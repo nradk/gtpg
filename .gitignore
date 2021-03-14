@@ -1,2 +1,8 @@
 # Vim swap files
 .*.swp
+
+# npm modules directory
+node_modules/
+
+# webpack output directory
+dist/

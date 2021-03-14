@@ -1,3 +1,6 @@
+import Konva from 'konva';
+import './dashboard.css';
+
 var layoutGlobal = "circular";
 
 const randomLayoutBtn = document.getElementById("randomBtn");
@@ -99,7 +102,7 @@ class VertexDrawing extends Konva.Circle {
             this.selected = !this.selected;
         }
     }
-    
+
     unselect() {
         if (this.selected) {
             this.stroke('black');
@@ -189,7 +192,7 @@ function getVertexDrawingsForLayout(graphAdjList, layout) {
 function getEdgeList(graphAdjList, directed) {
     // Assume undirected now
     let edges = [];
-    for (v of Object.keys(graphAdjList)) {
+    for (const v of Object.keys(graphAdjList)) {
         for (const n of graphAdjList[v]) {
             if (n < v) {
                 edges.push([n, v]);
