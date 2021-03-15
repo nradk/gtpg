@@ -221,7 +221,7 @@ function addVertexToCurrentGraph(e) {
     const pointer = stage.getPointerPosition();
     const x = e.evt.layerX - shiftX;
     const y = e.evt.layerY - shiftY;
-    const newKey = Math.max(Object.keys(graph)) + 1;
+    const newKey = Math.max(...Object.keys(graph).map(s => Number(s))) + 1;
     graph[newKey] = [];
     const drawing = new VertexDrawing(x, y, verticesLayer);
     vertexMap[newKey] = drawing;
