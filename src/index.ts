@@ -1,29 +1,39 @@
 import Konva from 'konva';
 import './dashboard.css';
 
-var layoutGlobal = "circular";
+type Layout = "circular" | "random";
+var layoutGlobal : Layout = "circular";
 
-const randomLayoutBtn = document.getElementById("randomBtn");
-randomLayoutBtn.onclick = e => {
+const randomLayoutBtn : HTMLElement = document.getElementById("randomBtn");
+randomLayoutBtn.onclick = _ => {
     layoutGlobal = "random";
     //e.target.classList.add('active');
     render();
 };
-const circularLayoutBtn = document.getElementById("circularBtn");
-circularLayoutBtn.onclick = e => {
+const circularLayoutBtn : HTMLElement = document.getElementById("circularBtn");
+circularLayoutBtn.onclick = _ => {
     layoutGlobal = "circular";
     //e.target.classList.add('active');
     render();
 };
 
-var stage = new Konva.Stage({
+const stage = new Konva.Stage({
     container: 'container',
     width: 1400,
     height: 700,
     draggable: true
 });
 
-const graph = {
+type Point = {
+    x: number,
+    y: number
+};
+
+type Graph = {
+    [key: number]: number[];
+};
+
+const graph : Graph = {
     1: [2, 3, 4],
     2: [1, 3, 4],
     3: [1, 2, 4],
@@ -31,8 +41,17 @@ const graph = {
     5: [1, 2, 3],
 };
 
+type MouseEventCallback = ((e: Konva.KonvaEventObject<MouseEvent>) => void);
+
 class VertexDrawing extends Konva.Circle {
-    constructor(x, y, layer) {
+
+    selected : boolean;
+    layer : Konva.Layer;
+    moveCallbacks : MouseEventCallback[];
+    edgeDrawings : EdgeDrawing[];
+    center : Point;
+
+    constructor(x : number, y : number, layer : Konva.Layer) {
         super({
             x: x,
             y: y,
@@ -111,22 +130,22 @@ class VertexDrawing extends Konva.Circle {
         }
     }
 
-    addMoveCallBack(callback) {
+    addMoveCallBack(callback : MouseEventCallback) {
         this.moveCallbacks.push(callback);
     }
 
-    removeMoveCallback(callback) {
+    removeMoveCallback(callback : MouseEventCallback) {
         const idx = this.moveCallbacks.indexOf(callback);
         if (idx >= 0) {
             this.moveCallbacks.splice(idx);
         }
     }
 
-    registerEdgeDrawing(edgeDrawing) {
+    registerEdgeDrawing(edgeDrawing : EdgeDrawing) {
         this.edgeDrawings.push(edgeDrawing);
     }
 
-    unregisterEdgeDrawing(edgeDrawing) {
+    unregisterEdgeDrawing(edgeDrawing : EdgeDrawing) {
         const idx = this.edgeDrawings.indexOf(edgeDrawing);
         if (idx >= 0) {
             this.edgeDrawings.splice(idx);
@@ -136,17 +155,23 @@ class VertexDrawing extends Konva.Circle {
 }
 
 class EdgeDrawing extends Konva.Line {
-    constructor(vertexDrawing1, vertexDrawing2, directed, layer) {
+    start: VertexDrawing;
+    end: VertexDrawing;
+    layer: Konva.Layer;
+
+    // Third argument is supposed to be 'directed'
+    constructor(start: VertexDrawing, end: VertexDrawing, _: boolean,
+                layer: Konva.Layer) {
         super({
-            points: [vertexDrawing1.center.x, vertexDrawing1.center.y,
-                     vertexDrawing2.center.x, vertexDrawing2.center.y],
+            points: [start.center.x, start.center.y,
+                     end.center.x, end.center.y],
             stroke: 'black',
             strokeWidth: 2,
             lineCap: 'round',
             lineJoin: 'round'
         });
-        this.start = vertexDrawing1;
-        this.end = vertexDrawing2;
+        this.start = start;
+        this.end = end;
         this.layer = layer;
         this.start.addMoveCallBack(this.vertexMoveCallback.bind(this));
         this.end.addMoveCallBack(this.vertexMoveCallback.bind(this));
@@ -154,14 +179,15 @@ class EdgeDrawing extends Konva.Line {
         this.end.registerEdgeDrawing(this);
     }
 
-    vertexMoveCallback(e) {
+    vertexMoveCallback(_ : Konva.KonvaEventObject<MouseEvent>) {
         this.points([this.start.center.x, this.start.center.y,
                      this.end.center.x, this.end.center.y]);
         this.layer.draw();
     }
 }
 
-function getVertexDrawingsForLayout(graphAdjList, layout) {
+
+function getVertexDrawingsForLayout(graphAdjList : Graph, layout : Layout) {
     let vertices = {};
     if (layout == "random") {
         for (const v of Object.keys(graphAdjList)) {
@@ -189,7 +215,8 @@ function getVertexDrawingsForLayout(graphAdjList, layout) {
     return vertices;
 }
 
-function getEdgeList(graphAdjList, directed) {
+// Second argument is supposed to be 'directed'
+function getEdgeList(graphAdjList: Graph, _: boolean) {
     // Assume undirected now
     let edges = [];
     for (const v of Object.keys(graphAdjList)) {
@@ -202,11 +229,13 @@ function getEdgeList(graphAdjList, directed) {
     return edges;
 }
 
-function drawGraph(graphAdjList, verticesLayer, edgesLayer, layout) {
+function drawGraph(graphAdjList : Graph, verticesLayer : Konva.Layer,
+                   edgesLayer : Konva.Layer, layout : Layout) {
     const vertexDrawings = getVertexDrawingsForLayout(graphAdjList, layout);
     vertexMap = vertexDrawings;
     const edges = getEdgeList(graphAdjList, false);
-    Object.values(vertexDrawings).forEach(vd => verticesLayer.add(vd));
+    Object.values(vertexDrawings).forEach((vd: VertexDrawing) =>
+                                          verticesLayer.add(vd));
 
     for (const e of edges) {
         const start = vertexDrawings[e[0]];
@@ -217,10 +246,9 @@ function drawGraph(graphAdjList, verticesLayer, edgesLayer, layout) {
     }
 }
 
-function addVertexToCurrentGraph(e) {
-    const pointer = stage.getPointerPosition();
-    const x = e.evt.layerX - shiftX;
-    const y = e.evt.layerY - shiftY;
+function addVertexToCurrentGraph(e : Konva.KonvaEventObject<MouseEvent>) {
+    const x = e.evt.offsetX - shiftX;
+    const y = e.evt.offsetY - shiftY;
     const newKey = Math.max(...Object.keys(graph).map(s => Number(s))) + 1;
     graph[newKey] = [];
     const drawing = new VertexDrawing(x, y, verticesLayer);
@@ -229,33 +257,33 @@ function addVertexToCurrentGraph(e) {
     verticesLayer.draw();
 }
 
-function toggleEdge(vertexDrawing1, vertexDrawing2) {
-    const start =  Object.keys(vertexMap).find(key => vertexMap[key] === vertexDrawing1);
-    const end   =  Object.keys(vertexMap).find(key => vertexMap[key] === vertexDrawing2);
-    for (const edgeDrawing of vertexDrawing1.edgeDrawings) {
-        const endIndex = vertexDrawing2.edgeDrawings.indexOf(edgeDrawing);
+function toggleEdge(start : VertexDrawing, end : VertexDrawing) {
+    const startId =  Object.keys(vertexMap).find(key => vertexMap[key] === start);
+    const endId   =  Object.keys(vertexMap).find(key => vertexMap[key] === end);
+    for (const edgeDrawing of start.edgeDrawings) {
+        const endIndex = end.edgeDrawings.indexOf(edgeDrawing);
         if (endIndex >= 0) {
-            vertexDrawing1.unregisterEdgeDrawing(edgeDrawing);
-            vertexDrawing2.unregisterEdgeDrawing(edgeDrawing);
+            start.unregisterEdgeDrawing(edgeDrawing);
+            end.unregisterEdgeDrawing(edgeDrawing);
             edgeDrawing.destroy();
             edgesLayer.draw();
-            graph[start].splice(graph[start].indexOf(end));
-            graph[end].splice(graph[end].indexOf(start));
+            graph[startId].splice(graph[startId].indexOf(end));
+            graph[endId].splice(graph[endId].indexOf(start));
             return;
         }
     }
-    const edgeDrawing = new EdgeDrawing(vertexDrawing1, vertexDrawing2, false,
+    const edgeDrawing = new EdgeDrawing(start, end, false,
         edgesLayer);
-    graph[start].push(end);
-    graph[end].push(start);
+    graph[startId].push(endId);
+    graph[endId].push(startId);
     edgesLayer.add(edgeDrawing);
     edgesLayer.draw();
 }
 
-let verticesLayer = new Konva.Layer();
-let edgesLayer = new Konva.Layer();
+const verticesLayer = new Konva.Layer();
+const edgesLayer = new Konva.Layer();
 
-let dragStartX, dragStartY;
+let dragStartX : number, dragStartY : number;
 let shiftX = 0, shiftY = 0;
 
 let vertexSelected = null;
