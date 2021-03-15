@@ -247,8 +247,9 @@ function drawGraph(graphAdjList : Graph, verticesLayer : Konva.Layer,
 }
 
 function addVertexToCurrentGraph(e : Konva.KonvaEventObject<MouseEvent>) {
-    const x = e.evt.offsetX - shiftX;
-    const y = e.evt.offsetY - shiftY;
+    const absolutePosition = e.target.getAbsolutePosition();
+    const x = e.evt.offsetX - absolutePosition.x;
+    const y = e.evt.offsetY - absolutePosition.y;
     const newKey = Math.max(...Object.keys(graph).map(s => Number(s))) + 1;
     graph[newKey] = [];
     const drawing = new VertexDrawing(x, y, verticesLayer);
@@ -283,9 +284,6 @@ function toggleEdge(start : VertexDrawing, end : VertexDrawing) {
 const verticesLayer = new Konva.Layer();
 const edgesLayer = new Konva.Layer();
 
-let dragStartX : number, dragStartY : number;
-let shiftX = 0, shiftY = 0;
-
 let vertexSelected = null;
 
 let vertexMap = {};
@@ -298,18 +296,6 @@ function render() {
     drawGraph(graph, verticesLayer, edgesLayer, layoutGlobal);
     stage.add(edgesLayer);
     stage.add(verticesLayer);
-    stage.on('dragstart', e => {
-        if (e.target == stage) {
-            dragStartX = e.evt.x;
-            dragStartY = e.evt.y;
-        }
-    });
-    stage.on('dragend', e => {
-        if (e.target == stage) {
-            shiftX += e.evt.x - dragStartX;
-            shiftY += e.evt.y - dragStartY;
-        }
-    });
     stage.on('click', addVertexToCurrentGraph);
 }
 
