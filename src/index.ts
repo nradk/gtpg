@@ -11,13 +11,22 @@ const stage = new Konva.Stage({
     draggable: true
 });
 
-const graph = new Graph({
-    1: [2, 3, 4],
-    2: [1, 3, 4],
-    3: [1, 2, 4],
-    4: [1, 2, 3],
-    5: [1, 2, 3],
+//const graph = new Graph(true, {
+    //1: [2, 3, 4, 5],
+    //2: [1, 3, 4, 5],
+    //3: [1, 2, 4, 5],
+    //4: [1, 2, 3],
+    //5: [1, 2, 3],
+//});
+
+const graph = new Graph(true, {
+    1: [2, 3, 4, 5],
+    2: [3, 4, 5],
+    3: [4, 5],
+    4: [],
+    5: [],
 });
+
 
 const graphDrawing = new GraphDrawing(stage, graph);
 

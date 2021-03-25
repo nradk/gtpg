@@ -19,7 +19,8 @@ export class VertexDrawing extends Konva.Group {
 
     constructor(x: number, y: number, labelText: string) {
         super({ x: x, y: y, draggable: true });
-        this.circle = new Konva.Circle({ radius: 15,
+        this.circle = new Konva.Circle({
+            radius: 15,
             fill: 'white',
             stroke: 'black',
             strokeWidth: 2
@@ -61,6 +62,10 @@ export class VertexDrawing extends Konva.Group {
             e.cancelBubble = true;
         };
         this.on('dblclick', doubleClickHandler);
+    }
+
+    getRadius(): number{
+        return this.circle.radius();
     }
 
     select() {
@@ -127,34 +132,59 @@ export class VertexDrawing extends Konva.Group {
 
 }
 
-export class EdgeDrawing extends Konva.Line {
+export class EdgeDrawing extends Konva.Arrow {
     start: VertexDrawing;
     end: VertexDrawing;
+    directed: boolean;
     redrawCallback: RedrawCallback;
 
     // Third argument is supposed to be 'directed'
-    constructor(start: VertexDrawing, end: VertexDrawing, _: boolean,
+    constructor(start: VertexDrawing, end: VertexDrawing, directed: boolean,
                 redrawCallback: RedrawCallback) {
         super({
             points: [start.x(), start.y(),
                 end.x(), end.y()],
             stroke: 'black',
+            fill: 'black',
             strokeWidth: 2,
             lineCap: 'round',
-            lineJoin: 'round'
+            lineJoin: 'round',
+            pointerLength: directed? 10 : 0,
+            pointerWidth: directed? 10 : 0,
+
         });
         this.start = start;
         this.end = end;
+        this.directed = directed;
         this.redrawCallback = redrawCallback;
         this.start.addMoveCallBack(this.vertexMoveCallback.bind(this));
         this.end.addMoveCallBack(this.vertexMoveCallback.bind(this));
         this.start.registerEdgeDrawing(this);
         this.end.registerEdgeDrawing(this);
+        this.setEdgePoints();
+    }
+
+    setEdgePoints() {
+        const start = this.start;
+        const end = this.end;
+        // Compute and set end point (the point where the edge touches the
+        // destination vertex's circle). Skip this computation if graph isn't
+        // directed.
+        if (this.directed) {
+            let toStart = [start.x() - end.x(), start.y() - end.y()];
+            const magnitude = Math.sqrt(toStart[0] * toStart[0] +
+                toStart[1] * toStart[1]);
+            toStart = [toStart[0] / magnitude, toStart[1] / magnitude];
+            const r = end.getRadius();
+            const endPoint = [end.x() + r*toStart[0], end.y() + r*toStart[1]];
+            this.points([start.x(), start.y()].concat(endPoint));
+        } else {
+            this.points([start.x(), start.y(), end.x(), end.y()]);
+        }
     }
 
     vertexMoveCallback(_: Konva.KonvaEventObject<MouseEvent>) {
-        this.points([this.start.x(), this.start.y(),
-            this.end.x(), this.end.y()]);
+        this.setEdgePoints();
         this.redrawCallback();
     }
 }
@@ -172,7 +202,7 @@ export class GraphDrawing {
 
     constructor(stage: Konva.Stage, graph?: Graph) {
         if (graph === undefined) {
-            this.graph = new Graph();
+            this.graph = new Graph(false);
         } else {
             this.graph = graph;
         }
@@ -228,8 +258,9 @@ export class GraphDrawing {
         for (const e of edges) {
             const start = this.vertexDrawings[e[0]];
             const end   = this.vertexDrawings[e[1]];
-            edgeDrawings.push(new EdgeDrawing(start, end, false,
-                              this.edgesLayer.draw.bind(this.edgesLayer)));
+            edgeDrawings.push(new EdgeDrawing(start, end,
+                this.graph.isDirected(),
+                this.edgesLayer.draw.bind(this.edgesLayer)));
         }
         return edgeDrawings;
     }
@@ -304,7 +335,8 @@ export class GraphDrawing {
                 return;
             }
         }
-        const edgeDrawing = new EdgeDrawing(start, end, false,
+        const edgeDrawing = new EdgeDrawing(start, end,
+                                this.graph.isDirected(),
                                 this.edgesLayer.draw.bind(this.edgesLayer));
         this.graph.addEdge(startId, endId);
         this.edgesLayer.add(edgeDrawing);
