@@ -29,5 +29,9 @@ const circularLayoutBtn: HTMLElement = document.getElementById("circularBtn");
 circularLayoutBtn.onclick = _ => {
     graphDrawing.renderGraph("circular");
 };
+const gridLayoutBtn: HTMLElement = document.getElementById("gridBtn");
+gridLayoutBtn.onclick = _ => {
+    graphDrawing.renderGraph("grid");
+};
 
 graphDrawing.renderGraph("circular");

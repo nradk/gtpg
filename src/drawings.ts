@@ -1,7 +1,8 @@
 import Konva from "konva";
 
 import Graph from "./graph";
-import { MouseEventCallback, Layout, RedrawCallback } from "./commontypes";
+import { MouseEventCallback, RedrawCallback } from "./commontypes";
+import * as Layouts from "./layouts";
 
 type VertexDrawingEventCallback = (v: VertexDrawing) => void;
 
@@ -167,6 +168,7 @@ export class GraphDrawing {
     stage : Konva.Stage;
     verticesLayer : Konva.Layer;
     edgesLayer : Konva.Layer;
+    layout : Layouts.Layout;
 
     constructor(stage: Konva.Stage, graph?: Graph) {
         if (graph === undefined) {
@@ -176,65 +178,47 @@ export class GraphDrawing {
         }
         this.stage = stage;
         this.vertexDrawings = [];
+        this.verticesLayer = new Konva.Layer();
+            this.edgesLayer = new Konva.Layer();
+        this.stage.add(this.edgesLayer).add(this.verticesLayer);
+        this.stage.on('click', this.addVertexToCurrentGraph.bind(this));
     }
 
-    renderGraph(layout: Layout) {
+    renderGraph(layoutName: Layouts.LayoutName) {
         this.stage.clear();
-        // TODO Is this necessary here?
-        this.stage.destroyChildren();
-        if (this.verticesLayer === undefined) {
-            this.verticesLayer = new Konva.Layer();
-        }
-        if (this.edgesLayer === undefined) {
-            this.edgesLayer = new Konva.Layer();
-        }
         this.verticesLayer.destroyChildren();
         this.edgesLayer.destroyChildren();
 
-        this.populateVertexDrawingsForLayout(layout);
+        this.layout = Layouts.getLayoutForStageDims(layoutName, {
+            width: this.stage.width(),
+            height: this.stage.height()
+        });
+        this.populateVertexDrawings();
+        this.attachVertexEventHandlers();
         Object.keys(this.vertexDrawings).forEach(k => this.verticesLayer.add(
             this.vertexDrawings[k]));
         const edgeDrawings = this.createEdgeDrawings();
         edgeDrawings.forEach(ed => this.edgesLayer.add(ed));
         this.edgesLayer.draw();
-
-        this.stage.add(this.edgesLayer).add(this.verticesLayer);
-        this.stage.on('click', this.addVertexToCurrentGraph.bind(this));
+        this.verticesLayer.draw();
     }
 
-
-    populateVertexDrawingsForLayout(layout: Layout): void {
-        const vertexDrawings: {[id: number]: VertexDrawing} = {};
-        if (layout == "random") {
-            for (const v of this.graph.getVertexIds()) {
-                const x = Math.random() * this.stage.width();
-                const y = Math.random() * this.stage.height();
-                vertexDrawings[v] =  new VertexDrawing(x, y, v.toString());
-                vertexDrawings[v].addClickCallback(
-                    this.vertexClickHandler.bind(this));
-                vertexDrawings[v].addDoubleClickCallback(
-                    this.vertexDoubleClickHandler.bind(this));
-            }
-        } else if (layout == "circular") {
-            const centerX = this.stage.width() / 2;
-            const centerY = this.stage.height() / 2;
-            const radius = Math.floor(0.8 * Math.min(this.stage.height(),
-                this.stage.width()) / 2);
-            const length = this.graph.getNumberOfVertices();
-            let r = 0;
-            const step = (Math.PI * 2) / length;
-            for (const v of this.graph.getVertexIds()) {
-                const x = centerX + Math.cos(r) * radius;
-                const y = centerY + Math.sin(r) * radius;
-                vertexDrawings[v] = new VertexDrawing(x, y, v.toString());
-                vertexDrawings[v].addClickCallback(
-                    this.vertexClickHandler.bind(this));
-                vertexDrawings[v].addDoubleClickCallback(
-                    this.vertexDoubleClickHandler.bind(this));
-                r += step;
-            }
+    populateVertexDrawings() {
+        const vertexPositions = this.layout.getVertexPositions(this.graph);
+        this.vertexDrawings = {};
+        for (const v of Object.keys(vertexPositions)) {
+            const p = vertexPositions[v];
+            this.vertexDrawings[v] = new VertexDrawing(p.x, p.y, v.toString());
         }
-        this.vertexDrawings = vertexDrawings;
+    }
+
+    attachVertexEventHandlers() {
+        for (const v of Object.keys(this.vertexDrawings)) {
+            this.vertexDrawings[v].addClickCallback(
+                this.vertexClickHandler.bind(this));
+            this.vertexDrawings[v].addDoubleClickCallback(
+                this.vertexDoubleClickHandler.bind(this));
+        }
     }
 
     // Assume vertices already drawn
@@ -251,6 +235,7 @@ export class GraphDrawing {
     }
 
     addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
+        console.trace();
         const absolutePosition = e.target.getAbsolutePosition();
         const x = e.evt.offsetX - absolutePosition.x;
         const y = e.evt.offsetY - absolutePosition.y;

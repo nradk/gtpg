@@ -5,8 +5,11 @@ export interface Point {
     y: number
 };
 
+export interface Size {
+    height: number;
+    width: number;
+}
+
 export type MouseEventCallback = ((e: Konva.KonvaEventObject<MouseEvent>)
                                   => void);
-export type Layout = "circular" | "random";
 export type RedrawCallback = () => void;
-
