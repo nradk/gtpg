@@ -1,70 +1,81 @@
 import Konva from "konva";
 
 import Graph from "./graph";
-import { Point, MouseEventCallback, Layout } from "./commontypes";
+import { MouseEventCallback, Layout, RedrawCallback } from "./commontypes";
 
 type VertexDrawingEventCallback = (v: VertexDrawing) => void;
 
-export class VertexDrawing extends Konva.Circle {
+export class VertexDrawing extends Konva.Group {
 
     selected: boolean;
-    layer: Konva.Layer;
+    label: Konva.Text;
+    circle: Konva.Circle;
     moveCallbacks: MouseEventCallback[];
     clickCallbacks: VertexDrawingEventCallback[];
     doubleClickCallbacks: VertexDrawingEventCallback[];
     edgeDrawings: EdgeDrawing[];
-    center: Point;
+    labelX: number;
 
-    constructor(x: number, y: number, layer: Konva.Layer) {
-        super({
-            x: x,
-            y: y,
-            radius: 15,
+    constructor(x: number, y: number, labelText: string) {
+        super({ x: x, y: y, draggable: true });
+        this.circle = new Konva.Circle({ radius: 15,
             fill: 'white',
             stroke: 'black',
-            strokeWidth: 2,
-            draggable: true,
-        })
+            strokeWidth: 2
+        });
+        this.add(this.circle);
         this.selected = false;
-        this.layer = layer;
+        this.moveCallbacks = [];
         this.moveCallbacks = [];
         this.clickCallbacks = [];
         this.doubleClickCallbacks = [];
         this.edgeDrawings = [];
-        this.center = {x: x, y: y};
-        this.on('mouseover', function () {
+        this.label = new Konva.Text({
+            text: labelText,
+            fontSize: 18,
+            fill: 'black'
+        });
+        this.label.offsetX(this.label.width() / 2);
+        this.label.offsetY(this.label.height() / 2);
+        this.add(this.label);
+        const mouseOverHandler = function () {
             document.body.style.cursor = 'pointer';
-        });
-        this.on('mouseout', function () {
+        };
+        const mouseOutHandler = function () {
             document.body.style.cursor = 'default';
-        });
-        this.on('dragmove', function (e) {
-            this.center.x = this.x();
-            this.center.y = this.y();
+        };
+        const dragHandler = (e: Konva.KonvaEventObject<MouseEvent>) => {
             this.moveCallbacks.forEach(callback => callback(e));
-        });
-        this.on('click', e => {
+        };
+        this.on('mouseover', mouseOverHandler);
+        this.on('mouseout', mouseOutHandler);
+        this.on('dragmove', dragHandler);
+        const clickHandler = (e: Konva.KonvaEventObject<MouseEvent>) => {
             this.clickCallbacks.forEach(callback => callback(this));
             e.cancelBubble = true;
-        });
-        this.on('dblclick', (e) => {
+        };
+        this.on('click', clickHandler);
+        const doubleClickHandler = (e: Konva.KonvaEventObject<MouseEvent>) => {
             this.doubleClickCallbacks.forEach(callback => callback(this));
             e.cancelBubble = true;
-        });
+        };
+        this.on('dblclick', doubleClickHandler);
     }
 
     select() {
         if (!this.selected) {
-            this.stroke('red');
-            this.strokeWidth(4);
+            this.circle.stroke('red');
+            this.circle.strokeWidth(4);
+            this.label.fill('red');
             this.selected = !this.selected;
         }
     }
 
     unselect() {
         if (this.selected) {
-            this.stroke('black');
-            this.strokeWidth(2);
+            this.circle.stroke('black');
+            this.circle.strokeWidth(2);
+            this.label.fill('black');
             this.selected = !this.selected;
         }
     }
@@ -118,14 +129,14 @@ export class VertexDrawing extends Konva.Circle {
 export class EdgeDrawing extends Konva.Line {
     start: VertexDrawing;
     end: VertexDrawing;
-    layer: Konva.Layer;
+    redrawCallback: RedrawCallback;
 
     // Third argument is supposed to be 'directed'
     constructor(start: VertexDrawing, end: VertexDrawing, _: boolean,
-        layer: Konva.Layer) {
+                redrawCallback: RedrawCallback) {
         super({
-            points: [start.center.x, start.center.y,
-                end.center.x, end.center.y],
+            points: [start.x(), start.y(),
+                end.x(), end.y()],
             stroke: 'black',
             strokeWidth: 2,
             lineCap: 'round',
@@ -133,7 +144,7 @@ export class EdgeDrawing extends Konva.Line {
         });
         this.start = start;
         this.end = end;
-        this.layer = layer;
+        this.redrawCallback = redrawCallback;
         this.start.addMoveCallBack(this.vertexMoveCallback.bind(this));
         this.end.addMoveCallBack(this.vertexMoveCallback.bind(this));
         this.start.registerEdgeDrawing(this);
@@ -141,9 +152,9 @@ export class EdgeDrawing extends Konva.Line {
     }
 
     vertexMoveCallback(_: Konva.KonvaEventObject<MouseEvent>) {
-        this.points([this.start.center.x, this.start.center.y,
-            this.end.center.x, this.end.center.y]);
-        this.layer.draw();
+        this.points([this.start.x(), this.start.y(),
+            this.end.x(), this.end.y()]);
+        this.redrawCallback();
     }
 }
 
@@ -180,35 +191,25 @@ export class GraphDrawing {
         this.verticesLayer.destroyChildren();
         this.edgesLayer.destroyChildren();
 
-        this.drawGraph(layout);
-        this.stage.add(this.edgesLayer).add(this.verticesLayer);
+        this.populateVertexDrawingsForLayout(layout);
+        Object.keys(this.vertexDrawings).forEach(k => this.verticesLayer.add(
+            this.vertexDrawings[k]));
+        const edgeDrawings = this.createEdgeDrawings();
+        edgeDrawings.forEach(ed => this.edgesLayer.add(ed));
+        this.edgesLayer.draw();
 
+        this.stage.add(this.edgesLayer).add(this.verticesLayer);
         this.stage.on('click', this.addVertexToCurrentGraph.bind(this));
     }
 
-    drawGraph(layout: Layout) {
-        const vertexDrawings = this.getVertexDrawingsForLayout(layout);
-        const edges = this.graph.getEdgeList();
-        Object.values(vertexDrawings).forEach(vd => this.verticesLayer.add(vd));
 
-        for (const e of edges) {
-            const start = vertexDrawings[e[0]];
-            const end   = vertexDrawings[e[1]];
-            // Assume undirected (third argument)
-            const edgeDrawing = new EdgeDrawing(start, end, false,
-                this.edgesLayer);
-            this.edgesLayer.add(edgeDrawing);
-        }
-    }
-
-    getVertexDrawingsForLayout(layout: Layout) {
+    populateVertexDrawingsForLayout(layout: Layout): void {
         const vertexDrawings: {[id: number]: VertexDrawing} = {};
         if (layout == "random") {
             for (const v of this.graph.getVertexIds()) {
                 const x = Math.random() * this.stage.width();
                 const y = Math.random() * this.stage.height();
-                vertexDrawings[v] =  new VertexDrawing(x, y,
-                    this.verticesLayer);
+                vertexDrawings[v] =  new VertexDrawing(x, y, v.toString());
                 vertexDrawings[v].addClickCallback(
                     this.vertexClickHandler.bind(this));
                 vertexDrawings[v].addDoubleClickCallback(
@@ -225,8 +226,7 @@ export class GraphDrawing {
             for (const v of this.graph.getVertexIds()) {
                 const x = centerX + Math.cos(r) * radius;
                 const y = centerY + Math.sin(r) * radius;
-                vertexDrawings[v] = new VertexDrawing(x, y,
-                    this.verticesLayer);
+                vertexDrawings[v] = new VertexDrawing(x, y, v.toString());
                 vertexDrawings[v].addClickCallback(
                     this.vertexClickHandler.bind(this));
                 vertexDrawings[v].addDoubleClickCallback(
@@ -235,7 +235,19 @@ export class GraphDrawing {
             }
         }
         this.vertexDrawings = vertexDrawings;
-        return vertexDrawings;
+    }
+
+    // Assume vertices already drawn
+    createEdgeDrawings(): EdgeDrawing[] {
+        const edges = this.graph.getEdgeList();
+        const edgeDrawings: EdgeDrawing[] = [];
+        for (const e of edges) {
+            const start = this.vertexDrawings[e[0]];
+            const end   = this.vertexDrawings[e[1]];
+            edgeDrawings.push(new EdgeDrawing(start, end, false,
+                              this.edgesLayer.draw.bind(this.edgesLayer)));
+        }
+        return edgeDrawings;
     }
 
     addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
@@ -243,7 +255,7 @@ export class GraphDrawing {
         const x = e.evt.offsetX - absolutePosition.x;
         const y = e.evt.offsetY - absolutePosition.y;
         const newId = this.graph.addVertex();
-        const drawing = new VertexDrawing(x, y, this.verticesLayer);
+        const drawing = new VertexDrawing(x, y, newId.toString());
         this.vertexDrawings[newId] = drawing;
         drawing.addClickCallback(this.vertexClickHandler.bind(this));
         drawing.addDoubleClickCallback(
@@ -308,7 +320,7 @@ export class GraphDrawing {
             }
         }
         const edgeDrawing = new EdgeDrawing(start, end, false,
-            this.edgesLayer);
+                                this.edgesLayer.draw.bind(this.edgesLayer));
         this.graph.addEdge(startId, endId);
         this.edgesLayer.add(edgeDrawing);
         this.edgesLayer.draw();
