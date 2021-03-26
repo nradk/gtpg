@@ -86,6 +86,17 @@ export class GridLayout implements Layout {
     }
 }
 
+export class FixedLayout implements Layout {
+    positions: PositionMap;
+
+    constructor(positions: PositionMap) {
+        this.positions = positions;
+    }
+
+    getVertexPositions(_: Graph): PositionMap {
+        return this.positions;
+    }
+}
 
 export function getLayoutForStageDims(name: LayoutName, stageDims: Size)
         : Layout {

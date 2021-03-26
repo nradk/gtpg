@@ -3,6 +3,8 @@ import './dashboard.css';
 
 import Graph from "./graph";
 import { GraphDrawing } from "./drawings";
+import { Size } from "./commontypes";
+import * as Layouts from "./layouts";
 
 const stage = new Konva.Stage({
     container: 'container',
@@ -28,19 +30,25 @@ const graph = new Graph(true, {
 });
 
 
-const graphDrawing = new GraphDrawing(stage, graph);
+const stageDims: Size = { width: stage.width(), height: stage.height() };
+const layout: Layouts.Layout = Layouts.getLayoutForStageDims("circular",
+    stageDims);
+const graphDrawing = new GraphDrawing(stage, layout, graph);
 
 const randomLayoutBtn: HTMLElement = document.getElementById("randomBtn");
 randomLayoutBtn.onclick = _ => {
-    graphDrawing.renderGraph("random");
+    graphDrawing.setLayoutFromLayoutName("random");
+    graphDrawing.renderGraph();
 };
 const circularLayoutBtn: HTMLElement = document.getElementById("circularBtn");
 circularLayoutBtn.onclick = _ => {
-    graphDrawing.renderGraph("circular");
+    graphDrawing.setLayoutFromLayoutName("circular");
+    graphDrawing.renderGraph();
 };
 const gridLayoutBtn: HTMLElement = document.getElementById("gridBtn");
 gridLayoutBtn.onclick = _ => {
-    graphDrawing.renderGraph("grid");
+    graphDrawing.setLayoutFromLayoutName("grid");
+    graphDrawing.renderGraph();
 };
 
-graphDrawing.renderGraph("circular");
+graphDrawing.renderGraph();

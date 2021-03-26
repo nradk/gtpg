@@ -15,7 +15,6 @@ export class VertexDrawing extends Konva.Group {
     clickCallbacks: VertexDrawingEventCallback[];
     doubleClickCallbacks: VertexDrawingEventCallback[];
     edgeDrawings: EdgeDrawing[];
-    labelX: number;
 
     constructor(x: number, y: number, labelText: string) {
         super({ x: x, y: y, draggable: true });
@@ -129,7 +128,6 @@ export class VertexDrawing extends Konva.Group {
             this.edgeDrawings.splice(idx, 1);
         }
     }
-
 }
 
 export class EdgeDrawing extends Konva.Arrow {
@@ -200,29 +198,31 @@ export class GraphDrawing {
     edgesLayer : Konva.Layer;
     layout : Layouts.Layout;
 
-    constructor(stage: Konva.Stage, graph?: Graph) {
+    constructor(stage: Konva.Stage, initialLayout: Layouts.Layout,
+                graph?: Graph) {
         if (graph === undefined) {
             this.graph = new Graph(false);
         } else {
             this.graph = graph;
         }
         this.stage = stage;
+        this.layout = initialLayout;
         this.vertexDrawings = [];
         this.verticesLayer = new Konva.Layer();
-            this.edgesLayer = new Konva.Layer();
+        this.edgesLayer = new Konva.Layer();
         this.stage.add(this.edgesLayer).add(this.verticesLayer);
         this.stage.on('click', this.addVertexToCurrentGraph.bind(this));
     }
 
-    renderGraph(layoutName: Layouts.LayoutName) {
+    renderGraph(layout?: Layouts.Layout) {
         this.stage.clear();
         this.verticesLayer.destroyChildren();
         this.edgesLayer.destroyChildren();
 
-        this.layout = Layouts.getLayoutForStageDims(layoutName, {
-            width: this.stage.width(),
-            height: this.stage.height()
-        });
+        if (layout !== undefined) {
+            this.layout = layout;
+        }
+
         this.populateVertexDrawings();
         this.attachVertexEventHandlers();
         Object.keys(this.vertexDrawings).forEach(k => this.verticesLayer.add(
@@ -341,5 +341,34 @@ export class GraphDrawing {
         this.graph.addEdge(startId, endId);
         this.edgesLayer.add(edgeDrawing);
         this.edgesLayer.draw();
+    }
+
+    setLayoutFromLayoutName(layoutName: Layouts.LayoutName): void {
+        this.layout = Layouts.getLayoutForStageDims(layoutName, {
+            width: this.stage.width(),
+            height: this.stage.height(),
+        });
+    }
+
+    toJsonString(): string {
+        const positions: Layouts.PositionMap = {};
+        for (const v of Object.keys(this.vertexDrawings)) {
+            positions[v] = {x: this.vertexDrawings[v].x(),
+                y: this.vertexDrawings[v].y()
+            };
+        }
+        return JSON.stringify({
+            graph: this.graph.toJsonString(),
+            positions: positions
+        });
+    }
+
+    static fromJsonString(jsonStr: string, stage: Konva.Stage): GraphDrawing {
+        const data: {graph: string, positions: Layouts.PositionMap} =
+            JSON.parse(jsonStr);
+        const gd = new GraphDrawing(stage,
+                                    new Layouts.FixedLayout(data.positions),
+                                    Graph.fromJsonString(data.graph));
+        return gd;
     }
 }

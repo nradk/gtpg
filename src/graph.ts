@@ -129,6 +129,19 @@ class Graph {
     isDirected(): boolean {
         return this.directed;
     }
+
+    toJsonString(): string {
+        return JSON.stringify({
+            adjacencyList: this.adjacencyList,
+            directed: this.directed
+        });
+    }
+
+    static fromJsonString(jsonString: string): Graph {
+        const obj: {adjacencyList: GraphAdjacencies, directed: boolean}
+                = JSON.parse(jsonString);
+        return new Graph(obj.directed, obj.adjacencyList);
+    }
 }
 
 export default Graph;
