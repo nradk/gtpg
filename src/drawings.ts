@@ -198,27 +198,31 @@ export class GraphDrawing {
     edgesLayer : Konva.Layer;
     layout : Layouts.Layout;
 
-    constructor(stage: Konva.Stage, initialLayout: Layouts.Layout,
-                graph?: Graph) {
+    constructor(initialLayout: Layouts.Layout, graph?: Graph) {
         if (graph === undefined) {
             this.graph = new Graph(false);
         } else {
             this.graph = graph;
         }
-        this.stage = stage;
         this.layout = initialLayout;
         this.vertexDrawings = [];
         this.verticesLayer = new Konva.Layer();
         this.edgesLayer = new Konva.Layer();
+    }
+
+    setStage(stage: Konva.Stage): void {
+        this.stage = stage;
+        this.stage.destroyChildren();
         this.stage.add(this.edgesLayer).add(this.verticesLayer);
         this.stage.on('click', this.addVertexToCurrentGraph.bind(this));
     }
 
     renderGraph(layout?: Layouts.Layout) {
-        this.stage.clear();
-        this.verticesLayer.destroyChildren();
-        this.edgesLayer.destroyChildren();
+        if (!this.stage) {
+            throw Error("Stage needs to be set before call to renderGraph()");
+        }
 
+        this.stage.destroyChildren();
         if (layout !== undefined) {
             this.layout = layout;
         }
@@ -363,11 +367,10 @@ export class GraphDrawing {
         });
     }
 
-    static fromJsonString(jsonStr: string, stage: Konva.Stage): GraphDrawing {
+    static fromJsonString(jsonStr: string): GraphDrawing {
         const data: {graph: string, positions: Layouts.PositionMap} =
             JSON.parse(jsonStr);
-        const gd = new GraphDrawing(stage,
-                                    new Layouts.FixedLayout(data.positions),
+        const gd = new GraphDrawing(new Layouts.FixedLayout(data.positions),
                                     Graph.fromJsonString(data.graph));
         return gd;
     }

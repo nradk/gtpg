@@ -33,7 +33,7 @@ const graph = new Graph(true, {
 const stageDims: Size = { width: stage.width(), height: stage.height() };
 const layout: Layouts.Layout = Layouts.getLayoutForStageDims("circular",
     stageDims);
-const graphDrawing = new GraphDrawing(stage, layout, graph);
+const graphDrawing = new GraphDrawing(layout, graph);
 
 const randomLayoutBtn: HTMLElement = document.getElementById("randomBtn");
 randomLayoutBtn.onclick = _ => {
