@@ -60,7 +60,12 @@ class Graph {
     }
 
     addVertex(): number {
-        const newId = Math.max(...this.getVertexIds().map(s => Number(s))) + 1;
+        let newId: number;
+        if (this.getVertexIds().length == 0) {
+            newId = 1;
+        } else {
+            newId = Math.max(...this.getVertexIds().map(s => Number(s))) + 1;
+        }
         this.adjacencyList[newId] = [];
         return newId;
     }

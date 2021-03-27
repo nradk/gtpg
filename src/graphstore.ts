@@ -29,7 +29,12 @@ export class LocalGraphDrawingStore implements GraphDrawingStore {
 
     storeGraphDrawing(graphDrawing: GraphDrawing): number {
         const allIds = this.getAllGraphDrawingIds();
-        const nextId = Math.max(...allIds) + 1;
+        var nextId: number;
+        if (allIds.length == 0) {
+            nextId = 1;
+        } else {
+            nextId = Math.max(...allIds) + 1;
+        }
         localStorage.setItem(nextId.toString(), graphDrawing.toJsonString());
         return nextId;
     }

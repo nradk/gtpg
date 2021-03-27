@@ -222,7 +222,8 @@ export class GraphDrawing {
             throw Error("Stage needs to be set before call to renderGraph()");
         }
 
-        this.stage.destroyChildren();
+        this.edgesLayer.destroyChildren();
+        this.verticesLayer.destroyChildren();
         if (layout !== undefined) {
             this.layout = layout;
         }
@@ -270,7 +271,6 @@ export class GraphDrawing {
     }
 
     addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
-        console.trace();
         const absolutePosition = e.target.getAbsolutePosition();
         const x = e.evt.offsetX - absolutePosition.x;
         const y = e.evt.offsetY - absolutePosition.y;
