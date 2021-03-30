@@ -1,7 +1,7 @@
 import Konva from "konva";
 
 import Graph from "./graph";
-import { MouseEventCallback, RedrawCallback } from "./commontypes";
+import { RedrawCallback } from "./commontypes";
 import * as Layouts from "./layouts";
 
 type VertexDrawingEventCallback = (v: VertexDrawing) => void;
@@ -11,7 +11,7 @@ export class VertexDrawing extends Konva.Group {
     selected: boolean;
     label: Konva.Text;
     circle: Konva.Circle;
-    moveCallbacks: MouseEventCallback[];
+    moveCallbacks: VertexDrawingEventCallback[];
     clickCallbacks: VertexDrawingEventCallback[];
     doubleClickCallbacks: VertexDrawingEventCallback[];
     edgeDrawings: EdgeDrawing[];
@@ -45,9 +45,8 @@ export class VertexDrawing extends Konva.Group {
         const mouseOutHandler = function () {
             document.body.style.cursor = 'default';
         };
-        const dragHandler = (e: Konva.KonvaEventObject<MouseEvent>) => {
-            this.moveCallbacks.forEach(callback => callback(e));
-        };
+        const dragHandler = (_: Konva.KonvaEventObject<MouseEvent>) =>
+            this.callMoveCallbacks();
         this.on('mouseover', mouseOverHandler);
         this.on('mouseout', mouseOutHandler);
         this.on('dragmove', dragHandler);
@@ -85,11 +84,15 @@ export class VertexDrawing extends Konva.Group {
         }
     }
 
-    addMoveCallBack(callback: MouseEventCallback) {
+    addMoveCallback(callback: VertexDrawingEventCallback) {
         this.moveCallbacks.push(callback);
     }
 
-    removeMoveCallback(callback: MouseEventCallback) {
+    callMoveCallbacks() {
+        this.moveCallbacks.forEach(callback => callback(this));
+    }
+
+    removeMoveCallback(callback: VertexDrawingEventCallback) {
         const idx = this.moveCallbacks.indexOf(callback);
         if (idx >= 0) {
             this.moveCallbacks.splice(idx, 1);
@@ -155,8 +158,8 @@ export class EdgeDrawing extends Konva.Arrow {
         this.end = end;
         this.directed = directed;
         this.redrawCallback = redrawCallback;
-        this.start.addMoveCallBack(this.vertexMoveCallback.bind(this));
-        this.end.addMoveCallBack(this.vertexMoveCallback.bind(this));
+        this.start.addMoveCallback(this.vertexMoveCallback.bind(this));
+        this.end.addMoveCallback(this.vertexMoveCallback.bind(this));
         this.start.registerEdgeDrawing(this);
         this.end.registerEdgeDrawing(this);
         this.setEdgePoints();
@@ -181,7 +184,7 @@ export class EdgeDrawing extends Konva.Arrow {
         }
     }
 
-    vertexMoveCallback(_: Konva.KonvaEventObject<MouseEvent>) {
+    vertexMoveCallback(_: VertexDrawing) {
         this.setEdgePoints();
         this.redrawCallback();
     }
@@ -197,6 +200,7 @@ export class GraphDrawing {
     verticesLayer : Konva.Layer;
     edgesLayer : Konva.Layer;
     layout : Layouts.Layout;
+    positions: Layouts.PositionMap;
 
     constructor(initialLayout: Layouts.Layout, graph?: Graph) {
         if (graph === undefined) {
@@ -206,6 +210,7 @@ export class GraphDrawing {
         }
         this.layout = initialLayout;
         this.vertexDrawings = [];
+        this.positions = {};
         this.verticesLayer = new Konva.Layer();
         this.edgesLayer = new Konva.Layer();
     }
@@ -238,11 +243,25 @@ export class GraphDrawing {
         this.verticesLayer.draw();
     }
 
+    // This is a "shallow" render, just update positions from the layout and
+    // update the vertex and edge positions
+    redrawGraph() {
+        this.layout.updateVertexPositions(this.graph, this.positions);
+        for (const v of Object.keys(this.positions)) {
+            const drawing: VertexDrawing = this.vertexDrawings[v];
+            drawing.x(this.positions[v].x);
+            drawing.y(this.positions[v].y);
+            drawing.callMoveCallbacks()
+        }
+        this.verticesLayer.draw();
+        this.edgesLayer.draw();
+    }
+
     populateVertexDrawings() {
-        const vertexPositions = this.layout.getVertexPositions(this.graph);
+        this.positions = this.layout.getVertexPositions(this.graph);
         this.vertexDrawings = {};
-        for (const v of Object.keys(vertexPositions)) {
-            const p = vertexPositions[v];
+        for (const v of Object.keys(this.positions)) {
+            const p = this.positions[v];
             this.vertexDrawings[v] = new VertexDrawing(p.x, p.y, v.toString());
         }
     }
@@ -253,6 +272,8 @@ export class GraphDrawing {
                 this.vertexClickHandler.bind(this));
             this.vertexDrawings[v].addDoubleClickCallback(
                 this.vertexDoubleClickHandler.bind(this));
+            this.vertexDrawings[v].addMoveCallback(
+                this.vertexMoveHandler.bind(this));
         }
     }
 
@@ -277,11 +298,17 @@ export class GraphDrawing {
         const newId = this.graph.addVertex();
         const drawing = new VertexDrawing(x, y, newId.toString());
         this.vertexDrawings[newId] = drawing;
+        this.positions[newId] = {x: x, y: y};
         drawing.addClickCallback(this.vertexClickHandler.bind(this));
         drawing.addDoubleClickCallback(
             this.vertexDoubleClickHandler.bind(this));
         this.verticesLayer.add(drawing);
         this.verticesLayer.draw();
+    }
+
+    vertexMoveHandler(vertex: VertexDrawing) {
+        const vid = this.lookupVertexId(vertex);
+        this.positions[vid] = {x: vertex.x(), y: vertex.y()};
     }
 
     vertexClickHandler(vertexDrawing: VertexDrawing) {
@@ -316,6 +343,8 @@ export class GraphDrawing {
         const vertexId = this.lookupVertexId(vertexDrawing)
         this.graph.removeVertex(vertexId);
         vertexDrawing.destroy();
+        delete this.vertexDrawings[vertexId];
+        delete this.positions[vertexId];
         this.verticesLayer.draw();
         this.edgesLayer.draw();
     }

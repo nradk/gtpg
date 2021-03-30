@@ -1,14 +1,17 @@
-import { Point, Size } from "./commontypes";
+import { Point, Size, Vector2, Util } from "./commontypes";
 import Graph from "./graph";
 
-export type LayoutName = "circular" | "random" | "grid";
+export type LayoutName = "circular" | "random" | "grid" | "forcebased";
 
 export interface PositionMap {
     [id: number]: Point;
 };
 
+export type RelayoutCallback = (map: PositionMap) => void;
+
 export interface Layout {
     getVertexPositions(graph: Graph): PositionMap;
+    updateVertexPositions(graph: Graph, positions: PositionMap): void;
 }
 
 export class RandomLayout implements Layout {
@@ -27,6 +30,13 @@ export class RandomLayout implements Layout {
             positions[v] = {x: x, y: y};
         }
         return positions;
+    }
+
+    updateVertexPositions(graph: Graph, positions: PositionMap) {
+        const p = this.getVertexPositions(graph);
+        for (const v of Object.keys(p)) {
+            positions[v] = p[v];
+        }
     }
 }
 
@@ -54,6 +64,13 @@ export class CircularLayout implements Layout {
             r += step;
         }
         return positions;
+    }
+
+    updateVertexPositions(graph: Graph, positions: PositionMap) {
+        const p = this.getVertexPositions(graph);
+        for (const v of Object.keys(p)) {
+            positions[v] = p[v];
+        }
     }
 }
 
@@ -84,6 +101,13 @@ export class GridLayout implements Layout {
         }
         return positions;
     }
+
+    updateVertexPositions(graph: Graph, positions: PositionMap) {
+        const p = this.getVertexPositions(graph);
+        for (const v of Object.keys(p)) {
+            positions[v] = p[v];
+        }
+    }
 }
 
 export class FixedLayout implements Layout {
@@ -96,6 +120,100 @@ export class FixedLayout implements Layout {
     getVertexPositions(_: Graph): PositionMap {
         return this.positions;
     }
+
+    updateVertexPositions(graph: Graph, positions: PositionMap) {
+        const p = this.getVertexPositions(graph);
+        for (const v of Object.keys(p)) {
+            positions[v] = p[v];
+        }
+    }
+}
+
+export class ForceBasedLayout implements Layout {
+    stageDims: Size;
+    forces: {[vertexId: number]: Vector2};          // Actually velocities
+    positions: PositionMap;
+
+    private readonly C1 = 50;       // Attractive force factor
+    private readonly C2 = 100;      // The no-force edge length
+    private readonly C3 = 100000;   // Repulsive force factor
+    private readonly C4 = 0.2;      // Position update factor
+
+    constructor(stageDims: Size) {
+        this.stageDims = stageDims;
+        this.forces = {};
+        this.positions = null;
+    }
+
+    // Computes the forces to be applied on each vertex
+    private computeForces(graph: Graph) {
+        // NOTE The algorithm implemented here is (section 12.2) from 
+        // http://cs.brown.edu/people/rtamassi/gdhandbook/chapters/force-directed.pdf
+        const vertexIds: number[] = graph.getVertexIds().sort();
+        const positions = this.positions;
+        for (let i = 0; i < vertexIds.length; i++) {
+            const start = vertexIds[i];
+            for (let j = i + 1; j < vertexIds.length; j++) {
+                const end = vertexIds[j];
+                const startPoint = positions[start];
+                const endPoint = positions[end];
+                const dist = Util.getDistanceFromPoints(positions[start],
+                                                     positions[end]);
+                const d2 = Util.getDistanceSquaredFromPoints(positions[start],
+                                                     positions[end]);
+                let forceMagnitude = 0;
+                if (!graph.areNeighbors(start, end) && !graph.areNeighbors(end, start)) {
+                    forceMagnitude = this.C3 / d2;
+                } else {
+                    // Negate because this force is attractive
+                    forceMagnitude = - this.C1 * Math.log(dist / this.C2);
+                }
+                const directionVector: Vector2 = Util.getDirectionVectorFromPoints(
+                    startPoint, endPoint);
+
+                const forceVector: Vector2 = Util.scalarVectorMultiply(
+                    forceMagnitude, directionVector);
+                this.forces[end] = Util.vectorAdd(this.forces[end],
+                                                  forceVector);
+                this.forces[start] = Util.vectorAdd(this.forces[start],
+                                Util.scalarVectorMultiply(-1, forceVector));
+            }
+        }
+    }
+
+    private updatePositions() {
+        for (const v of Object.keys(this.positions)) {
+            const force = Util.scalarVectorMultiply(this.C4, this.forces[v]);
+            this.positions[v] = Util.vectorToPoint(Util.vectorAdd(
+                Util.pointToVector(this.positions[v]), force));
+        }
+    }
+
+    // Initialize forces to zero
+    resetForces(graph: Graph) {
+        this.forces = {};
+        for (const v of graph.getVertexIds()) {
+            this.forces[v] = [0, 0];
+        }
+    }
+
+    getVertexPositions(graph: Graph): PositionMap {
+        // Initially arrange them in a circular layout
+        if (!this.positions) {
+            this.positions = (new CircularLayout(this.stageDims)).getVertexPositions(graph);
+        }
+        this.resetForces(graph);
+        this.computeForces(graph);
+        this.updatePositions();
+        return this.positions;
+    }
+
+    updateVertexPositions(graph: Graph, positions: PositionMap) {
+        this.positions = positions;
+        this.resetForces(graph);
+        this.computeForces(graph);
+        this.updatePositions();
+    }
 }
 
 export function getLayoutForStageDims(name: LayoutName, stageDims: Size)
@@ -106,6 +224,8 @@ export function getLayoutForStageDims(name: LayoutName, stageDims: Size)
         return new RandomLayout(stageDims);
     } else if (name == "grid") {
         return new GridLayout(stageDims);
+    } else if (name == "forcebased") {
+        return new ForceBasedLayout(stageDims);
     } else {
         throw Error("Invalid layout name " + name);
     }

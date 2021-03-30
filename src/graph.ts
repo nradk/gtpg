@@ -19,11 +19,11 @@ class Graph {
         return Object.keys(this.adjacencyList).map(i => parseInt(i));
     }
 
-    getVertexNeighborIds(vertexId: number) : undefined | number[] {
-        return this.adjacencyList[vertexId];
+    getVertexNeighborIds(vertexId: number): number[] {
+        return this.adjacencyList[vertexId] ?? [];
     }
 
-    getEdgeList() {
+    getEdgeList(): number[][] {
         const edges = [];
         for (const v of this.getVertexIds()) {
             for (const n of this.getVertexNeighborIds(v)) {
@@ -43,7 +43,7 @@ class Graph {
 
     // This test is directed for directed graphs, i.e. in directed graphs
     // generally areNeighbors(x, y) !== areNeighbors(y, x)
-    areNeighbors(startVertex: number, endVertex: number) {
+    areNeighbors(startVertex: number, endVertex: number): boolean {
         if (!(startVertex in this.adjacencyList)) {
             throw Error(`Vertex ${startVertex} is not in the graph.`);
         }

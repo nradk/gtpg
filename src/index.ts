@@ -11,14 +11,31 @@ function setupButtons() {
     randomLayoutBtn.onclick = _ => {
         graphDrawing.setLayoutFromLayoutName("random");
         graphDrawing.renderGraph();
+        if (timer != -1) {
+            window.clearInterval(timer);
+        }
+
     };
     circularLayoutBtn.onclick = _ => {
         graphDrawing.setLayoutFromLayoutName("circular");
         graphDrawing.renderGraph();
+        if (timer != -1) {
+            window.clearInterval(timer);
+        }
     };
     gridLayoutBtn.onclick = _ => {
         graphDrawing.setLayoutFromLayoutName("grid");
         graphDrawing.renderGraph();
+        if (timer != -1) {
+            window.clearInterval(timer);
+        }
+    };
+    forceBasedLayoutBtn.onclick = _ => {
+        graphDrawing.setLayoutFromLayoutName("forcebased");
+        graphDrawing.renderGraph();
+        timer = window.setInterval(() => {
+            graphDrawing.redrawGraph();
+        }, 40);
     };
     graphSaveBtn.onclick = saveCurrentGraph;
     graphDeleteBtn.onclick = deleteCurrentGraph;
@@ -28,6 +45,7 @@ function setupButtons() {
 var randomLayoutBtn: HTMLElement = document.getElementById("randomBtn");
 var circularLayoutBtn: HTMLElement = document.getElementById("circularBtn");
 var gridLayoutBtn: HTMLElement = document.getElementById("gridBtn");
+var forceBasedLayoutBtn: HTMLElement = document.getElementById("forceBasedBtn");
 var graphSaveBtn: HTMLElement = document.getElementById("save-btn");
 var graphDeleteBtn: HTMLElement = document.getElementById("delete-btn");
 var newGraphBtn: HTMLElement = document.getElementById("new-graph-btn");
@@ -36,6 +54,8 @@ var graphNameEl: HTMLElement = document.getElementById("graph-name");
 var graphListEl: HTMLElement = document.getElementById("saved-graphs-list");
 
 const store = new LocalGraphDrawingStore();
+
+var timer = -1;
 
 function htmlToElement(html: string): Element {
     var template = document.createElement('template');
