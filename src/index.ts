@@ -1,6 +1,10 @@
 import Konva from 'konva';
 import './dashboard.css';
 
+// Import JS and CSS dependencies for Bootstrap
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
 import Graph from "./graph";
 import { GraphDrawing } from "./drawings";
 import { Size } from "./commontypes";
