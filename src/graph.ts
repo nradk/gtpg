@@ -75,12 +75,11 @@ class Graph {
         if (!(vertexId in this.adjacencyList)) {
             throw Error(`Cannot remove missing vertex ${vertexId}.`);
         }
-        const neighbors = this.adjacencyList[vertexId].slice();
-        for (const neighbor of neighbors) {
+        for (const otherVertex of this.getVertexIds()) {
             // The check is necessary for directed graphs because in them there
             // might be an edge a -> b but no edge b -> a.
-            if (this.areNeighbors(neighbor, vertexId)) {
-                this.removeEdge(neighbor, vertexId);
+            if (this.areNeighbors(otherVertex, vertexId)) {
+                this.removeEdge(otherVertex, vertexId);
             }
         }
         delete this.adjacencyList[vertexId];
@@ -117,13 +116,13 @@ class Graph {
         if (!(endVertexId in this.adjacencyList)) {
             throw Error(`Cannot remove edge - no vertex ${endVertexId}.`);
         }
-        if (endVertexId in this.adjacencyList[startVertexId]) {
+        if (this.adjacencyList[startVertexId].includes(endVertexId)) {
             const index = this.adjacencyList[startVertexId].indexOf(
                 endVertexId);
             this.adjacencyList[startVertexId].splice(index, 1);
         }
         if (!this.directed) {
-            if (startVertexId in this.adjacencyList[endVertexId]) {
+            if (this.adjacencyList[endVertexId].includes(startVertexId)) {
                 const index = this.adjacencyList[endVertexId].indexOf(
                     startVertexId);
                 this.adjacencyList[endVertexId].splice(index, 1);

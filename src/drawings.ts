@@ -403,4 +403,8 @@ export class GraphDrawing {
                                     Graph.fromJsonString(data.graph));
         return gd;
     }
+
+    detachStage() {
+        this.stage.off('click');
+    }
 }
