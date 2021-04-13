@@ -241,6 +241,9 @@ export class GraphDrawing {
         edgeDrawings.forEach(ed => this.edgesLayer.add(ed));
         this.edgesLayer.draw();
         this.verticesLayer.draw();
+
+        // After drawing the graph, 'fix' the layout
+        this.layout = new Layouts.FixedLayout(this.positions);
     }
 
     // This is a "shallow" render, just update positions from the layout and
