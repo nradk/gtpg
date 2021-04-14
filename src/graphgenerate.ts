@@ -2,7 +2,7 @@ import $ from "jquery";
 
 import GraphTabs from "./graphtabs";
 import * as Layout from "./layouts";
-import { GraphDrawing } from "./drawings";
+import GraphDrawing from "./drawing/graphdrawing";
 import Graph from "./graph";
 
 export default class GraphGenerate {

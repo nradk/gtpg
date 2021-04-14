@@ -2,7 +2,7 @@ import Konva from 'konva';
 import $ from "jquery";
 
 import { TabBar } from "./custom/tabbar";
-import { GraphDrawing } from "./drawings";
+import GraphDrawing from "./drawing/graphdrawing";
 import * as Layouts from "./layouts";
 import Graph from "./graph";
 import { Size } from "./commontypes";
