@@ -5,6 +5,7 @@ import { TabBar } from "./custom/tabbar";
 import { GraphDrawing } from "./drawings";
 import * as Layouts from "./layouts";
 import Graph from "./graph";
+import { Size } from "./commontypes";
 
 export default class GraphTabs {
     tabBar: TabBar = $("tab-bar")[0] as TabBar;
@@ -15,7 +16,7 @@ export default class GraphTabs {
         this.stage = stage;
         this.tabBar.setTabCreatedCallback((id: number) => {
             const layout: Layouts.Layout = Layouts.getLayoutForStageDims(
-                "circular", {width: stage.width(), height: stage.height()});
+                "circular", this.getStageDims());
             this.tabDrawings[id] = new GraphDrawing(layout, new Graph(true));
         });
         this.tabBar.setTabActivatedCallback((id: number) => {
@@ -32,6 +33,14 @@ export default class GraphTabs {
         this.tabBar.setTabClosedCallback((id: number) => {
             delete this.tabDrawings[id];
         });
+    }
+
+    getActiveGraphDrawing(): GraphDrawing {
+        return this.tabDrawings[this.tabBar.getActiveTabId()];
+    }
+
+    getStageDims(): Size {
+        return {width: this.stage.width(), height: this.stage.height()};
     }
 }
 

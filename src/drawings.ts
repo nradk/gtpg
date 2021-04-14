@@ -200,6 +200,7 @@ export class GraphDrawing {
     verticesLayer : Konva.Layer;
     edgesLayer : Konva.Layer;
     layout : Layouts.Layout;
+    continuousLayoutTimer: number;
     positions: Layouts.PositionMap;
 
     constructor(initialLayout: Layouts.Layout, graph?: Graph) {
@@ -229,7 +230,7 @@ export class GraphDrawing {
 
         this.edgesLayer.destroyChildren();
         this.verticesLayer.destroyChildren();
-        if (layout !== undefined) {
+        if (layout != undefined) {
             this.layout = layout;
         }
 
@@ -244,6 +245,17 @@ export class GraphDrawing {
 
         // After drawing the graph, 'fix' the layout
         this.layout = new Layouts.FixedLayout(this.positions);
+
+        if (this.continuousLayoutTimer != undefined) {
+            window.clearInterval(this.continuousLayoutTimer);
+            this.continuousLayoutTimer = undefined;
+        }
+        if (layout != undefined && layout.isContinuous()) {
+            this.continuousLayoutTimer = window.setInterval(() => {
+                layout.updateVertexPositions(this.graph, this.positions);
+                this.redrawGraph();
+            }, 40);
+        }
     }
 
     // This is a "shallow" render, just update positions from the layout and
@@ -408,6 +420,10 @@ export class GraphDrawing {
     }
 
     detachStage() {
+        if (this.continuousLayoutTimer != undefined) {
+            window.clearInterval(this.continuousLayoutTimer);
+            this.continuousLayoutTimer = undefined;
+        }
         this.stage.off('click');
     }
 }

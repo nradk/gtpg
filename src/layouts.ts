@@ -12,6 +12,7 @@ export type RelayoutCallback = (map: PositionMap) => void;
 export interface Layout {
     getVertexPositions(graph: Graph): PositionMap;
     updateVertexPositions(graph: Graph, positions: PositionMap): void;
+    isContinuous(): boolean;
 }
 
 export class RandomLayout implements Layout {
@@ -37,6 +38,10 @@ export class RandomLayout implements Layout {
         for (const v of Object.keys(p)) {
             positions[v] = p[v];
         }
+    }
+
+    isContinuous() {
+        return false;
     }
 }
 
@@ -71,6 +76,10 @@ export class CircularLayout implements Layout {
         for (const v of Object.keys(p)) {
             positions[v] = p[v];
         }
+    }
+
+    isContinuous() {
+        return false;
     }
 }
 
@@ -108,6 +117,10 @@ export class GridLayout implements Layout {
             positions[v] = p[v];
         }
     }
+
+    isContinuous() {
+        return false;
+    }
 }
 
 export class FixedLayout implements Layout {
@@ -126,6 +139,10 @@ export class FixedLayout implements Layout {
         for (const v of Object.keys(p)) {
             positions[v] = p[v];
         }
+    }
+
+    isContinuous() {
+        return false;
     }
 }
 
@@ -147,7 +164,7 @@ export class ForceBasedLayout implements Layout {
 
     // Computes the forces to be applied on each vertex
     private computeForces(graph: Graph) {
-        // NOTE The algorithm implemented here is (section 12.2) from 
+        // NOTE The algorithm implemented here is (section 12.2) from
         // http://cs.brown.edu/people/rtamassi/gdhandbook/chapters/force-directed.pdf
         const vertexIds: number[] = graph.getVertexIds().sort();
         const positions = this.positions;
@@ -213,6 +230,10 @@ export class ForceBasedLayout implements Layout {
         this.resetForces(graph);
         this.computeForces(graph);
         this.updatePositions();
+    }
+
+    isContinuous() {
+        return true;
     }
 }
 

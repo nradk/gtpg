@@ -6,6 +6,7 @@ import 'bootswatch/dist/lumen/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 import GraphTabs from "./graphtabs";
+import AutoLayout from "./autolayout";
 
 // Double-import seemingly necessary
 import './custom/tabbar';   // Executes the module, to register custom element
@@ -28,4 +29,4 @@ $("#new-graph-btn").on("click", () => {
     console.log("newgraphbutnclicked");
     displayNewGraph();
 });
-new GraphTabs(stage);
+new AutoLayout(new GraphTabs(stage));
