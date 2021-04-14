@@ -1,13 +1,16 @@
 import $ from 'jquery';
 
+export type TabType = "empty-directed" | "empty-undirected" | "generated" | "loaded";
+
 export type TabEventCallback = (id: number) => void;
+export type TabCreatedCallback = (id: number, tabType: TabType) => void;
 
 export class TabBar extends HTMLElement {
     private nextId: number;
     private tabActivatedCallback: TabEventCallback;
     private tabDeactivatedCallback: TabEventCallback;
     private tabClosedCallback: TabEventCallback;
-    private tabCreatedCallback: TabEventCallback;
+    private tabCreatedCallback: TabCreatedCallback;
 
     constructor() {
         super();
@@ -30,11 +33,11 @@ export class TabBar extends HTMLElement {
         this.tabClosedCallback = tabClosedCallback;
     }
 
-    setTabCreatedCallback(tabCreatedCallback: TabEventCallback) {
+    setTabCreatedCallback(tabCreatedCallback: TabCreatedCallback) {
         this.tabCreatedCallback = tabCreatedCallback;
     }
 
-    addTabElement(title: string): number {
+    addTabElement(title: string, tabType: TabType): number {
         const id = this.getNextId();
         const template: HTMLTemplateElement = document.querySelector("#tab-template");
         const tabFrag = document.importNode(template.content, true);
@@ -74,7 +77,7 @@ export class TabBar extends HTMLElement {
         });
         const container = this.querySelector("#tabbar");
         container.appendChild(tabFrag);
-        this.tabCreatedCallback(id);
+        this.tabCreatedCallback(id, tabType);
         return id;
     }
 

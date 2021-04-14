@@ -11,7 +11,7 @@ export default class GraphGenerate {
             // const kind = $("#selectGraphType").val() as string;
             const n = $("#inputNumVertices").val() as number;
             const tabbar = graphTabs.getTabBar();
-            const newId = tabbar.addTabElement(`Complete Graph (K_${n})`);
+            const newId = tabbar.addTabElement(`Complete Graph (K_${n})`, "generated");
             tabbar.setActiveById(newId);
             const layout = new Layout.CircularLayout(graphTabs.getStageDims());
             const graphDrawing = new GraphDrawing(layout, Graph.completeGraph(n));

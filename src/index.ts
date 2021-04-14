@@ -14,9 +14,9 @@ import * as TabBar from './custom/tabbar';  // Actually does the import
 
 import GraphGenerate from './graphgenerate';
 
-function displayNewGraph() {
+function displayNewGraph(tabType: TabBar.TabType) {
     const tabbar: TabBar.TabBar = document.querySelector("tab-bar");
-    const newId = tabbar.addTabElement("New Graph");
+    const newId = tabbar.addTabElement("New Graph", tabType);
     tabbar.setActiveById(newId);
 }
 
@@ -27,10 +27,13 @@ const stage = new Konva.Stage({
     draggable: true
 });
 
-$("#new-graph-btn").on("click", () => {
-    console.log("newgraphbutnclicked");
-    displayNewGraph();
+$("#new-undirected-graph-btn").on("click", () => {
+    displayNewGraph("empty-undirected");
 });
+$("#new-directed-graph-btn").on("click", () => {
+    displayNewGraph("empty-directed");
+});
+
 
 const graphTabs = new GraphTabs(stage);
 new AutoLayout(graphTabs);
