@@ -4,6 +4,7 @@ import VertexDrawing from "./vertexdrawing";
 import EdgeDrawing from "./edgedrawing";
 import Graph from "../graph";
 import * as Layouts from "../layouts";
+import { getMouseEventXY } from "./util";
 
 export default class GraphDrawing {
     vertexDrawings : {[id: number]: VertexDrawing};
@@ -121,9 +122,7 @@ export default class GraphDrawing {
     }
 
     addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
-        const absolutePosition = e.target.getAbsolutePosition();
-        const x = e.evt.offsetX - absolutePosition.x;
-        const y = e.evt.offsetY - absolutePosition.y;
+        const [x, y] = getMouseEventXY(e);
         const newId = this.graph.addVertex();
         const drawing = new VertexDrawing(x, y, newId.toString());
         this.vertexDrawings[newId] = drawing;
