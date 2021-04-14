@@ -35,12 +35,30 @@ export default class GraphTabs {
         });
     }
 
+    updateGraphDrawing(id: number, graphDrawing: GraphDrawing) {
+        const active = this.tabBar.getActiveTabId();
+        if (active == id) {
+            this.tabDrawings[id].detachStage();
+            this.stage.destroyChildren();
+            this.stage.clear();
+            this.tabDrawings[id] = graphDrawing;
+            this.tabDrawings[id].setStage(this.stage);
+            this.tabDrawings[id].renderGraph();
+        } else {
+            this.tabDrawings[id] = graphDrawing;
+        }
+    }
+
     getActiveGraphDrawing(): GraphDrawing {
         return this.tabDrawings[this.tabBar.getActiveTabId()];
     }
 
     getStageDims(): Size {
         return {width: this.stage.width(), height: this.stage.height()};
+    }
+
+    getTabBar(): TabBar {
+        return this.tabBar;
     }
 }
 

@@ -146,6 +146,19 @@ class Graph {
                 = JSON.parse(jsonString);
         return new Graph(obj.directed, obj.adjacencyList);
     }
+
+    static completeGraph(numVertices: number): Graph {
+        const adjList: GraphAdjacencies = {};
+        for (let i = 1; i <= numVertices; i++) {
+            adjList[i] = [];
+            for (let j = 1; j <= numVertices; j++) {
+                if (i != j) {
+                    adjList[i].push(j);
+                }
+            }
+        }
+        return new Graph(false, adjList);
+    }
 }
 
 export default Graph;

@@ -12,12 +12,12 @@
     <nav class="navbar navbar-dark sticky-top bg-primary flex-md-nowrap p-0">
       <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Graph Playground</a>
       <!--<input class="form-control form-control-dark w-100" type="text"
-          placeholder="Search" aria-label="Search">-->
-      <ul class="navbar-nav px-3">
-        <li class="nav-item text-nowrap">
+        placeholder="Search" aria-label="Search">-->
+        <ul class="navbar-nav px-3">
+          <li class="nav-item text-nowrap">
             <a class="nav-link" href="#">Sign out</a>
-        </li>
-      </ul>
+          </li>
+        </ul>
     </nav>
 
     <div class="container-fluid">
@@ -28,67 +28,108 @@
         </nav>
 
         <main role="main" class="col-8 pt-0" style="padding-left: 0px;
-            padding-right: 0px">
-            <div class="row pr-1">
-                <div class="col">
-                    <tab-bar/>
-                </div>
-
-                <div class="dropdown col-auto pt-1">
-                  <button class="btn btn-primary dropdown-toggle" type="button"
-                      id="dropdownMenuButton1" data-toggle="dropdown"
-                      aria-haspopup="true" aria-expanded="false">
-                      New
-                  </button>
-                  <ul role='menu' class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="#" id="new-graph-btn">
-                            New Empty Graph
-                        </a>
-                    </li>
-                    <li><a class="dropdown-item" href="#">Load Saved Graph</a></li>
-                    <li><a class="dropdown-item" href="#">Generate Graph</a></li>
-                  </ul>
-                </div>
+                                 padding-right: 0px">
+          <div class="row pr-1">
+            <div class="col">
+              <tab-bar/>
             </div>
+
+            <div class="dropdown col-auto pt-1">
+              <button class="btn btn-primary dropdown-toggle" type="button"
+                                                              id="dropdownMenuButton1" data-toggle="dropdown"
+                                                                                       aria-haspopup="true" aria-expanded="false">
+                New
+              </button>
+              <ul role='menu' class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                <li><a class="dropdown-item" href="#" id="new-graph-btn">
+                    New Empty Graph
+                  </a>
+                </li>
+                <li><a class="dropdown-item" href="#">Load Saved Graph</a></li>
+                <li><a class="dropdown-item" href="#" data-toggle="modal"
+                                                      data-target="#generateModal">Generate Graph</a></li>
+              </ul>
+            </div>
+          </div>
+          <!-- Modal -->
+          <div class="modal fade" id="generateModal" tabindex="-1"
+                                                     aria-labelledby="generateModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="generateModalLabel">Generate
+                    Graph</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <form id="graphGenerateForm">
+                  <div class="modal-body">
+                    <fieldset>
+                      <div class="form-group">
+                        <label for="selectGraphType">Graph Type:</label>
+                        <select class="form-control"
+                                id="selectGraphType">
+                          <option>Complete Graph</option>
+                        </select>
+                      </div>
+                      <div class="form-group">
+                        <label for="inputNumVertices">Number of vertices:</label>
+                        <input id="inputNumVertices" class="form-control"
+                                                     value="5"
+                                                     type="number" min="1"
+                                                                   max="99"/>
+                      </div>
+                    </fieldset>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                                          data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Generate</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
           <div id="container"></div>
         </main>
 
         <nav class="col-2 bg-light sidebar border-left">
-            <div class="sidebar-sticky">
-                <div class="row border-bottom p-2">
-                    Auto Layout
-                </div>
-                <div class="p-2" id="layout-buttons-container">
-                <div class="row">
-                    <button class="btn btn-outline-primary col"
-                            type="button" data-layout="circular">Cirular</button>
-                    <button class="btn btn-outline-primary col"
-                            type="button" data-layout="random">Random</button>
-                </div>
-                <div class="row">
-                    <button class="btn btn-outline-primary col"
-                            type="button" data-layout="grid">Grid</button>
-                    <button class="btn btn-outline-primary col"
-                            type="button" data-layout="forcebased">Force Based</button>
-                </div>
-                </div>
+          <div class="sidebar-sticky">
+            <div class="row border-bottom p-2">
+              Auto Layout
             </div>
+            <div class="p-2" id="layout-buttons-container">
+              <div class="row">
+                <button class="btn btn-outline-primary col"
+                        type="button" data-layout="circular">Cirular</button>
+                <button class="btn btn-outline-primary col"
+                        type="button" data-layout="random">Random</button>
+              </div>
+              <div class="row">
+                <button class="btn btn-outline-primary col"
+                        type="button" data-layout="grid">Grid</button>
+                <button class="btn btn-outline-primary col"
+                        type="button" data-layout="forcebased">Force Based</button>
+              </div>
+            </div>
+          </div>
         </nav>
       </div>
     </div>
 
     <!-- Templates go here -->
     <template id="tabbar-template">
-        <ul class="nav nav-tabs justify-content-start" id="tabbar">
-        </ul>
+      <ul class="nav nav-tabs justify-content-start" id="tabbar">
+      </ul>
     </template>
 
     <template id="tab-template">
-        <li class="nav-item">
-            <a class="nav-link" aria-current="page" href="#">
-                <slot name="tab-title">Untitled</slot><i style='margin-left: 3pt'class="bi-x-square"></i>
-            </a>
-        </li>
+      <li class="nav-item">
+        <a class="nav-link" aria-current="page" href="#">
+          <slot name="tab-title">Untitled</slot><i style='margin-left: 3pt'class="bi-x-square"></i>
+        </a>
+      </li>
     </template>
   </body>
 </html>

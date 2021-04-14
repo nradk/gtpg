@@ -12,6 +12,8 @@ import AutoLayout from "./autolayout";
 import './custom/tabbar';   // Executes the module, to register custom element
 import * as TabBar from './custom/tabbar';  // Actually does the import
 
+import GraphGenerate from './graphgenerate';
+
 function displayNewGraph() {
     const tabbar: TabBar.TabBar = document.querySelector("tab-bar");
     const newId = tabbar.addTabElement("New Graph");
@@ -29,4 +31,7 @@ $("#new-graph-btn").on("click", () => {
     console.log("newgraphbutnclicked");
     displayNewGraph();
 });
-new AutoLayout(new GraphTabs(stage));
+
+const graphTabs = new GraphTabs(stage);
+new AutoLayout(graphTabs);
+new GraphGenerate(graphTabs);
