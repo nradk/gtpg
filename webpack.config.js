@@ -9,6 +9,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             title: 'Graph Theory Playground',
             template: 'src/index.html',
+            baseUrl: process.env.NODE_ENV == 'development'?'/':'/graph-theory-playground/'
         }),
     ],
     output: {
