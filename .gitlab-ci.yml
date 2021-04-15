@@ -1,0 +1,25 @@
+image: node:10
+
+cache:
+  paths:
+    - ./node_modules/
+
+before_script:
+  - rm -rf dist
+  - CI=false npm install
+
+pages:
+  stage: deploy
+  environment: Production
+  script:
+    - CI=false npm run build
+      #- cp dist/index.html dist/404.html
+    - mkdir public
+    - mv ./dist/* public
+    - export
+  artifacts:
+    paths:
+      - public
+  only:
+    refs:
+      - master       # deploy contents in master branch
