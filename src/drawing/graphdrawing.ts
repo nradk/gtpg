@@ -5,6 +5,7 @@ import EdgeDrawing from "./edgedrawing";
 import Graph from "../graph";
 import * as Layouts from "../layouts";
 import { getMouseEventXY } from "./util";
+import { Vector2 } from "../commontypes";
 
 export default class GraphDrawing {
     vertexDrawings : {[id: number]: VertexDrawing};
@@ -33,7 +34,7 @@ export default class GraphDrawing {
 
     setStage(stage: Konva.Stage): void {
         this.stage = stage;
-        this.stage.destroyChildren();
+        this.stage.removeChildren();
         this.stage.add(this.edgesLayer).add(this.verticesLayer);
         this.stage.on('click', this.addVertexToCurrentGraph.bind(this));
     }
@@ -43,18 +44,29 @@ export default class GraphDrawing {
             throw Error("Stage needs to be set before call to renderGraph()");
         }
 
-        this.edgesLayer.destroyChildren();
-        this.verticesLayer.destroyChildren();
         if (layout != undefined) {
             this.layout = layout;
         }
 
-        this.populateVertexDrawings();
-        this.attachVertexEventHandlers();
+        this.edgesLayer.removeChildren();
+        this.verticesLayer.removeChildren();
+
+        if (Object.keys(this.vertexDrawings).length == 0) {
+            // edge drawigns must be populated AFTER vertex drawings
+            // because edge drawings store a reference to their start
+            // and end vertex drawings
+            this.populateVertexDrawings();
+            this.populateEdgeDrawings();
+            this.attachVertexEventHandlers();
+        }
+
+        // Add edgedrawings and vertexdrawings to their respective layers
         Object.keys(this.vertexDrawings).forEach(k => this.verticesLayer.add(
             this.vertexDrawings[k]));
-        const edgeDrawings = this.createEdgeDrawings();
-        edgeDrawings.forEach(ed => this.edgesLayer.add(ed));
+        this.edgeDrawings.forEach(ed => this.edgesLayer.add(ed));
+
+        // Draw both layers (necessary for the added objects to actually be
+        // visible)
         this.edgesLayer.draw();
         this.verticesLayer.draw();
 
@@ -108,17 +120,16 @@ export default class GraphDrawing {
     }
 
     // Assume vertices already drawn
-    createEdgeDrawings(): EdgeDrawing[] {
+    populateEdgeDrawings() {
         const edges = this.graph.getEdgeList();
-        const edgeDrawings: EdgeDrawing[] = [];
+        this.edgeDrawings = [];
         for (const e of edges) {
             const start = this.vertexDrawings[e[0]];
             const end   = this.vertexDrawings[e[1]];
-            edgeDrawings.push(new EdgeDrawing(start, end,
+            this.edgeDrawings.push(new EdgeDrawing(start, end,
                 this.graph.isDirected(),
                 this.edgesLayer.draw.bind(this.edgesLayer)));
         }
-        return edgeDrawings;
     }
 
     addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
@@ -218,17 +229,39 @@ export default class GraphDrawing {
                 y: this.vertexDrawings[v].y()
             };
         }
+        const edges = this.graph.getEdgeList();
+        const curvePointPositions: {[v1: number]: {[v2: number]: Vector2}} = {};
+        for (let i = 0; i < edges.length; i++) {
+            // TODO this depends on the fact that this.edgeDrawings is created
+            // by iterating through this.graph.getEdgeList() in order. Remove
+            // that dependence.
+            const edge = edges[i];
+            const edgeDrawing = this.edgeDrawings[i];
+            if (!(edge[0] in curvePointPositions)) {
+                curvePointPositions[edge[0]] = {};
+            }
+            curvePointPositions[edge[0]][edge[1]] = edgeDrawing.getCurvePointPosition();
+        }
         return JSON.stringify({
             graph: this.graph.toJsonString(),
-            positions: positions
+            vertexPositions: positions,
+            curvePointPositions: curvePointPositions
         });
     }
 
     static fromJsonString(jsonStr: string): GraphDrawing {
-        const data: {graph: string, positions: Layouts.PositionMap} =
-            JSON.parse(jsonStr);
+        const data: {
+            graph: string,
+            positions: Layouts.PositionMap,
+            curvePointPositions: {[v1: number]: {[v2: number]: Vector2}}
+        } = JSON.parse(jsonStr);
         const gd = new GraphDrawing(new Layouts.FixedLayout(data.positions),
                                     Graph.fromJsonString(data.graph));
+        const edgeList = gd.graph.getEdgeList();
+        for (const edge of edgeList) {
+            const ed = gd.getEdgeDrawing(edge[0], edge[1]);
+            ed.setCurvePointPosition(data.curvePointPositions[edge[0]][edge[1]]);
+        }
         return gd;
     }
 
@@ -238,5 +271,18 @@ export default class GraphDrawing {
             this.continuousLayoutTimer = undefined;
         }
         this.stage.off('click');
+    }
+
+    getEdgeDrawing(startVertexId: number, endVertexId: number): EdgeDrawing {
+        // TODO store egeDrawings in 2D array to avoid extra overhead here
+        for (const edgeDrawing of this.edgeDrawings) {
+            const o = this.vertexDrawings;
+            const startId = parseInt(Object.keys(o).find(key => o[key] == edgeDrawing.start));
+            const endId   = parseInt(Object.keys(o).find(key => o[key] == edgeDrawing.end));
+            if (startId == startVertexId && endId === endVertexId) {
+                return edgeDrawing;
+            }
+        }
+        return undefined;
     }
 }

@@ -21,14 +21,14 @@ export default class GraphTabs {
             this.tabDrawings[id] = new GraphDrawing(layout, new Graph(directed));
         });
         this.tabBar.setTabActivatedCallback((id: number) => {
-            this.stage.destroyChildren();
+            this.stage.removeChildren();
             this.stage.clear();
             this.tabDrawings[id].setStage(this.stage);
             this.tabDrawings[id].renderGraph();
         });
         this.tabBar.setTabDeactivatedCallback((id: number) => {
             this.tabDrawings[id].detachStage();
-            this.stage.destroyChildren();
+            this.stage.removeChildren();
             this.stage.clear();
         });
         this.tabBar.setTabClosedCallback((id: number) => {

@@ -1,7 +1,7 @@
 import Konva from "konva";
 
 import VertexDrawing from "./vertexdrawing";
-import { RedrawCallback } from "../commontypes";
+import { RedrawCallback, Vector2 } from "../commontypes";
 import { getMouseEventXY } from "./util";
 
 export default class EdgeDrawing extends Konva.Group {
@@ -56,11 +56,16 @@ export default class EdgeDrawing extends Konva.Group {
     }
 
     handleClick(evt: Konva.KonvaEventObject<MouseEvent>) {
+        this.setCurvePointPosition(getMouseEventXY(evt));
+        evt.cancelBubble = true;
+    }
+
+    setCurvePointPosition(position: Vector2) {
         if (this.curvePoint != undefined) {
             this.curvePoint.remove();
             this.curvePoint.destroy();
         }
-        const [x, y] = getMouseEventXY(evt);
+        const [x, y] = position;
         this.curvePoint = new Konva.Circle({
             x: x,
             y: y,
@@ -83,7 +88,6 @@ export default class EdgeDrawing extends Konva.Group {
         });
         this.add(this.curvePoint);
         this.adjustArrowByCurvePoint();
-        evt.cancelBubble = true;
     }
 
     adjustArrowByCurvePoint() {
@@ -94,15 +98,6 @@ export default class EdgeDrawing extends Konva.Group {
                            this.curvePoint.x(), this.curvePoint.y(),
                            ex, ey]);
         this.arrow.tension(1);
-    }
-
-    handleMoveStart() {
-    }
-
-    handleMove() {
-    }
-
-    handleMoveEnd() {
     }
 
     setEdgePoints() {
@@ -127,5 +122,9 @@ export default class EdgeDrawing extends Konva.Group {
     vertexMoveCallback(_: VertexDrawing) {
         this.setEdgePoints();
         this.redrawCallback();
+    }
+
+    getCurvePointPosition(): Vector2 {
+        return [this.curvePoint.x(), this.curvePoint.y()];
     }
 }
