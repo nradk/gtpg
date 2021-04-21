@@ -39,7 +39,7 @@ module.exports = {
                     options: {
                         name: '[name].[ext]',
                         outputPath: 'webfonts',
-                        publicPath: '../webfonts',
+                        publicPath: 'webfonts',
                     },
                 }
             }
