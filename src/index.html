@@ -20,6 +20,33 @@
       <div class="row">
         <nav class="col-2 bg-light border-right sidebar">
           <div class="sidebar-sticky">
+
+            <div class="row border-bottom p-2">
+              Quick Actions
+            </div>
+
+            <div class="p-2" id="action-buttons-container">
+              <div class="row">
+                <button class="btn btn-secondary col m-2" id="btn-save">
+                  <i class="bi-save" style="font-size:13pt;"></i> &nbsp; Save
+                </button>
+                <button class="btn btn-secondary col m-2" id="btn-export">
+                  <i class="bi-file-earmark-arrow-down" style="font-size:13pt;">
+                  </i> &nbsp; Export
+                </button>
+              </div>
+
+              <div class="row">
+                <button class="btn btn-secondary col m-2" id="btn-open">
+                  <i class="bi-box-arrow-in-up" style="font-size:14pt;"></i> &nbsp; Open
+                </button>
+                <button class="btn btn-secondary col m-2" id="btn-import">
+                  <i class="bi-file-earmark-arrow-up" style="font-size:13pt;">
+                  </i> &nbsp; Import
+                </button>
+              </div>
+
+            </div>
           </div>
         </nav>
 
@@ -45,7 +72,9 @@
                     Empty Directed Graph
                   </a>
                 </li>
-                <li><a class="dropdown-item" href="#">Load Saved Graph</a></li>
+                <li><a class="dropdown-item" href="#">Open Saved Graph</a></li>
+                <li><a class="dropdown-item" href="#" id="new-import-graph-btn">
+                    Import Graph</a></li>
                 <li><a class="dropdown-item" href="#" data-toggle="modal"
                                                       data-target="#generateModal">Generate Graph</a></li>
               </ul>
@@ -96,25 +125,33 @@
 
         <nav class="col-2 bg-light sidebar border-left">
           <div class="sidebar-sticky">
+
             <div class="row border-bottom p-2">
               Auto Layout
             </div>
             <div class="p-2" id="layout-buttons-container">
               <div class="row">
-                <button class="btn btn-outline-primary col"
-                        type="button" data-layout="circular">Cirular</button>
-                <button class="btn btn-outline-primary col"
-                        type="button" data-layout="random">Random</button>
+                <button class="btn btn-outline-primary col m-2"
+                        type="button" data-layout="circular">
+                          <i class="bi-circle"></i>&nbsp; Cirular</button>
+                <button class="btn btn-outline-primary col m-2"
+                        type="button" data-layout="random">
+                          <i class="bi-dice-5"></i>&nbsp; Random</button>
               </div>
               <div class="row">
-                <button class="btn btn-outline-primary col"
-                        type="button" data-layout="grid">Grid</button>
-                <button class="btn btn-outline-primary col"
-                        type="button" data-layout="forcebased">Force Based</button>
+                <button class="btn btn-outline-primary col m-2"
+                        type="button" data-layout="grid">
+                          <i class="bi-bounding-box-circles"></i>&nbsp; Grid</button>
+                </button>
+                <button class="btn btn-outline-primary col m-2"
+                        type="button" data-layout="forcebased">
+                          <i class="bi-arrows-fullscreen"></i>&nbsp; Force Based</button>
               </div>
             </div>
+
           </div>
         </nav>
+
       </div>
     </div>
 
