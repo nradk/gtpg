@@ -252,15 +252,20 @@ export default class GraphDrawing {
     static fromJsonString(jsonStr: string): GraphDrawing {
         const data: {
             graph: string,
-            positions: Layouts.PositionMap,
+            vertexPositions: Layouts.PositionMap,
             curvePointPositions: {[v1: number]: {[v2: number]: Vector2}}
         } = JSON.parse(jsonStr);
-        const gd = new GraphDrawing(new Layouts.FixedLayout(data.positions),
+        const gd = new GraphDrawing(new Layouts.FixedLayout(data.vertexPositions),
                                     Graph.fromJsonString(data.graph));
+        gd.populateVertexDrawings();
+        gd.populateEdgeDrawings();
         const edgeList = gd.graph.getEdgeList();
         for (const edge of edgeList) {
             const ed = gd.getEdgeDrawing(edge[0], edge[1]);
-            ed.setCurvePointPosition(data.curvePointPositions[edge[0]][edge[1]]);
+            const curvePointPosition = data.curvePointPositions[edge[0]][edge[1]];
+            if (curvePointPosition != undefined) {
+                ed.setCurvePointPosition(curvePointPosition);
+            }
         }
         return gd;
     }

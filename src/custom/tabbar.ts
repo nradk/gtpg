@@ -105,6 +105,10 @@ export class TabBar extends HTMLElement {
         return id ? parseInt(id) : undefined;
     }
 
+    getActiveTabTitle(): string {
+        return $("#tabbar").find("a.active").children("slot").html();
+    }
+
     removeById(id: number) {
         $("#tabbar").children(`li[data-id=${id}]`).remove();
     }

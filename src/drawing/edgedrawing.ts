@@ -125,6 +125,9 @@ export default class EdgeDrawing extends Konva.Group {
     }
 
     getCurvePointPosition(): Vector2 {
-        return [this.curvePoint.x(), this.curvePoint.y()];
+        if (this.curvePoint) {
+            return [this.curvePoint.x(), this.curvePoint.y()];
+        }
+        return undefined;
     }
 }

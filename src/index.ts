@@ -7,6 +7,7 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 
 import GraphTabs from "./graphtabs";
 import AutoLayout from "./autolayout";
+import ImportExport from "./storage/importexport";
 
 // Double-import seemingly necessary
 import './custom/tabbar';   // Executes the module, to register custom element
@@ -38,3 +39,4 @@ $("#new-directed-graph-btn").on("click", () => {
 const graphTabs = new GraphTabs(stage);
 new AutoLayout(graphTabs);
 new GraphGenerate(graphTabs);
+new ImportExport(graphTabs);
