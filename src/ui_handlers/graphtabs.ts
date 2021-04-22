@@ -1,10 +1,10 @@
 import Konva from 'konva';
 import $ from "jquery";
 
-import { TabBar, TabType } from "./custom/tabbar";
-import GraphDrawing from "./drawing/graphdrawing";
-import Graph from "./graph";
-import { Size } from "./commontypes";
+import { TabBar, TabType } from "../components/tabbar";
+import GraphDrawing from "../drawing/graphdrawing";
+import Graph from "../graph_core/graph";
+import { Size } from "../commontypes";
 
 export default class GraphTabs {
     tabBar: TabBar = $("tab-bar")[0] as TabBar;
@@ -59,4 +59,3 @@ export default class GraphTabs {
         return this.tabBar;
     }
 }
-

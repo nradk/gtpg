@@ -1,5 +1,5 @@
 import $ from "jquery";
-import GraphTabs from "../graphtabs";
+import GraphTabs from "./graphtabs";
 import GraphDrawing from "../drawing/graphdrawing";
 
 export default class ImportExport {

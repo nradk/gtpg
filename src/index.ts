@@ -5,15 +5,14 @@ import 'bootstrap';
 import 'bootswatch/dist/lumen/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-import GraphTabs from "./graphtabs";
-import AutoLayout from "./autolayout";
-import ImportExport from "./storage/importexport";
+import GraphTabs from "./ui_handlers/graphtabs";
+import AutoLayout from "./ui_handlers/autolayout";
+import ImportExport from "./ui_handlers/importexport";
+import GraphGenerate from './ui_handlers/graphgenerate';
 
 // Double-import seemingly necessary
-import './custom/tabbar';   // Executes the module, to register custom element
-import * as TabBar from './custom/tabbar';  // Actually does the import
-
-import GraphGenerate from './graphgenerate';
+import './components/tabbar';   // Executes the module, to register custom element
+import * as TabBar from './components/tabbar';  // Actually does the import
 
 function displayNewGraph(tabType: TabBar.TabType) {
     const tabbar: TabBar.TabBar = document.querySelector("tab-bar");

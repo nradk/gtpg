@@ -2,8 +2,8 @@ import Konva from "konva";
 
 import VertexDrawing from "./vertexdrawing";
 import EdgeDrawing from "./edgedrawing";
-import Graph from "../graph";
-import * as Layouts from "../layouts";
+import Graph from "../graph_core/graph";
+import * as Layouts from "../drawing/layouts";
 import { getMouseEventXY } from "./util";
 import { Vector2 } from "../commontypes";
 

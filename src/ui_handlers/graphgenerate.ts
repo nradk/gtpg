@@ -1,9 +1,9 @@
 import $ from "jquery";
 
 import GraphTabs from "./graphtabs";
-import * as Layout from "./layouts";
-import GraphDrawing from "./drawing/graphdrawing";
-import Graph from "./graph";
+import * as Layout from "../drawing/layouts";
+import GraphDrawing from "../drawing/graphdrawing";
+import Graph from "../graph_core/graph";
 
 export default class GraphGenerate {
     constructor(graphTabs: GraphTabs) {

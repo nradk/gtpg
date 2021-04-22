@@ -1,5 +1,5 @@
-import { Point, Size, Vector2, Util } from "./commontypes";
-import Graph from "./graph";
+import { Point, Size, Vector2, Util } from "../commontypes";
+import Graph from "../graph_core/graph";
 
 export type LayoutName = "circular" | "random" | "grid" | "forcebased";
 

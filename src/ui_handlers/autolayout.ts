@@ -1,6 +1,6 @@
 import $ from "jquery";
 
-import * as Layout from "./layouts";
+import * as Layout from "../drawing/layouts";
 import GraphTabs from "./graphtabs";
 
 export default class AutoLayout {
