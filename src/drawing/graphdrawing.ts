@@ -95,6 +95,11 @@ export default class GraphDrawing {
         this.edgesLayer.draw();
     }
 
+    setVertexRadius(radius: number) {
+        Object.values(this.vertexDrawings).forEach(vd => vd.setRadius(radius));
+        this.verticesLayer.draw();
+    }
+
     populateVertexDrawings(layout: Layouts.Layout) {
         this.positions = layout.getVertexPositions(this.graph);
         this.vertexDrawings = {};

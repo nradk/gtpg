@@ -9,6 +9,7 @@ import GraphTabs from "./ui_handlers/graphtabs";
 import AutoLayout from "./ui_handlers/autolayout";
 import ImportExport from "./ui_handlers/importexport";
 import GraphGenerate from './ui_handlers/graphgenerate';
+import DisplayCustomizer from './ui_handlers/display_customizer';
 
 // Double-import seemingly necessary
 import './components/tabbar';   // Executes the module, to register custom element
@@ -39,3 +40,4 @@ const graphTabs = new GraphTabs(stage);
 new AutoLayout(graphTabs);
 new GraphGenerate(graphTabs);
 new ImportExport(graphTabs);
+new DisplayCustomizer(graphTabs);

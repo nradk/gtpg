@@ -129,6 +129,13 @@ export default class VertexDrawing extends Konva.Group {
             this.edgeDrawings.splice(idx, 1);
         }
     }
+
+    setRadius(radius: number) {
+        this.circle.radius(radius);
+        // call vertex 'move' callbacks to trigger redraw of edges
+        // (necessary in directed graphs to properly place arrows)
+        this.callMoveCallbacks();
+    }
 }
 
 
