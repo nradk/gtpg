@@ -3,7 +3,6 @@ import $ from "jquery";
 
 import { TabBar, TabType } from "./custom/tabbar";
 import GraphDrawing from "./drawing/graphdrawing";
-import * as Layouts from "./layouts";
 import Graph from "./graph";
 import { Size } from "./commontypes";
 
@@ -15,10 +14,8 @@ export default class GraphTabs {
     constructor(stage: Konva.Stage) {
         this.stage = stage;
         this.tabBar.setTabCreatedCallback((id: number, tabType: TabType) => {
-            const layout: Layouts.Layout = Layouts.getLayoutForStageDims(
-                "circular", this.getStageDims());
             const directed = tabType == "empty-directed";
-            this.tabDrawings[id] = new GraphDrawing(layout, new Graph(directed));
+            this.tabDrawings[id] = new GraphDrawing(new Graph(directed));
         });
         this.tabBar.setTabActivatedCallback((id: number) => {
             this.stage.removeChildren();

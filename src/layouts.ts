@@ -15,6 +15,20 @@ export interface Layout {
     isContinuous(): boolean;
 }
 
+// Empty layout, does nothing
+export class EmptyLayout implements Layout {
+    getVertexPositions(_: Graph): PositionMap {
+        return {};
+    }
+
+    updateVertexPositions(_: Graph, __: PositionMap) {
+    }
+
+    isContinuous() {
+        return false;
+    }
+}
+
 export class RandomLayout implements Layout {
 
     stageDims: Size;

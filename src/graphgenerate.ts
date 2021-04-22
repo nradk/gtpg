@@ -14,7 +14,8 @@ export default class GraphGenerate {
             const newId = tabbar.addTabElement(`Complete Graph (K_${n})`, "generated");
             tabbar.setActiveById(newId);
             const layout = new Layout.CircularLayout(graphTabs.getStageDims());
-            const graphDrawing = new GraphDrawing(layout, Graph.completeGraph(n));
+            const graphDrawing = new GraphDrawing(Graph.completeGraph(n));
+            graphDrawing.layoutWithoutRender(layout);
             graphTabs.updateGraphDrawing(newId, graphDrawing);
             $("#generateModal").modal("hide");
             e.preventDefault();

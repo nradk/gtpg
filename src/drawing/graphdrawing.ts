@@ -15,17 +15,15 @@ export default class GraphDrawing {
     stage : Konva.Stage;
     verticesLayer : Konva.Layer;
     edgesLayer : Konva.Layer;
-    layout : Layouts.Layout;
     continuousLayoutTimer: number;
     positions: Layouts.PositionMap;
 
-    constructor(initialLayout: Layouts.Layout, graph?: Graph) {
+    constructor(graph?: Graph) {
         if (graph === undefined) {
             this.graph = new Graph(false);
         } else {
             this.graph = graph;
         }
-        this.layout = initialLayout;
         this.vertexDrawings = [];
         this.positions = {};
         this.verticesLayer = new Konva.Layer();
@@ -44,20 +42,12 @@ export default class GraphDrawing {
             throw Error("Stage needs to be set before call to renderGraph()");
         }
 
-        if (layout != undefined) {
-            this.layout = layout;
-        }
-
         this.edgesLayer.removeChildren();
         this.verticesLayer.removeChildren();
 
-        if (Object.keys(this.vertexDrawings).length == 0) {
-            // edge drawigns must be populated AFTER vertex drawings
-            // because edge drawings store a reference to their start
-            // and end vertex drawings
-            this.populateVertexDrawings();
-            this.populateEdgeDrawings();
-            this.attachVertexEventHandlers();
+        if (Object.keys(this.vertexDrawings).length == 0 || layout != undefined) {
+            // If no vertices present and no layout given, use empty layout
+            this.layoutWithoutRender(layout ?? new Layouts.EmptyLayout());
         }
 
         // Add edgedrawings and vertexdrawings to their respective layers
@@ -70,9 +60,6 @@ export default class GraphDrawing {
         this.edgesLayer.draw();
         this.verticesLayer.draw();
 
-        // After drawing the graph, 'fix' the layout
-        this.layout = new Layouts.FixedLayout(this.positions);
-
         if (this.continuousLayoutTimer != undefined) {
             window.clearInterval(this.continuousLayoutTimer);
             this.continuousLayoutTimer = undefined;
@@ -80,15 +67,24 @@ export default class GraphDrawing {
         if (layout != undefined && layout.isContinuous()) {
             this.continuousLayoutTimer = window.setInterval(() => {
                 layout.updateVertexPositions(this.graph, this.positions);
-                this.redrawGraph();
+                this.redrawGraph(layout);
             }, 40);
         }
     }
 
+    layoutWithoutRender(layout: Layouts.Layout) {
+        // edge drawigns must be populated AFTER vertex drawings
+        // because edge drawings store a reference to their start
+        // and end vertex drawings
+        this.populateVertexDrawings(layout);
+        this.populateEdgeDrawings();
+        this.attachVertexEventHandlers();
+    }
+
     // This is a "shallow" render, just update positions from the layout and
     // update the vertex and edge positions
-    redrawGraph() {
-        this.layout.updateVertexPositions(this.graph, this.positions);
+    redrawGraph(layout: Layouts.Layout) {
+        layout.updateVertexPositions(this.graph, this.positions);
         for (const v of Object.keys(this.positions)) {
             const drawing: VertexDrawing = this.vertexDrawings[v];
             drawing.x(this.positions[v].x);
@@ -99,8 +95,8 @@ export default class GraphDrawing {
         this.edgesLayer.draw();
     }
 
-    populateVertexDrawings() {
-        this.positions = this.layout.getVertexPositions(this.graph);
+    populateVertexDrawings(layout: Layouts.Layout) {
+        this.positions = layout.getVertexPositions(this.graph);
         this.vertexDrawings = {};
         for (const v of Object.keys(this.positions)) {
             const p = this.positions[v];
@@ -215,13 +211,6 @@ export default class GraphDrawing {
         this.edgesLayer.draw();
     }
 
-    setLayoutFromLayoutName(layoutName: Layouts.LayoutName): void {
-        this.layout = Layouts.getLayoutForStageDims(layoutName, {
-            width: this.stage.width(),
-            height: this.stage.height(),
-        });
-    }
-
     toJsonString(): string {
         const positions: Layouts.PositionMap = {};
         for (const v of Object.keys(this.vertexDrawings)) {
@@ -255,9 +244,9 @@ export default class GraphDrawing {
             vertexPositions: Layouts.PositionMap,
             curvePointPositions: {[v1: number]: {[v2: number]: Vector2}}
         } = JSON.parse(jsonStr);
-        const gd = new GraphDrawing(new Layouts.FixedLayout(data.vertexPositions),
-                                    Graph.fromJsonString(data.graph));
-        gd.populateVertexDrawings();
+        const gd = new GraphDrawing(Graph.fromJsonString(data.graph));
+        const layout = new Layouts.FixedLayout(data.vertexPositions);
+        gd.populateVertexDrawings(layout);
         gd.populateEdgeDrawings();
         const edgeList = gd.graph.getEdgeList();
         for (const edge of edgeList) {
