@@ -131,11 +131,13 @@ export default class VertexDrawing extends Konva.Group {
     }
 
     setRadius(radius: number) {
+        const ratio = radius / this.circle.radius();
         this.circle.radius(radius);
+        this.label.fontSize(Math.round(this.label.fontSize() * ratio));
+        this.label.offsetX(this.label.width() / 2);
+        this.label.offsetY(this.label.height() / 2);
         // call vertex 'move' callbacks to trigger redraw of edges
         // (necessary in directed graphs to properly place arrows)
         this.callMoveCallbacks();
     }
 }
-
-
