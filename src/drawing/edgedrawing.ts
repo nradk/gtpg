@@ -86,6 +86,9 @@ export default class EdgeDrawing extends Konva.Group {
         this.curvePoint.on("dragmove", () => {
             this.adjustArrowByCurvePoint();
         });
+        this.curvePoint.on("click", e => {
+            e.cancelBubble = true;
+        });
         this.add(this.curvePoint);
         this.adjustArrowByCurvePoint();
     }
@@ -103,6 +106,10 @@ export default class EdgeDrawing extends Konva.Group {
     setEdgePoints() {
         const start = this.start;
         const end = this.end;
+        const arrowPoints = [start.x(), start.y()];
+        if (this.curvePoint != null) {
+            arrowPoints.push(this.curvePoint.x(), this.curvePoint.y());
+        }
         // Compute and set end point (the point where the edge touches the
         // destination vertex's circle). Skip this computation if graph isn't
         // directed.
@@ -113,9 +120,9 @@ export default class EdgeDrawing extends Konva.Group {
             toStart = [toStart[0] / magnitude, toStart[1] / magnitude];
             const r = end.getRadius();
             const endPoint = [end.x() + r*toStart[0], end.y() + r*toStart[1]];
-            this.arrow.points([start.x(), start.y()].concat(endPoint));
+            this.arrow.points(arrowPoints.concat(endPoint));
         } else {
-            this.arrow.points([start.x(), start.y(), end.x(), end.y()]);
+            this.arrow.points(arrowPoints.concat([end.x(), end.y()]));
         }
     }
 
