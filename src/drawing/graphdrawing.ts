@@ -17,6 +17,7 @@ export default class GraphDrawing {
     edgesLayer : Konva.Layer;
     continuousLayoutTimer: number;
     positions: Layouts.PositionMap;
+    vertexRadius: number;
 
     constructor(graph?: Graph) {
         if (graph === undefined) {
@@ -28,6 +29,7 @@ export default class GraphDrawing {
         this.positions = {};
         this.verticesLayer = new Konva.Layer();
         this.edgesLayer = new Konva.Layer();
+        this.vertexRadius = 15;
     }
 
     setStage(stage: Konva.Stage): void {
@@ -96,6 +98,7 @@ export default class GraphDrawing {
     }
 
     setVertexRadius(radius: number) {
+        this.vertexRadius = radius;
         Object.values(this.vertexDrawings).forEach(vd => vd.setRadius(radius));
         this.verticesLayer.draw();
     }
@@ -105,7 +108,8 @@ export default class GraphDrawing {
         this.vertexDrawings = {};
         for (const v of Object.keys(this.positions)) {
             const p = this.positions[v];
-            this.vertexDrawings[v] = new VertexDrawing(p.x, p.y, v.toString());
+            this.vertexDrawings[v] = new VertexDrawing(p.x, p.y,
+                this.vertexRadius, v.toString());
         }
     }
 
@@ -136,7 +140,8 @@ export default class GraphDrawing {
     addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
         const [x, y] = getMouseEventXY(e);
         const newId = this.graph.addVertex();
-        const drawing = new VertexDrawing(x, y, newId.toString());
+        const drawing = new VertexDrawing(x, y, this.vertexRadius,
+            newId.toString());
         this.vertexDrawings[newId] = drawing;
         this.positions[newId] = {x: x, y: y};
         drawing.addClickCallback(this.vertexClickHandler.bind(this));

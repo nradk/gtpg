@@ -14,10 +14,10 @@ export default class VertexDrawing extends Konva.Group {
     doubleClickCallbacks: VertexDrawingEventCallback[];
     edgeDrawings: EdgeDrawing[];
 
-    constructor(x: number, y: number, labelText: string) {
+    constructor(x: number, y: number, radius: number, labelText: string) {
         super({ x: x, y: y, draggable: true });
         this.circle = new Konva.Circle({
-            radius: 15,
+            radius: radius,
             fill: 'white',
             stroke: 'black',
             strokeWidth: 2
@@ -31,7 +31,7 @@ export default class VertexDrawing extends Konva.Group {
         this.edgeDrawings = [];
         this.label = new Konva.Text({
             text: labelText,
-            fontSize: 18,
+            fontSize: radius,
             fill: 'black'
         });
         this.label.offsetX(this.label.width() / 2);
