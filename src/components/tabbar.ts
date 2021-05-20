@@ -37,11 +37,32 @@ export class TabBar extends HTMLElement {
         this.tabCreatedCallback = tabCreatedCallback;
     }
 
+    makeTitleEditable(tabId: number) {
+        const titleSpan = $("#tabbar")
+                .children(`li[data-id=${tabId}]`).find("a span");
+        titleSpan.attr("contenteditable", "true");
+        titleSpan.on('focus', () => document.execCommand('selectAll',
+            false, null));
+        titleSpan.on('keydown', (event) => {
+            if (event.code == "Enter") {
+                titleSpan.trigger("blur");
+            }
+        });
+    }
+
+    makeTitleNonEditable(tabId: number) {
+        const titleSpan = $("#tabbar")
+                .children(`li[data-id=${tabId}]`).find("a span");
+        titleSpan.attr("contenteditable", "false");
+        titleSpan.off();
+    }
+
     addTabElement(title: string, tabType: TabType): number {
         const id = this.getNextId();
         const template: HTMLTemplateElement = document.querySelector("#tab-template");
         const tabFrag = document.importNode(template.content, true);
-        tabFrag.querySelector("a.nav-link slot").innerHTML = title;
+        const titleSpan = tabFrag.querySelector("a.nav-link span");
+        titleSpan.innerHTML = title;
         tabFrag.firstElementChild.setAttribute("data-id", "" + id);
         tabFrag.firstElementChild.querySelector("a").onclick = () => {
             const active = this.getActiveTabId();
@@ -88,10 +109,13 @@ export class TabBar extends HTMLElement {
     setActiveById(id: number) {
         const prevActive = this.getActiveTabId();
         if (prevActive != undefined) {
+            this.makeTitleNonEditable(prevActive);
             this.tabDeactivatedCallback?.(prevActive);
         }
         $("#tabbar").children().children("a").removeClass("active");
-        $("#tabbar").children(`li[data-id=${id}]`).children("a").addClass("active");
+        const a = $("#tabbar").children(`li[data-id=${id}]`).children("a");
+        a.addClass("active");
+        this.makeTitleEditable(id);
         this.tabActivatedCallback?.(id);
     }
 
@@ -106,7 +130,7 @@ export class TabBar extends HTMLElement {
     }
 
     getActiveTabTitle(): string {
-        return $("#tabbar").find("a.active").children("slot").html();
+        return $("#tabbar").find("a.active").children("span").html();
     }
 
     removeById(id: number) {
