@@ -9,7 +9,7 @@ import { Vector2 } from "../commontypes";
 
 export default class GraphDrawing {
     vertexDrawings : {[id: number]: VertexDrawing};
-    edgeDrawings : EdgeDrawing[];
+    edgeDrawings : {[start: number]: { [end: number]: EdgeDrawing }};
     graph : Graph;
     selectedVertex : VertexDrawing;
     stage : Konva.Stage;
@@ -55,7 +55,11 @@ export default class GraphDrawing {
         // Add edgedrawings and vertexdrawings to their respective layers
         Object.keys(this.vertexDrawings).forEach(k => this.verticesLayer.add(
             this.vertexDrawings[k]));
-        this.edgeDrawings.forEach(ed => this.edgesLayer.add(ed));
+        for (const s of Object.keys(this.edgeDrawings)) {
+            for (const e of Object.keys(this.edgeDrawings[s])) {
+                this.edgesLayer.add(this.edgeDrawings[s][e]);
+            }
+        }
 
         // Draw both layers (necessary for the added objects to actually be
         // visible)
@@ -131,9 +135,12 @@ export default class GraphDrawing {
         for (const e of edges) {
             const start = this.vertexDrawings[e[0]];
             const end   = this.vertexDrawings[e[1]];
-            this.edgeDrawings.push(new EdgeDrawing(start, end,
+            if (!(e[0] in this.edgeDrawings)) {
+                this.edgeDrawings[e[0]] = {};
+            }
+            this.edgeDrawings[e[0]][e[1]] = new EdgeDrawing(start, end,
                 this.graph.isDirected(),
-                this.edgesLayer.draw.bind(this.edgesLayer)));
+                this.edgesLayer.draw.bind(this.edgesLayer));
         }
     }
 
@@ -230,12 +237,8 @@ export default class GraphDrawing {
         }
         const edges = this.graph.getEdgeList();
         const curvePointPositions: {[v1: number]: {[v2: number]: Vector2}} = {};
-        for (let i = 0; i < edges.length; i++) {
-            // TODO this depends on the fact that this.edgeDrawings is created
-            // by iterating through this.graph.getEdgeList() in order. Remove
-            // that dependence.
-            const edge = edges[i];
-            const edgeDrawing = this.edgeDrawings[i];
+        for (const edge of edges) {
+            const edgeDrawing = this.edgeDrawings[edge[0]][edge[1]];
             if (!(edge[0] in curvePointPositions)) {
                 curvePointPositions[edge[0]] = {};
             }
@@ -278,15 +281,6 @@ export default class GraphDrawing {
     }
 
     getEdgeDrawing(startVertexId: number, endVertexId: number): EdgeDrawing {
-        // TODO store egeDrawings in 2D array to avoid extra overhead here
-        for (const edgeDrawing of this.edgeDrawings) {
-            const o = this.vertexDrawings;
-            const startId = parseInt(Object.keys(o).find(key => o[key] == edgeDrawing.start));
-            const endId   = parseInt(Object.keys(o).find(key => o[key] == edgeDrawing.end));
-            if (startId == startVertexId && endId === endVertexId) {
-                return edgeDrawing;
-            }
-        }
-        return undefined;
+        return this.edgeDrawings[startVertexId]?.[endVertexId];
     }
 }
