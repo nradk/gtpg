@@ -2,7 +2,7 @@ import Konva from "konva";
 
 import VertexDrawing from "./vertexdrawing";
 import EdgeDrawing from "./edgedrawing";
-import Graph from "../graph_core/graph";
+import { UnweightedGraph, Graph } from "../graph_core/graph";
 import * as Layouts from "../drawing/layouts";
 import { getMouseEventXY } from "./util";
 import { Vector2 } from "../commontypes";
@@ -21,7 +21,7 @@ export default class GraphDrawing {
 
     constructor(graph?: Graph) {
         if (graph === undefined) {
-            this.graph = new Graph(false);
+            this.graph = new UnweightedGraph(false);
         } else {
             this.graph = graph;
         }
@@ -257,7 +257,7 @@ export default class GraphDrawing {
             vertexPositions: Layouts.PositionMap,
             curvePointPositions: {[v1: number]: {[v2: number]: Vector2}}
         } = JSON.parse(jsonStr);
-        const gd = new GraphDrawing(Graph.fromJsonString(data.graph));
+        const gd = new GraphDrawing(UnweightedGraph.fromJsonString(data.graph));
         const layout = new Layouts.FixedLayout(data.vertexPositions);
         gd.layoutWithoutRender(layout);
         const edgeList = gd.graph.getEdgeList();

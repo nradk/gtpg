@@ -3,7 +3,7 @@ import $ from "jquery";
 
 import { TabBar, TabType } from "../components/tabbar";
 import GraphDrawing from "../drawing/graphdrawing";
-import Graph from "../graph_core/graph";
+import { UnweightedGraph } from "../graph_core/graph";
 import { Size } from "../commontypes";
 
 export default class GraphTabs {
@@ -15,7 +15,7 @@ export default class GraphTabs {
         this.stage = stage;
         this.tabBar.setTabCreatedCallback((id: number, tabType: TabType) => {
             const directed = tabType == "empty-directed";
-            this.tabDrawings[id] = new GraphDrawing(new Graph(directed));
+            this.tabDrawings[id] = new GraphDrawing(new UnweightedGraph(directed));
         });
         this.tabBar.setTabActivatedCallback((id: number) => {
             this.stage.removeChildren();

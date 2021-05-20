@@ -3,7 +3,7 @@ import $ from "jquery";
 import GraphTabs from "./graphtabs";
 import * as Layout from "../drawing/layouts";
 import GraphDrawing from "../drawing/graphdrawing";
-import Graph from "../graph_core/graph";
+import { UnweightedGraph } from "../graph_core/graph";
 
 export default class GraphGenerate {
     constructor(graphTabs: GraphTabs) {
@@ -14,7 +14,7 @@ export default class GraphGenerate {
             const newId = tabbar.addTabElement(`Complete Graph (K_${n})`, "generated");
             tabbar.setActiveById(newId);
             const layout = new Layout.CircularLayout(graphTabs.getStageDims());
-            const graphDrawing = new GraphDrawing(Graph.completeGraph(n));
+            const graphDrawing = new GraphDrawing(UnweightedGraph.completeGraph(n));
             graphDrawing.layoutWithoutRender(layout);
             graphTabs.updateGraphDrawing(newId, graphDrawing);
             $("#generateModal").modal("hide");
