@@ -10,6 +10,9 @@ import AutoLayout from "./ui_handlers/autolayout";
 import ImportExport from "./ui_handlers/importexport";
 import GraphGenerate from './ui_handlers/graphgenerate';
 import DisplayCustomizer from './ui_handlers/display_customizer';
+import { WeightedGraph } from './graph_core/graph';
+import * as Layout from './drawing/layouts';
+import GraphDrawing from './drawing/graphdrawing';
 
 // Double-import seemingly necessary
 import './components/tabbar';   // Executes the module, to register custom element
@@ -33,6 +36,21 @@ $("#new-undirected-graph-btn").on("click", () => {
 });
 $("#new-directed-graph-btn").on("click", () => {
     displayNewGraph("empty-directed");
+});
+$("#new-test-wtd-graph-btn").on("click", () => {
+    const tabbar = graphTabs.getTabBar();
+    const newId = tabbar.addTabElement('Test Weighted Graph', "generated");
+    tabbar.setActiveById(newId);
+    const layout = new Layout.CircularLayout(graphTabs.getStageDims());
+    const adjacency = {
+        1: { 2: 1, 3: 1},
+        2: { 1: 1, 3: 2},
+        3: { 1: 1, 2: 2},
+    };
+    const graph = new WeightedGraph(false, adjacency);
+    const graphDrawing = new GraphDrawing(graph);
+    graphDrawing.layoutWithoutRender(layout);
+    graphTabs.updateGraphDrawing(newId, graphDrawing);
 });
 
 

@@ -11,9 +11,13 @@ export default class EdgeDrawing extends Konva.Group {
     redrawCallback: RedrawCallback;
     arrow: Konva.Arrow;
     curvePoint: Konva.Circle;
+    weight?: number;
+    weightText?: Konva.Text;
+    weightOffset?: Vector2;
 
     constructor(start: VertexDrawing, end: VertexDrawing, directed: boolean,
-                redrawCallback: RedrawCallback) {
+                redrawCallback: RedrawCallback, weight?: number,
+                weightOffset?: Vector2) {
         super();
         this.arrow = new Konva.Arrow({
             points: [start.x(), start.y(),
@@ -26,8 +30,9 @@ export default class EdgeDrawing extends Konva.Group {
             pointerLength: directed? 10 : 0,
             pointerWidth: directed? 10 : 0
         });
+        this.weight = weight;
         this.add(this.arrow);
-        this.on('mouseover', () => {
+        this.arrow.on('mouseover', () => {
             if (this.curvePoint != undefined) {
                 this.curvePoint.opacity(1);
                 this.redrawCallback();
@@ -35,7 +40,7 @@ export default class EdgeDrawing extends Konva.Group {
                 document.body.style.cursor = 'crosshair';
             }
         });
-        this.on('mouseout', () => {
+        this.arrow.on('mouseout', () => {
             if (this.curvePoint != undefined) {
                 this.curvePoint.opacity(0);
                 this.redrawCallback();
@@ -53,10 +58,26 @@ export default class EdgeDrawing extends Konva.Group {
         this.start.registerEdgeDrawing(this);
         this.end.registerEdgeDrawing(this);
         this.setEdgePoints();
+        if (this.weight != undefined) {
+            this.weightText = new Konva.Text({
+                text: weight + "",
+                fontSize: 14,
+            });
+            this.weightText.offsetX(this.weightText.width() / 2);
+            this.weightText.offsetY(this.weightText.height() / 2);
+            this.add(this.weightText);
+            this.weightOffset = weightOffset;
+            if (weightOffset == undefined) {
+                console.warn("Weight offset undefined for weighted edge");
+                this.weightOffset = [5, 5];
+            }
+            this.updateWeightPosition();
+        }
     }
 
     handleClick(evt: Konva.KonvaEventObject<MouseEvent>) {
         this.setCurvePointPosition(getMouseEventXY(evt));
+        this.updateWeightPosition();
         evt.cancelBubble = true;
     }
 
@@ -75,22 +96,30 @@ export default class EdgeDrawing extends Konva.Group {
             strokeWidth: 1,
             draggable: true
         });
-        this.curvePoint.on("mouseover", () => {
+        this.curvePoint.on("mouseover", (e) => {
             document.body.style.cursor = "move";
+            this.curvePoint.opacity(1);
             this.curvePoint.fill("red");
+            this.redrawCallback();
+            e.cancelBubble = true;
         });
-        this.curvePoint.on("mouseout", () => {
+        this.curvePoint.on("mouseout", (e) => {
             document.body.style.cursor = "default";
+            this.curvePoint.opacity(0);
             this.curvePoint.fill("white");
+            this.redrawCallback();
+            e.cancelBubble = true;
         });
         this.curvePoint.on("dragmove", () => {
             this.adjustArrowByCurvePoint();
+            this.updateWeightPosition();
         });
         this.curvePoint.on("click", e => {
             e.cancelBubble = true;
         });
         this.add(this.curvePoint);
         this.adjustArrowByCurvePoint();
+        this.updateWeightPosition();
     }
 
     adjustArrowByCurvePoint() {
@@ -128,6 +157,7 @@ export default class EdgeDrawing extends Konva.Group {
 
     vertexMoveCallback(_: VertexDrawing) {
         this.setEdgePoints();
+        this.updateWeightPosition();
         this.redrawCallback();
     }
 
@@ -136,5 +166,21 @@ export default class EdgeDrawing extends Konva.Group {
             return [this.curvePoint.x(), this.curvePoint.y()];
         }
         return undefined;
+    }
+
+    updateWeightPosition() {
+        if (this.weightText == undefined) {
+            return;
+        }
+        var weightAnchor: number[];
+        if (this.curvePoint != undefined) {
+            weightAnchor = [this.curvePoint.x(), this.curvePoint.y()];
+        } else {
+            weightAnchor = [0, 0];
+            weightAnchor[0] = (this.start.x() + this.end.x()) / 2;
+            weightAnchor[1] = (this.start.y() + this.end.y()) / 2;
+        }
+        this.weightText.x(weightAnchor[0] + this.weightOffset[0]);
+        this.weightText.y(weightAnchor[1] + this.weightOffset[1]);
     }
 }

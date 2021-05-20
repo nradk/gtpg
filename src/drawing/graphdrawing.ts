@@ -2,10 +2,10 @@ import Konva from "konva";
 
 import VertexDrawing from "./vertexdrawing";
 import EdgeDrawing from "./edgedrawing";
-import { UnweightedGraph, Graph } from "../graph_core/graph";
+import { UnweightedGraph, WeightedGraph, Graph } from "../graph_core/graph";
 import * as Layouts from "../drawing/layouts";
 import { getMouseEventXY } from "./util";
-import { Vector2 } from "../commontypes";
+import { Vector2,  Util } from "../commontypes";
 
 export default class GraphDrawing {
     vertexDrawings : {[id: number]: VertexDrawing};
@@ -140,8 +140,22 @@ export default class GraphDrawing {
             }
             this.edgeDrawings[e[0]][e[1]] = new EdgeDrawing(start, end,
                 this.graph.isDirected(),
-                this.edgesLayer.draw.bind(this.edgesLayer));
+                this.edgesLayer.draw.bind(this.edgesLayer),
+                this.graph instanceof WeightedGraph ?
+                    this.graph.getEdgeWeight(e[0], e[1]) : undefined,
+                this.graph instanceof WeightedGraph ?
+                    this.getWeightOffset(start, end) : undefined,
+            );
         }
+    }
+
+    private getWeightOffset(start: VertexDrawing, end: VertexDrawing): Vector2 {
+        const centroid = this.getCentroid();
+        const edgeCenter: Vector2 = [(start.x() + end.x()) / 2,
+            (end.y() + start.y()) / 2];
+        const offset = Util.getNormalized(Util.getDirectionVector(centroid,
+            edgeCenter));
+        return Util.scalarVectorMultiply(15, offset);
     }
 
     addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
@@ -221,8 +235,12 @@ export default class GraphDrawing {
             }
         }
         const edgeDrawing = new EdgeDrawing(start, end,
-                                this.graph.isDirected(),
-                                this.edgesLayer.draw.bind(this.edgesLayer));
+            this.graph.isDirected(),
+            this.edgesLayer.draw.bind(this.edgesLayer),
+            this.graph instanceof WeightedGraph ? 0 : undefined,
+            this.graph instanceof WeightedGraph ?
+                this.getWeightOffset(start, end) : undefined,
+        );
         this.graph.addEdge(startId, endId);
         this.edgesLayer.add(edgeDrawing);
         this.edgesLayer.draw();
@@ -281,5 +299,16 @@ export default class GraphDrawing {
 
     getEdgeDrawing(startVertexId: number, endVertexId: number): EdgeDrawing {
         return this.edgeDrawings[startVertexId]?.[endVertexId];
+    }
+
+    getCentroid(): Vector2 {
+        let x = 0, y = 0;
+        for (const v of Object.values(this.vertexDrawings)) {
+            x += v.x();
+            y += v.y();
+        }
+        const n = Object.values(this.vertexDrawings).length;
+        const centroid: Vector2 = [ x / n, y / n ];
+        return centroid;
     }
 }

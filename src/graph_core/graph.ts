@@ -206,7 +206,7 @@ export class WeightedGraph implements Graph {
 
     getVertexNeighborIds(vertexId: number): number[] {
         // TODO is this the correct thing to do for directed graphs?
-        return Object.keys(this.adjacencyMap[vertexId])?.map(parseInt) ?? [];
+        return Object.keys(this.adjacencyMap[vertexId])?.map(v => parseInt(v));
     }
 
     // This returns a 3-element array where the third element is the weight
@@ -240,6 +240,13 @@ export class WeightedGraph implements Graph {
         // Directedness doesn't affect the following test because for
         // undirected graphs edges are stored in both directions.
         return endVertex in this.adjacencyMap[startVertex];
+    }
+
+    getEdgeWeight(startVertex: number, endVertex: number): number {
+        if (!this.areNeighbors(startVertex, endVertex)) {
+            throw Error(`There is no edge from ${startVertex} to ${endVertex}`);
+        }
+        return this.adjacencyMap[startVertex][endVertex];
     }
 
     getNumberOfVertices(): number {

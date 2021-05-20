@@ -57,4 +57,8 @@ export class Util {
     static vectorAdd(v1: Vector2, v2: Vector2): Vector2 {
         return [v1[0] + v2[0], v1[1] + v2[1]];
     }
+
+    static getNormalized(v: Vector2): Vector2 {
+        return this.scalarVectorMultiply(1 / this.getDistance(v, [0, 0]), v);
+    }
 }
