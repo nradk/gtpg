@@ -259,8 +259,7 @@ export default class GraphDrawing {
         } = JSON.parse(jsonStr);
         const gd = new GraphDrawing(Graph.fromJsonString(data.graph));
         const layout = new Layouts.FixedLayout(data.vertexPositions);
-        gd.populateVertexDrawings(layout);
-        gd.populateEdgeDrawings();
+        gd.layoutWithoutRender(layout);
         const edgeList = gd.graph.getEdgeList();
         for (const edge of edgeList) {
             const ed = gd.getEdgeDrawing(edge[0], edge[1]);
