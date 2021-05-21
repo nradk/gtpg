@@ -3,7 +3,7 @@ import $ from "jquery";
 
 import { TabBar, TabType } from "../components/tabbar";
 import GraphDrawing from "../drawing/graphdrawing";
-import { UnweightedGraph } from "../graph_core/graph";
+import { Graph, UnweightedGraph, WeightedGraph } from "../graph_core/graph";
 import { Size } from "../commontypes";
 
 export default class GraphTabs {
@@ -14,8 +14,25 @@ export default class GraphTabs {
     constructor(stage: Konva.Stage) {
         this.stage = stage;
         this.tabBar.setTabCreatedCallback((id: number, tabType: TabType) => {
-            const directed = tabType == "empty-directed";
-            this.tabDrawings[id] = new GraphDrawing(new UnweightedGraph(directed));
+            let graph: Graph;
+            console.log("tab type", tabType);
+            switch (tabType) {
+                case "empty-directed":
+                    graph = new UnweightedGraph(true);
+                    break;
+                case "empty-undirected":
+                    graph = new UnweightedGraph(false);
+                    break;
+                case "empty-directed-weighted":
+                    graph = new WeightedGraph(true);
+                    break;
+                case "empty-undirected-weighted":
+                    graph = new WeightedGraph(false);
+                    break;
+                default:
+                    graph = new UnweightedGraph(true);
+            }
+            this.tabDrawings[id] = new GraphDrawing(graph);
         });
         this.tabBar.setTabActivatedCallback((id: number) => {
             this.stage.removeChildren();

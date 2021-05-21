@@ -79,6 +79,7 @@ export default class EdgeDrawing extends Konva.Group {
                 EditWeight.editWeight(w => {
                     this.weightChangeCallback(this.start, this.end, w)
                     this.weightText.text(w + "");
+                    this.redrawCallback();
                 });
                 event.cancelBubble = true;
             });

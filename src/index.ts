@@ -32,12 +32,19 @@ const stage = new Konva.Stage({
     draggable: true
 });
 
+$("#new-und-wtd-graph-btn").on("click", () => {
+    displayNewGraph("empty-undirected-weighted");
+});
+$("#new-dir-wtd-graph-btn").on("click", () => {
+    displayNewGraph("empty-directed-weighted");
+});
 $("#new-undirected-graph-btn").on("click", () => {
     displayNewGraph("empty-undirected");
 });
 $("#new-directed-graph-btn").on("click", () => {
     displayNewGraph("empty-directed");
 });
+
 $("#new-test-wtd-graph-btn").on("click", () => {
     const tabbar = graphTabs.getTabBar();
     const newId = tabbar.addTabElement('Test Weighted Graph', "generated");

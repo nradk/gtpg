@@ -1,6 +1,7 @@
 import $ from 'jquery';
 
-export type TabType = "empty-directed" | "empty-undirected" | "generated" | "loaded";
+export type TabType = "empty-directed" | "empty-undirected" | "generated" |
+    "loaded" | "empty-directed-weighted" | "empty-undirected-weighted";
 
 export type TabEventCallback = (id: number) => void;
 export type TabCreatedCallback = (id: number, tabType: TabType) => void;
