@@ -10,10 +10,47 @@
   </head>
 
   <body>
-    <nav class="navbar navbar-dark sticky-top bg-primary flex-md-nowrap p-0">
-      <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Graph Playground</a>
-      <!--<input class="form-control form-control-dark w-100" type="text"
-        placeholder="Search" aria-label="Search">-->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-primary">
+      <div class="container-fluid">
+        <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Graph Playground</a>
+
+        <!--<input class="form-control form-control-dark w-100" type="text"
+          placeholder="Search" aria-label="Search">-->
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarColor01">
+            <ul class="navbar-nav me-auto">
+              <li class="nav-item">
+                <a class="nav-link active" href="#">Home
+                  <!--<span class="visually-hidden">(current)</span>-->
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">Placeholder</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">Placeholder</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="#">About</a>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle"
+                  data-toggle="dropdown" href="#" role="button"
+                  aria-haspopup="true" aria-expanded="false">Algorithms</a>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="#">Kruskal's Spanning Tree</a>
+                  <a class="dropdown-item" href="#">Another Algorithm</a>
+                  <a class="dropdown-item" href="#">Third Algorithm</a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="#">Another category</a>
+                </div>
+              </li>
+            </ul>
+          </div>
+      </div>
     </nav>
 
     <div class="container-fluid">
@@ -51,7 +88,7 @@
         </nav>
 
         <main role="main" class="col-8 pt-0" style="padding-left: 0px;
-                                 padding-right: 0px">
+                                            padding-right: 0px">
           <div class="row pr-1">
             <div class="col">
               <tab-bar/>
@@ -59,8 +96,8 @@
 
             <div class="dropdown col-auto pt-1">
               <button class="btn btn-primary dropdown-toggle" type="button"
-                                                              id="dropdownMenuButton1" data-toggle="dropdown"
-                                                                                       aria-haspopup="true" aria-expanded="false">
+                      id="dropdownMenuButton1" data-toggle="dropdown"
+                      aria-haspopup="true" aria-expanded="false">
                 New
               </button>
               <ul role='menu' class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
@@ -84,7 +121,7 @@
                 <li><a class="dropdown-item" href="#" id="new-import-graph-btn">
                     Import Graph</a></li>
                 <li><a class="dropdown-item" href="#" data-toggle="modal"
-                                                      data-target="#generateModal">Generate Graph</a></li>
+                       data-target="#generateModal">Generate Graph</a></li>
               </ul>
             </div>
           </div>
@@ -132,7 +169,7 @@
 
           <!-- Weight Edit Modal -->
           <div class="modal fade" id="weightEditModal" tabindex="-1"
-                   aria-labelledby="weightEditModalLabel" aria-hidden="true">
+                                                       aria-labelledby="weightEditModalLabel" aria-hidden="true">
             <div class="modal-dialog">
               <div class="modal-content">
                 <div class="modal-header">
@@ -147,7 +184,7 @@
                       <div class="form-group">
                         <label for="inputWeight">New Weight:</label>
                         <input id="inputWeight" class="form-control"
-                               value="1" type="number"/>
+                                                value="1" type="number"/>
                       </div>
                     </fieldset>
                   </div>
@@ -175,19 +212,19 @@
               <div class="row">
                 <button class="btn btn-outline-primary col m-2"
                         type="button" data-layout="circular">
-                          <i class="bi-circle"></i>&nbsp; Cirular</button>
+                  <i class="bi-circle"></i>&nbsp; Cirular</button>
                 <button class="btn btn-outline-primary col m-2"
                         type="button" data-layout="random">
-                          <i class="bi-dice-5"></i>&nbsp; Random</button>
+                  <i class="bi-dice-5"></i>&nbsp; Random</button>
               </div>
               <div class="row">
                 <button class="btn btn-outline-primary col m-2"
                         type="button" data-layout="grid">
-                          <i class="bi-bounding-box-circles"></i>&nbsp; Grid</button>
+                  <i class="bi-bounding-box-circles"></i>&nbsp; Grid</button>
                 </button>
                 <button class="btn btn-outline-primary col m-2"
                         type="button" data-layout="forcebased">
-                          <i class="bi-arrows-fullscreen"></i>&nbsp; Force Based</button>
+                  <i class="bi-arrows-fullscreen"></i>&nbsp; Force Based</button>
               </div>
             </div>
 
@@ -195,8 +232,8 @@
               Graph Display Options
             </div>
             <div class="p-2">
-                <label for="vertex-size">Vertex Size</label>
-                <input type="range" class="custom-range" value=13 id="vertex-size">
+              <label for="vertex-size">Vertex Size</label>
+              <input type="range" class="custom-range" value=13 id="vertex-size">
             </div>
 
           </div>
