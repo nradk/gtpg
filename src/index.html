@@ -84,7 +84,8 @@
               </ul>
             </div>
           </div>
-          <!-- Modal -->
+
+          <!-- Graph Generation Modal -->
           <div class="modal fade" id="generateModal" tabindex="-1"
                                                      aria-labelledby="generateModalLabel" aria-hidden="true">
             <div class="modal-dialog">
@@ -124,6 +125,39 @@
               </div>
             </div>
           </div>
+
+          <!-- Weight Edit Modal -->
+          <div class="modal fade" id="weightEditModal" tabindex="-1"
+                   aria-labelledby="weightEditModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="weightEditModalLabel">Edit Weight</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <form id="weightEditForm">
+                  <div class="modal-body">
+                    <fieldset>
+                      <div class="form-group">
+                        <label for="inputWeight">New Weight:</label>
+                        <input id="inputWeight" class="form-control"
+                               value="1" type="number"/>
+                      </div>
+                    </fieldset>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                                          data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Change</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+
           <div id="container"></div>
         </main>
 

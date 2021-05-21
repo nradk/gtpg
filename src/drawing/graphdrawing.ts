@@ -145,6 +145,7 @@ export default class GraphDrawing {
                     this.graph.getEdgeWeight(e[0], e[1]) : undefined,
                 this.graph instanceof WeightedGraph ?
                     this.getWeightOffset(start, end) : undefined,
+                this.handleWeightUpdate.bind(this)
             );
         }
     }
@@ -240,6 +241,7 @@ export default class GraphDrawing {
             this.graph instanceof WeightedGraph ? 0 : undefined,
             this.graph instanceof WeightedGraph ?
                 this.getWeightOffset(start, end) : undefined,
+            this.handleWeightUpdate.bind(this)
         );
         this.graph.addEdge(startId, endId);
         this.edgesLayer.add(edgeDrawing);
@@ -310,5 +312,13 @@ export default class GraphDrawing {
         const n = Object.values(this.vertexDrawings).length;
         const centroid: Vector2 = [ x / n, y / n ];
         return centroid;
+    }
+
+    handleWeightUpdate(start: VertexDrawing, end: VertexDrawing, weight: number) {
+        const startId = this.lookupVertexId(start);
+        const endId = this.lookupVertexId(end);
+        if (this.graph instanceof WeightedGraph) {
+            this.graph.setEdgeWeight(startId, endId, weight);
+        }
     }
 }

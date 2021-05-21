@@ -107,7 +107,8 @@ export class UnweightedGraph implements Graph {
     }
 
     // In an undirected graph, the edge is added in both directions
-    addEdge(startVertex: number, endVertex: number) {
+    // If weight is not provided, it is set to 0
+    addEdge(startVertex: number, endVertex: number, weight?: number) {
         if (!(startVertex in this.adjacencyList)) {
             throw Error(`Cannot add an edge because vertex ${startVertex} is` +
                 ` not in the graph.`);
@@ -121,11 +122,11 @@ export class UnweightedGraph implements Graph {
             throw Error("Cannot add a loop to a simple graph");
         }
         if (!(endVertex in this.adjacencyList[startVertex])) {
-            this.adjacencyList[startVertex].push(endVertex);
+            this.adjacencyList[startVertex][endVertex] = weight ?? 0;
         }
         if (!this.directed) {
             if (!(startVertex in this.adjacencyList[endVertex])) {
-                this.adjacencyList[endVertex].push(startVertex);
+                this.adjacencyList[endVertex][startVertex] = weight ?? 0;
             }
         }
     }
@@ -247,6 +248,16 @@ export class WeightedGraph implements Graph {
             throw Error(`There is no edge from ${startVertex} to ${endVertex}`);
         }
         return this.adjacencyMap[startVertex][endVertex];
+    }
+
+    setEdgeWeight(startVertex: number, endVertex: number, weight: number) {
+        if (!(startVertex in this.adjacencyMap)) {
+            throw Error(`Vertex ${startVertex} is not in the graph.`);
+        }
+        if (!(endVertex in this.adjacencyMap)) {
+            throw Error(`Vertex ${endVertex} is not in the graph.`);
+        }
+        this.adjacencyMap[startVertex][endVertex] = weight;
     }
 
     getNumberOfVertices(): number {

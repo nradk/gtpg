@@ -9,6 +9,7 @@ import GraphTabs from "./ui_handlers/graphtabs";
 import AutoLayout from "./ui_handlers/autolayout";
 import ImportExport from "./ui_handlers/importexport";
 import GraphGenerate from './ui_handlers/graphgenerate';
+import { EditWeight } from './ui_handlers/editweight';
 import DisplayCustomizer from './ui_handlers/display_customizer';
 import { WeightedGraph } from './graph_core/graph';
 import * as Layout from './drawing/layouts';
@@ -57,5 +58,6 @@ $("#new-test-wtd-graph-btn").on("click", () => {
 const graphTabs = new GraphTabs(stage);
 new AutoLayout(graphTabs);
 new GraphGenerate(graphTabs);
+new EditWeight();
 new ImportExport(graphTabs);
 new DisplayCustomizer(graphTabs);

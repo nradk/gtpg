@@ -3,6 +3,9 @@ import Konva from "konva";
 import VertexDrawing from "./vertexdrawing";
 import { RedrawCallback, Vector2 } from "../commontypes";
 import { getMouseEventXY } from "./util";
+import { EditWeight } from "../ui_handlers/editweight";
+
+type WeightUpdateCallback = (s: VertexDrawing, e: VertexDrawing, w: number) => void;
 
 export default class EdgeDrawing extends Konva.Group {
     start: VertexDrawing;
@@ -14,10 +17,12 @@ export default class EdgeDrawing extends Konva.Group {
     weight?: number;
     weightText?: Konva.Text;
     weightOffset?: Vector2;
+    weightChangeCallback?: WeightUpdateCallback;
 
     constructor(start: VertexDrawing, end: VertexDrawing, directed: boolean,
                 redrawCallback: RedrawCallback, weight?: number,
-                weightOffset?: Vector2) {
+                weightOffset?: Vector2,
+                weightChangeCallback?: WeightUpdateCallback) {
         super();
         this.arrow = new Konva.Arrow({
             points: [start.x(), start.y(),
@@ -31,6 +36,7 @@ export default class EdgeDrawing extends Konva.Group {
             pointerWidth: directed? 10 : 0
         });
         this.weight = weight;
+        this.weightChangeCallback = weightChangeCallback;
         this.add(this.arrow);
         this.arrow.on('mouseover', () => {
             if (this.curvePoint != undefined) {
@@ -48,7 +54,7 @@ export default class EdgeDrawing extends Konva.Group {
                 document.body.style.cursor = 'default';
             }
         });
-        this.on('click', this.handleClick.bind(this));
+        this.arrow.on('click', this.handleClick.bind(this));
         this.start = start;
         this.end = end;
         this.directed = directed;
@@ -62,6 +68,22 @@ export default class EdgeDrawing extends Konva.Group {
             this.weightText = new Konva.Text({
                 text: weight + "",
                 fontSize: 14,
+            });
+            this.weightText.on('mouseover', () => {
+                document.body.style.cursor = 'text';
+            });
+            this.weightText.on('mouseout', () => {
+                document.body.style.cursor = 'default';
+            });
+            this.weightText.on('dblclick', event => {
+                EditWeight.editWeight(w => {
+                    this.weightChangeCallback(this.start, this.end, w)
+                    this.weightText.text(w + "");
+                });
+                event.cancelBubble = true;
+            });
+            this.weightText.on('click', event => {
+                event.cancelBubble = true;
             });
             this.weightText.offsetX(this.weightText.width() / 2);
             this.weightText.offsetY(this.weightText.height() / 2);
