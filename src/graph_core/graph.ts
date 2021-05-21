@@ -18,8 +18,25 @@ export interface Graph {
     removeEdge(startVertexId: number, endVertexId: number): void;
     isDirected(): boolean;
     isWeighted(): boolean;
-    toJsonString(): string;
+    toJSON(): object;
 }
+
+export function fromJsonString(jsonString: string): Graph {
+    return fromJsonObject(JSON.parse(jsonString));
+}
+
+export function fromJsonObject(jsonObject: any): Graph {
+    const obj: {adjacencies: (GraphAdjacencies | WeightedGraphAdjacencies),
+            directed: boolean, weighted: boolean} = jsonObject;
+    if (obj.weighted) {
+        const adjacencies = obj.adjacencies as WeightedGraphAdjacencies;
+        return new WeightedGraph(obj.directed, adjacencies);
+    } else {
+        const adjacencies = obj.adjacencies as GraphAdjacencies;
+        return new UnweightedGraph(obj.directed, adjacencies);
+    }
+}
+
 
 export class UnweightedGraph implements Graph {
     adjacencyList: GraphAdjacencies;
@@ -160,17 +177,12 @@ export class UnweightedGraph implements Graph {
         return false;
     }
 
-    toJsonString(): string {
-        return JSON.stringify({
-            adjacencyList: this.adjacencyList,
-            directed: this.directed
-        });
-    }
-
-    static fromJsonString(jsonString: string): Graph {
-        const obj: {adjacencyList: GraphAdjacencies, directed: boolean}
-                = JSON.parse(jsonString);
-        return new UnweightedGraph(obj.directed, obj.adjacencyList);
+    toJSON(): object {
+        return {
+            adjacencies: this.adjacencyList,
+            directed: this.directed,
+            weighted: false
+        };
     }
 
     static completeGraph(numVertices: number): Graph {
@@ -200,7 +212,7 @@ export class WeightedGraph implements Graph {
         }
     }
 
-    getVertexIds() {
+    getVertexIds(): number[] {
         // TODO this will miss 0-outdegree vertices in directed graphs
         return Object.keys(this.adjacencyMap).map(i => parseInt(i));
     }
@@ -210,7 +222,7 @@ export class WeightedGraph implements Graph {
         return Object.keys(this.adjacencyMap[vertexId])?.map(v => parseInt(v));
     }
 
-    // This returns a 3-element array where the third element is the weight
+    // This returns an array of 3-element arrays where the third element is the weight
     getEdgeList(): number[][] {
         const edges = [];
         for (const v of this.getVertexIds()) {
@@ -271,7 +283,7 @@ export class WeightedGraph implements Graph {
         } else {
             newId = Math.max(...this.getVertexIds().map(s => Number(s))) + 1;
         }
-        this.adjacencyMap[newId] = [];
+        this.adjacencyMap[newId] = {};
         return newId;
     }
 
@@ -305,15 +317,15 @@ export class WeightedGraph implements Graph {
         if (startVertex === endVertex) {
             throw Error("Cannot add a loop to a simple graph");
         }
-        weight = weight ?? 0;
         if (!(endVertex in this.adjacencyMap[startVertex])) {
-            this.adjacencyMap[startVertex][endVertex] = weight;
+            this.adjacencyMap[startVertex][endVertex] = weight ?? 0;
         }
         if (!this.directed) {
             if (!(startVertex in this.adjacencyMap[endVertex])) {
-                this.adjacencyMap[endVertex][startVertex] = weight;
+                this.adjacencyMap[endVertex][startVertex] = weight ?? 0;
             }
         }
+        console.log("Edge added to adj map", this.adjacencyMap);
     }
 
     removeEdge(startVertexId: number, endVertexId: number) {
@@ -341,17 +353,12 @@ export class WeightedGraph implements Graph {
         return true;
     }
 
-    toJsonString(): string {
-        return JSON.stringify({
-            adjacencyList: this.adjacencyMap,
-            directed: this.directed
-        });
-    }
-
-    static fromJsonString(jsonString: string): Graph {
-        const obj: {adjacencyList: GraphAdjacencies, directed: boolean}
-                = JSON.parse(jsonString);
-        return new UnweightedGraph(obj.directed, obj.adjacencyList);
+    toJSON(): object {
+        return {
+            adjacencies: this.adjacencyMap,
+            directed: this.directed,
+            weighted: true,
+        };
     }
 
     static completeGraph(numVertices: number): Graph {
@@ -367,4 +374,3 @@ export class WeightedGraph implements Graph {
         return new UnweightedGraph(false, adjList);
     }
 }
-

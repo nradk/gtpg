@@ -41,6 +41,7 @@ export default class ImportExport {
                 return;
             }
             fileList[0].text().then(text => {
+                console.log(text);
                 const drawing = GraphDrawing.fromJsonString(text);
                 this.createTab(drawing, fileList[0].name);
             }).catch(e => {

@@ -2,7 +2,7 @@ import Konva from "konva";
 
 import VertexDrawing from "./vertexdrawing";
 import EdgeDrawing from "./edgedrawing";
-import { UnweightedGraph, WeightedGraph, Graph } from "../graph_core/graph";
+import * as Graphs from "../graph_core/graph";
 import * as Layouts from "../drawing/layouts";
 import { getMouseEventXY } from "./util";
 import { Vector2,  Util } from "../commontypes";
@@ -10,7 +10,7 @@ import { Vector2,  Util } from "../commontypes";
 export default class GraphDrawing {
     vertexDrawings : {[id: number]: VertexDrawing};
     edgeDrawings : {[start: number]: { [end: number]: EdgeDrawing }};
-    graph : Graph;
+    graph : Graphs.Graph;
     selectedVertex : VertexDrawing;
     stage : Konva.Stage;
     verticesLayer : Konva.Layer;
@@ -19,9 +19,9 @@ export default class GraphDrawing {
     positions: Layouts.PositionMap;
     vertexRadius: number;
 
-    constructor(graph?: Graph) {
+    constructor(graph?: Graphs.Graph) {
         if (graph === undefined) {
-            this.graph = new UnweightedGraph(false);
+            this.graph = new Graphs.UnweightedGraph(false);
         } else {
             this.graph = graph;
         }
@@ -131,7 +131,7 @@ export default class GraphDrawing {
     // Assume vertices already drawn
     populateEdgeDrawings() {
         const edges = this.graph.getEdgeList();
-        this.edgeDrawings = [];
+        this.edgeDrawings = {}
         for (const e of edges) {
             const start = this.vertexDrawings[e[0]];
             const end   = this.vertexDrawings[e[1]];
@@ -141,9 +141,9 @@ export default class GraphDrawing {
             this.edgeDrawings[e[0]][e[1]] = new EdgeDrawing(start, end,
                 this.graph.isDirected(),
                 this.edgesLayer.draw.bind(this.edgesLayer),
-                this.graph instanceof WeightedGraph ?
+                this.graph instanceof Graphs.WeightedGraph ?
                     this.graph.getEdgeWeight(e[0], e[1]) : undefined,
-                this.graph instanceof WeightedGraph ?
+                this.graph instanceof Graphs.WeightedGraph ?
                     this.getWeightOffset(start, end) : undefined,
                 this.handleWeightUpdate.bind(this)
             );
@@ -207,6 +207,7 @@ export default class GraphDrawing {
         for (const edge of vertexDrawing.edgeDrawings) {
             edge.destroy();
         }
+        // TODO remove edge drawing from this.edgeDrawings
         const vertexId = this.lookupVertexId(vertexDrawing)
         this.graph.removeVertex(vertexId);
         vertexDrawing.destroy();
@@ -224,6 +225,7 @@ export default class GraphDrawing {
     toggleEdge(start: VertexDrawing, end: VertexDrawing) {
         const startId = this.lookupVertexId(start);
         const endId = this.lookupVertexId(end);
+        console.log("Toggling", startId, endId);
         for (const edgeDrawing of start.edgeDrawings) {
             const endIndex = end.edgeDrawings.indexOf(edgeDrawing);
             if (endIndex >= 0) {
@@ -231,21 +233,28 @@ export default class GraphDrawing {
                 end.unregisterEdgeDrawing(edgeDrawing);
                 edgeDrawing.destroy();
                 this.edgesLayer.draw();
+                delete this.edgeDrawings[startId][endId];
                 this.graph.removeEdge(startId, endId);
+                console.log("Removed edge", this.edgeDrawings);
                 return;
             }
         }
         const edgeDrawing = new EdgeDrawing(start, end,
             this.graph.isDirected(),
             this.edgesLayer.draw.bind(this.edgesLayer),
-            this.graph instanceof WeightedGraph ? 0 : undefined,
-            this.graph instanceof WeightedGraph ?
+            this.graph instanceof Graphs.WeightedGraph ? 0 : undefined,
+            this.graph instanceof Graphs.WeightedGraph ?
                 this.getWeightOffset(start, end) : undefined,
             this.handleWeightUpdate.bind(this)
         );
         this.graph.addEdge(startId, endId);
+        if (!(startId in this.edgeDrawings)) {
+            this.edgeDrawings[startId] = {};
+        }
+        this.edgeDrawings[startId][endId] = edgeDrawing;
         this.edgesLayer.add(edgeDrawing);
         this.edgesLayer.draw();
+        console.log("Added edge", this.edgeDrawings);
     }
 
     toJsonString(): string {
@@ -256,6 +265,8 @@ export default class GraphDrawing {
             };
         }
         const edges = this.graph.getEdgeList();
+        console.log(edges);
+        console.log(this.edgeDrawings);
         const curvePointPositions: {[v1: number]: {[v2: number]: Vector2}} = {};
         for (const edge of edges) {
             const edgeDrawing = this.edgeDrawings[edge[0]][edge[1]];
@@ -265,7 +276,7 @@ export default class GraphDrawing {
             curvePointPositions[edge[0]][edge[1]] = edgeDrawing.getCurvePointPosition();
         }
         return JSON.stringify({
-            graph: this.graph.toJsonString(),
+            graph: this.graph,
             vertexPositions: positions,
             curvePointPositions: curvePointPositions
         });
@@ -277,7 +288,7 @@ export default class GraphDrawing {
             vertexPositions: Layouts.PositionMap,
             curvePointPositions: {[v1: number]: {[v2: number]: Vector2}}
         } = JSON.parse(jsonStr);
-        const gd = new GraphDrawing(UnweightedGraph.fromJsonString(data.graph));
+        const gd = new GraphDrawing(Graphs.fromJsonObject(data.graph));
         const layout = new Layouts.FixedLayout(data.vertexPositions);
         gd.layoutWithoutRender(layout);
         const edgeList = gd.graph.getEdgeList();
@@ -317,7 +328,7 @@ export default class GraphDrawing {
     handleWeightUpdate(start: VertexDrawing, end: VertexDrawing, weight: number) {
         const startId = this.lookupVertexId(start);
         const endId = this.lookupVertexId(end);
-        if (this.graph instanceof WeightedGraph) {
+        if (this.graph instanceof Graphs.WeightedGraph) {
             this.graph.setEdgeWeight(startId, endId, weight);
         }
     }

@@ -1,8 +1,8 @@
-import { UnweightedGraph } from "./graph";
+import { UnweightedGraph, fromJsonString } from "./graph";
 
 test('empty undirected graph deserialized correctly', () => {
     const g = new UnweightedGraph(false);
-    const gg = UnweightedGraph.fromJsonString(g.toJsonString());
+    const gg = fromJsonString(JSON.stringify(g));
     expect(gg).toEqual(g);
 });
 
@@ -14,7 +14,7 @@ test('undirected K_5 deserialized correctly', () => {
         4: [1,2,3,5],
         5: [1,2,3,4]
     });
-    const gg = UnweightedGraph.fromJsonString(g.toJsonString());
+    const gg = fromJsonString(JSON.stringify(g));
     expect(gg).toEqual(g);
 });
 
@@ -25,6 +25,6 @@ test('directed 4-cycle deserialized correctly', () => {
         3: [4],
         4: [1]
     });
-    const gg = UnweightedGraph.fromJsonString(g.toJsonString());
+    const gg = fromJsonString(JSON.stringify(g));
     expect(gg).toEqual(g);
 });
