@@ -3,6 +3,7 @@ import Konva from "konva";
 import VertexDrawing from "./vertexdrawing";
 import { RedrawCallback, Vector2 } from "../commontypes";
 import { getMouseEventXY } from "./util";
+import { DecorationState } from "../decoration/decorator";
 import { EditWeight } from "../ui_handlers/editweight";
 
 type WeightUpdateCallback = (s: VertexDrawing, e: VertexDrawing, w: number) => void;
@@ -18,6 +19,7 @@ export default class EdgeDrawing extends Konva.Group {
     weightText?: Konva.Text;
     weightOffset?: Vector2;
     weightChangeCallback?: WeightUpdateCallback;
+    decorationState: DecorationState;
 
     constructor(start: VertexDrawing, end: VertexDrawing, directed: boolean,
                 redrawCallback: RedrawCallback, weight?: number,
@@ -35,6 +37,7 @@ export default class EdgeDrawing extends Konva.Group {
             pointerLength: directed? 10 : 0,
             pointerWidth: directed? 10 : 0
         });
+        this.decorationState = "default";
         this.weight = weight;
         this.weightChangeCallback = weightChangeCallback;
         this.add(this.arrow);
@@ -205,5 +208,29 @@ export default class EdgeDrawing extends Konva.Group {
         }
         this.weightText.x(weightAnchor[0] + this.weightOffset[0]);
         this.weightText.y(weightAnchor[1] + this.weightOffset[1]);
+    }
+
+    setDecorationState(state: DecorationState) {
+        this.decorationState = state;
+        switch (state)  {
+            case "default":
+                this.arrow.stroke('black');
+                this.arrow.fill('black');
+                this.weightText && this.weightText.fill('black');
+                this.weightText && this.weightText.stroke('black');
+                break;
+            case "selected":
+                this.arrow.stroke('blue');
+                this.arrow.fill('blue');
+                this.weightText && this.weightText.fill('blue');
+                this.weightText && this.weightText.stroke('blue');
+                break;
+            case "disabled":
+                this.arrow.stroke('gainsboro');
+                this.arrow.fill('gainsboro');
+                this.weightText && this.weightText.fill('gainsboro');
+                this.weightText && this.weightText.stroke('gainsboro');
+                break;
+        }
     }
 }

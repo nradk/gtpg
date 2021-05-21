@@ -6,18 +6,19 @@ import * as Graphs from "../graph_core/graph";
 import * as Layouts from "../drawing/layouts";
 import { getMouseEventXY } from "./util";
 import { Vector2,  Util } from "../commontypes";
+import { Decorator, DecorationState } from "../decoration/decorator";
 
 export default class GraphDrawing {
-    vertexDrawings : {[id: number]: VertexDrawing};
-    edgeDrawings : {[start: number]: { [end: number]: EdgeDrawing }};
-    graph : Graphs.Graph;
-    selectedVertex : VertexDrawing;
-    stage : Konva.Stage;
-    verticesLayer : Konva.Layer;
-    edgesLayer : Konva.Layer;
-    continuousLayoutTimer: number;
-    positions: Layouts.PositionMap;
-    vertexRadius: number;
+    private vertexDrawings : {[id: number]: VertexDrawing};
+    private edgeDrawings : {[start: number]: { [end: number]: EdgeDrawing }};
+    private graph : Graphs.Graph;
+    private selectedVertex : VertexDrawing;
+    private stage : Konva.Stage;
+    private verticesLayer : Konva.Layer;
+    private edgesLayer : Konva.Layer;
+    private continuousLayoutTimer: number;
+    private positions: Layouts.PositionMap;
+    private vertexRadius: number;
 
     constructor(graph?: Graphs.Graph) {
         if (graph === undefined) {
@@ -25,7 +26,7 @@ export default class GraphDrawing {
         } else {
             this.graph = graph;
         }
-        this.vertexDrawings = [];
+        this.vertexDrawings = {};
         this.positions = {};
         this.verticesLayer = new Konva.Layer();
         this.edgesLayer = new Konva.Layer();
@@ -131,7 +132,7 @@ export default class GraphDrawing {
     // Assume vertices already drawn
     populateEdgeDrawings() {
         const edges = this.graph.getEdgeList();
-        this.edgeDrawings = {}
+        this.edgeDrawings = {};
         for (const e of edges) {
             const start = this.vertexDrawings[e[0]];
             const end   = this.vertexDrawings[e[1]];
@@ -188,7 +189,7 @@ export default class GraphDrawing {
             this.toggleEdge(this.selectedVertex, vertexDrawing);
             this.selectedVertex = null;
         } else {
-            if (vertexDrawing.selected) {
+            if (vertexDrawing.isSelected()) {
                 vertexDrawing.unselect();
                 this.selectedVertex = null;
             } else {
@@ -330,6 +331,36 @@ export default class GraphDrawing {
         const endId = this.lookupVertexId(end);
         if (this.graph instanceof Graphs.WeightedGraph) {
             this.graph.setEdgeWeight(startId, endId, weight);
+        }
+    }
+
+    getGraph(): Graphs.Graph {
+        return this.graph;
+    }
+
+    getDecorator(): Decorator {
+        return new GraphDrawing.DefaultDecorator(this);
+    }
+
+    static DefaultDecorator = class implements Decorator {
+        drawing: GraphDrawing;
+
+        constructor(graphDrawing: GraphDrawing) {
+            this.drawing = graphDrawing;
+        }
+
+        getGraph(): Graphs.Graph {
+            return this.drawing.graph;
+        }
+
+        setVertexState(vertexId: number, state: DecorationState) {
+            this.drawing.vertexDrawings[vertexId].setDecorationState(state);
+        }
+
+        setEdgeState(startVertexId: number, endVertexId: number,
+                     state: DecorationState) {
+            const edge = this.drawing.edgeDrawings[startVertexId][endVertexId];
+            edge.setDecorationState(state);
         }
     }
 }

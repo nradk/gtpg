@@ -18,7 +18,7 @@ export default class ImportExport {
             alert("No graph to save!");
             return;
         }
-        if (drawing.graph.getNumberOfVertices() == 0) {
+        if (drawing.getGraph().getNumberOfVertices() == 0) {
             alert("Cannot export an empty graph!");
             return;
         }

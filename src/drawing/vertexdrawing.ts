@@ -1,12 +1,13 @@
 import Konva from "konva";
 
 import EdgeDrawing from "./edgedrawing";
+import { DecorationState } from "../decoration/decorator";
 
 type VertexDrawingEventCallback = (v: VertexDrawing) => void;
 
 export default class VertexDrawing extends Konva.Group {
 
-    selected: boolean;
+    decorationState: DecorationState;
     label: Konva.Text;
     circle: Konva.Circle;
     moveCallbacks: VertexDrawingEventCallback[];
@@ -23,7 +24,7 @@ export default class VertexDrawing extends Konva.Group {
             strokeWidth: 2
         });
         this.add(this.circle);
-        this.selected = false;
+        this.decorationState = "default";
         this.moveCallbacks = [];
         this.moveCallbacks = [];
         this.clickCallbacks = [];
@@ -65,20 +66,35 @@ export default class VertexDrawing extends Konva.Group {
     }
 
     select() {
-        if (!this.selected) {
-            this.circle.stroke('red');
-            this.circle.strokeWidth(4);
-            this.label.fill('red');
-            this.selected = !this.selected;
-        }
+        this.setDecorationState("selected");
+    }
+
+    isSelected(): boolean {
+        return this.decorationState === "selected";
     }
 
     unselect() {
-        if (this.selected) {
-            this.circle.stroke('black');
-            this.circle.strokeWidth(2);
-            this.label.fill('black');
-            this.selected = !this.selected;
+        this.setDecorationState("default");
+    }
+
+    setDecorationState(state: DecorationState) {
+        this.decorationState = state;
+        switch (state)  {
+            case "default":
+                this.circle.stroke('black');
+                this.circle.strokeWidth(2);
+                this.label.fill('black');
+                break;
+            case "selected":
+                this.circle.stroke('blue');
+                this.circle.strokeWidth(2);
+                this.label.fill('blue');
+                break;
+            case "disabled":
+                this.circle.stroke('gainsboro');
+                this.circle.strokeWidth(2);
+                this.label.fill('gainsboro');
+                break;
         }
     }
 
