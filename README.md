@@ -8,13 +8,15 @@ of graph theory concepts and algorithms.
 - Multitasking with tabs
 - Curved (movable) edges
 - Four auto-layout algorithms
+- Save and open graph from local device
+- Weighted graphs
+- Algorithm visualizations:
+  - Kruskal's MST Algorithm
 
 ### Planned Features
-- Save and open graph from local device
 - Save and open graph from browser
 - Text annotations on graphs
 - Editable vertex labels
-- Weighted graphs
 - Multigraphs
-- Customization of display sizes and colors
-- Algorithm visualizations
+- Better customization of display sizes and colors
+- More algorithm visualizations
