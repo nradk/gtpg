@@ -10,6 +10,7 @@ import { Decorator, DecorationState } from "../decoration/decorator";
 
 export default class GraphDrawing {
     private vertexDrawings : {[id: number]: VertexDrawing};
+    // For undirected graphs, 'start' is always smaller than 'end'
     private edgeDrawings : {[start: number]: { [end: number]: EdgeDrawing }};
     private graph : Graphs.Graph;
     private selectedVertex : VertexDrawing;
@@ -226,7 +227,6 @@ export default class GraphDrawing {
     toggleEdge(start: VertexDrawing, end: VertexDrawing) {
         const startId = this.lookupVertexId(start);
         const endId = this.lookupVertexId(end);
-        console.log("Toggling", startId, endId);
         for (const edgeDrawing of start.edgeDrawings) {
             const endIndex = end.edgeDrawings.indexOf(edgeDrawing);
             if (endIndex >= 0) {
@@ -236,7 +236,6 @@ export default class GraphDrawing {
                 this.edgesLayer.draw();
                 delete this.edgeDrawings[startId][endId];
                 this.graph.removeEdge(startId, endId);
-                console.log("Removed edge", this.edgeDrawings);
                 return;
             }
         }
@@ -249,13 +248,21 @@ export default class GraphDrawing {
             this.handleWeightUpdate.bind(this)
         );
         this.graph.addEdge(startId, endId);
-        if (!(startId in this.edgeDrawings)) {
-            this.edgeDrawings[startId] = {};
+        // The order is important because graph.getEdgeList() returns only
+        // (m,n) edges where m < n. We conform to that here.
+        if (startId < endId) {
+            if (!(startId in this.edgeDrawings)) {
+                this.edgeDrawings[startId] = {};
+            }
+            this.edgeDrawings[startId][endId] = edgeDrawing;
+        } else {
+            if (!(endId in this.edgeDrawings)) {
+                this.edgeDrawings[endId] = {};
+            }
+            this.edgeDrawings[endId][startId] = edgeDrawing;
         }
-        this.edgeDrawings[startId][endId] = edgeDrawing;
         this.edgesLayer.add(edgeDrawing);
         this.edgesLayer.draw();
-        console.log("Added edge", this.edgeDrawings);
     }
 
     toJsonString(): string {
@@ -266,8 +273,6 @@ export default class GraphDrawing {
             };
         }
         const edges = this.graph.getEdgeList();
-        console.log(edges);
-        console.log(this.edgeDrawings);
         const curvePointPositions: {[v1: number]: {[v2: number]: Vector2}} = {};
         for (const edge of edges) {
             const edgeDrawing = this.edgeDrawings[edge[0]][edge[1]];
@@ -327,8 +332,13 @@ export default class GraphDrawing {
     }
 
     handleWeightUpdate(start: VertexDrawing, end: VertexDrawing, weight: number) {
-        const startId = this.lookupVertexId(start);
-        const endId = this.lookupVertexId(end);
+        let startId = this.lookupVertexId(start);
+        let endId = this.lookupVertexId(end);
+        //if (!this.graph.isDirected() && startId > endId) {
+            //let t = endId;
+            //endId = startId;
+            //startId = t;
+        //}
         if (this.graph instanceof Graphs.WeightedGraph) {
             this.graph.setEdgeWeight(startId, endId, weight);
         }
@@ -355,12 +365,14 @@ export default class GraphDrawing {
 
         setVertexState(vertexId: number, state: DecorationState) {
             this.drawing.vertexDrawings[vertexId].setDecorationState(state);
+            this.drawing.vertexDrawings[vertexId].draw();
         }
 
         setEdgeState(startVertexId: number, endVertexId: number,
                      state: DecorationState) {
             const edge = this.drawing.edgeDrawings[startVertexId][endVertexId];
             edge.setDecorationState(state);
+            edge.draw();
         }
     }
 }

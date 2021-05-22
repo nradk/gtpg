@@ -217,19 +217,16 @@ export default class EdgeDrawing extends Konva.Group {
                 this.arrow.stroke('black');
                 this.arrow.fill('black');
                 this.weightText && this.weightText.fill('black');
-                this.weightText && this.weightText.stroke('black');
                 break;
             case "selected":
                 this.arrow.stroke('blue');
                 this.arrow.fill('blue');
                 this.weightText && this.weightText.fill('blue');
-                this.weightText && this.weightText.stroke('blue');
                 break;
             case "disabled":
                 this.arrow.stroke('gainsboro');
                 this.arrow.fill('gainsboro');
                 this.weightText && this.weightText.fill('gainsboro');
-                this.weightText && this.weightText.stroke('gainsboro');
                 break;
         }
     }

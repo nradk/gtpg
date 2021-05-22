@@ -12,7 +12,7 @@ export interface Graph {
     getEdgeList(): number[][];
     areNeighbors(startVertex: number, endVertex: number): boolean;
     getNumberOfVertices(): number;
-    addVertex(): number;
+    addVertex(vertexId?: number): number;
     removeVertex(vertexId: number): void;
     addEdge(startVertex: number, endVertex: number): void;
     removeEdge(startVertexId: number, endVertexId: number): void;
@@ -97,12 +97,19 @@ export class UnweightedGraph implements Graph {
         return this.getVertexIds().length;
     }
 
-    addVertex(): number {
+    addVertex(vertexId?: number): number {
         let newId: number;
-        if (this.getVertexIds().length == 0) {
-            newId = 1;
+        if (vertexId != undefined) {
+            if (vertexId in this.adjacencyList) {
+                throw Error(`Vertex ${vertexId} already exists in the graph.`);
+            }
+            newId = vertexId;
         } else {
-            newId = Math.max(...this.getVertexIds().map(s => Number(s))) + 1;
+            if (this.getVertexIds().length == 0) {
+                newId = 1;
+            } else {
+                newId = Math.max(...this.getVertexIds().map(s => Number(s))) + 1;
+            }
         }
         this.adjacencyList[newId] = [];
         return newId;
@@ -124,8 +131,7 @@ export class UnweightedGraph implements Graph {
     }
 
     // In an undirected graph, the edge is added in both directions
-    // If weight is not provided, it is set to 0
-    addEdge(startVertex: number, endVertex: number, weight?: number) {
+    addEdge(startVertex: number, endVertex: number) {
         if (!(startVertex in this.adjacencyList)) {
             throw Error(`Cannot add an edge because vertex ${startVertex} is` +
                 ` not in the graph.`);
@@ -139,11 +145,11 @@ export class UnweightedGraph implements Graph {
             throw Error("Cannot add a loop to a simple graph");
         }
         if (!(endVertex in this.adjacencyList[startVertex])) {
-            this.adjacencyList[startVertex][endVertex] = weight ?? 0;
+            this.adjacencyList[startVertex].push(endVertex);
         }
         if (!this.directed) {
             if (!(startVertex in this.adjacencyList[endVertex])) {
-                this.adjacencyList[endVertex][startVertex] = weight ?? 0;
+                this.adjacencyList[endVertex].push(startVertex);
             }
         }
     }
@@ -270,20 +276,31 @@ export class WeightedGraph implements Graph {
             throw Error(`Vertex ${endVertex} is not in the graph.`);
         }
         this.adjacencyMap[startVertex][endVertex] = weight;
+        if (!this.directed) {
+            this.adjacencyMap[endVertex][startVertex] = weight;
+        }
     }
 
     getNumberOfVertices(): number {
         return this.getVertexIds().length;
     }
 
-    addVertex(): number {
+
+    addVertex(vertexId?: number): number {
         let newId: number;
-        if (this.getVertexIds().length == 0) {
-            newId = 1;
+        if (vertexId != undefined) {
+            if (vertexId in this.adjacencyMap) {
+                throw Error(`Vertex ${vertexId} already exists in the graph.`);
+            }
+            newId = vertexId;
         } else {
-            newId = Math.max(...this.getVertexIds().map(s => Number(s))) + 1;
+            if (this.getVertexIds().length == 0) {
+                newId = 1;
+            } else {
+                newId = Math.max(...this.getVertexIds().map(s => Number(s))) + 1;
+            }
         }
-        this.adjacencyMap[newId] = {};
+        this.adjacencyMap[newId] = {}
         return newId;
     }
 
@@ -317,15 +334,18 @@ export class WeightedGraph implements Graph {
         if (startVertex === endVertex) {
             throw Error("Cannot add a loop to a simple graph");
         }
+        let w: number = 0;
+        if (weight != undefined) {
+            w = weight;
+        }
         if (!(endVertex in this.adjacencyMap[startVertex])) {
-            this.adjacencyMap[startVertex][endVertex] = weight ?? 0;
+            this.adjacencyMap[startVertex][endVertex] = w;
         }
         if (!this.directed) {
             if (!(startVertex in this.adjacencyMap[endVertex])) {
-                this.adjacencyMap[endVertex][startVertex] = weight ?? 0;
+                this.adjacencyMap[endVertex][startVertex] = w;
             }
         }
-        console.log("Edge added to adj map", this.adjacencyMap);
     }
 
     removeEdge(startVertexId: number, endVertexId: number) {

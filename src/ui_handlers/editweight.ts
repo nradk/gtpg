@@ -3,7 +3,7 @@ import $ from "jquery";
 export class EditWeight {
     constructor() {
         $("#weightEditForm").on("submit", e => {
-            const w = $("#inputWeight").val() as number;
+            const w = Number($("#inputWeight").val());
             const callback = $("#weightEditForm").data("callback");
             (callback as ((weight: number) => void))(w);
             $("#weightEditModal").modal("hide");
