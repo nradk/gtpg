@@ -30,7 +30,6 @@ export default class EdgeDrawing extends Konva.Group {
             points: [start.x(), start.y(),
                 end.x(), end.y()],
             stroke: 'black',
-            fill: 'black',
             strokeWidth: 2,
             lineCap: 'round',
             lineJoin: 'round',
@@ -215,18 +214,15 @@ export default class EdgeDrawing extends Konva.Group {
         switch (state)  {
             case "default":
                 this.arrow.stroke('black');
-                this.arrow.fill('black');
                 this.weightText && this.weightText.fill('black');
                 break;
             case "selected":
-                this.arrow.stroke('blue');
-                this.arrow.fill('blue');
-                this.weightText && this.weightText.fill('blue');
+                this.arrow.stroke('#158cba');
+                this.weightText && this.weightText.fill('#158cba');
                 break;
             case "disabled":
-                this.arrow.stroke('gainsboro');
-                this.arrow.fill('gainsboro');
-                this.weightText && this.weightText.fill('gainsboro');
+                this.arrow.stroke('#f0f0f0');
+                this.weightText && this.weightText.fill('#f0f0f0');
                 break;
         }
     }

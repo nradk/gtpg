@@ -29,7 +29,7 @@ export class KruskalMST implements Algorithm {
         for (let i = 0; i < vertices.length; i++) {
             forests[vertices[i]] = i;
         }
-        while (edges.length > 0) {
+        const timerId = setInterval(() => {
             const e = edges.pop();
             // Check if e connects two vertices in different forests
             if (forests[e[0]] != forests[e[1]]) {
@@ -46,6 +46,9 @@ export class KruskalMST implements Algorithm {
                     }
                 }
             }
-        }
+            if (edges.length == 0) {
+                clearInterval(timerId);
+            }
+        }, 400);
     }
 }
