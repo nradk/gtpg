@@ -6,6 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
+    <!-- For some reason the html element doesn't occupy full height unless
+      we do this -->
+    <style type="text/css">
+      html, body {
+        height: 100%;
+      }
+    </style>
     <title>Graph Playground</title>
   </head>
 
@@ -54,8 +61,8 @@
       </div>
     </nav>
 
-    <div class="container-fluid">
-      <div class="row">
+    <div class="container-fluid d-flex h-100 flex-column">
+      <div class="row flex-grow-1">
         <nav class="col-2 bg-light border-right sidebar">
           <div class="sidebar-sticky">
 
@@ -88,13 +95,12 @@
           </div>
         </nav>
 
-        <main role="main" class="col-8 pt-0" style="padding-left: 0px;
-                                            padding-right: 0px">
-          <div class="row pr-1">
+        <main role="main" class="col-8 pt-0 d-flex flex-column"
+              style="padding-left: 0px; padding-right: 0px">
+          <div class="row pr-1"> <!-- Tab bar row -->
             <div class="col">
               <tab-bar/>
             </div>
-
             <div class="dropdown col-auto pt-1">
               <button class="btn btn-primary dropdown-toggle" type="button"
                       id="dropdownMenuButton1" data-toggle="dropdown"
@@ -125,7 +131,12 @@
                        data-target="#generateModal">Generate Graph</a></li>
               </ul>
             </div>
-          </div>
+          </div> <!-- End tab bar row -->
+
+          <div class="row" id="container"></div> <!-- KonvaJS container -->
+
+          <!-- Algorithm control panel -->
+          <div class="row border-top p-2 m-0" id="algo-control"></div>
 
           <!-- Graph Generation Modal -->
           <div class="modal fade" id="generateModal" tabindex="-1"
@@ -200,7 +211,6 @@
           </div>
 
 
-          <div id="container"></div>
         </main>
 
         <nav class="col-2 bg-light sidebar border-left">
@@ -239,7 +249,6 @@
 
           </div>
         </nav>
-
       </div>
     </div>
 
@@ -256,6 +265,10 @@
           <i style='margin-left: 3pt'class="bi-x-square"></i>
         </a>
       </li>
+    </template>
+
+    <template id="kruskal-control-template">
+      Howdy!
     </template>
 
   </body>

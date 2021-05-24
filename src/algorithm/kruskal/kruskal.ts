@@ -1,6 +1,6 @@
-import { Algorithm } from "./algorithm";
-import { Decorator } from "../decoration/decorator";
-import { WeightedGraph } from "../graph_core/graph";
+import { Algorithm } from "../algorithm";
+import { Decorator } from "../../decoration/decorator";
+import { WeightedGraph } from "../../graph_core/graph";
 
 export class KruskalMST implements Algorithm {
 

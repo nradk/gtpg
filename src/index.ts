@@ -16,7 +16,7 @@ import { WeightedGraph } from './graph_core/graph';
 import * as Layout from './drawing/layouts';
 import GraphDrawing from './drawing/graphdrawing';
 
-// Double-import seemingly necessary
+// Double-imports seemingly necessary
 import './components/tabbar';   // Executes the module, to register custom element
 import * as TabBar from './components/tabbar';  // Actually does the import
 

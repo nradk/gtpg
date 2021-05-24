@@ -1,11 +1,14 @@
 import $ from "jquery";
-import { KruskalMST } from "../algorithm/kruskal";
+import { KruskalMST } from "../algorithm/kruskal/kruskal";
+import { KruskalControls } from "../algorithm/kruskal/kruskal_controls";
 import GraphTabs from "./graphtabs";
 
 export default class AlgorithmUI {
 
     constructor(graphTabs: GraphTabs) {
         $("#btn-algo-kruskal").on('click', () => {
+            $("#algo-control").empty().append(new KruskalControls());
+
             const graphDrawing = graphTabs.getActiveGraphDrawing();
             if (graphDrawing == undefined) {
                 console.error("No graph present for Kruskal Algorithm.");
