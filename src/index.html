@@ -137,7 +137,6 @@
 
           <!-- Algorithm control panel -->
           <div class="row border-top p-2 m-0" id="algo-control">
-            <kruskal-controls class="container-fluid"/>
           </div>
 
           <!-- Graph Generation Modal -->
@@ -291,6 +290,12 @@
                                             class="btn btn-outline-danger m-1">
               <i class="bi-arrow-repeat" style="font-size:14pt;"></i> Repeat
             </button>
+        </div>
+
+        <div class="row p-2 justify-content-center">
+            <label class="col-lg-1" for="algorithm-speed">Speed</label>
+            <input type="range" class="custom-range col-lg-6"
+                   min=0 max=100 id="algorithm-speed">
         </div>
 
     </template>

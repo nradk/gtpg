@@ -10,6 +10,7 @@ export class KruskalControls extends AlgorithmControls {
     pause_btn: JQuery<HTMLElement>;
     stop_btn: JQuery<HTMLElement>;
     repeat_btn: JQuery<HTMLElement>;
+    speed_slider: JQuery<HTMLElement>;
 
     constructor() {
         super();
@@ -20,6 +21,7 @@ export class KruskalControls extends AlgorithmControls {
         this.appendChild(templateFrag);
 
         $(this).addClass('container-fluid');
+        this.speed_slider = $(this).find("#algorithm-speed");
         this.pause_btn = $(this).find("#btn-kruskal-pause");
         this.play_btn = $(this).find("#btn-kruskal-play");
         this.stop_btn = $(this).find("#btn-kruskal-stop");
@@ -36,6 +38,10 @@ export class KruskalControls extends AlgorithmControls {
         this.repeat_btn.on('click', () => {
             this.algorithm?.stop();
             this.algorithm?.execute();
+        });
+        this.speed_slider.on('change', () => {
+            const value = this.speed_slider.val() as number;
+            this.algorithm?.setSpeed(Number(value));
         });
     }
 

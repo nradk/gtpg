@@ -42,12 +42,16 @@ export class KruskalMST implements Algorithm {
         for (let i = 0; i < vertices.length; i++) {
             forests[vertices[i]] = i;
         }
+        // Keep track of how many edges have been added to the MST,
+        // so we know when we are done.
+        let edgesAdded = 0;
         this.step = () => {
             const e = edges.pop();
             // Check if e connects two vertices in different forests
             if (forests[e[0]] != forests[e[1]]) {
                 // Add e to MST
                 mst.addEdge(e[0], e[1], e[2]);
+                edgesAdded += 1;
                 // Select that edge
                 this.decorator.setEdgeState(e[0], e[1], "selected");
                 // Merge the forests
@@ -59,9 +63,10 @@ export class KruskalMST implements Algorithm {
                     }
                 }
             }
-            if (edges.length == 0) {
+            // |E| = |V| - 1 in a tree
+            if (edgesAdded == graph.getVertexIds().length - 1) {
+                this.setState("stopped");
                 clearTimeout(this.timer);
-                this.setState( "stopped");
             } else if (this.getState() == "running") {
                 this.timer = setTimeout(this.step, this.delay);
             }
