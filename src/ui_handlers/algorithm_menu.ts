@@ -7,8 +7,6 @@ export default class AlgorithmUI {
 
     constructor(graphTabs: GraphTabs) {
         $("#btn-algo-kruskal").on('click', () => {
-            $("#algo-control").empty().append(new KruskalControls());
-
             const graphDrawing = graphTabs.getActiveGraphDrawing();
             if (graphDrawing == undefined) {
                 console.error("No graph present for Kruskal Algorithm.");
@@ -20,7 +18,11 @@ export default class AlgorithmUI {
                 alert("Please provide a graph with at least one vertex!");
                 return;
             }
-            (new KruskalMST()).execute(graphDrawing.getDecorator());
+            const controls = new KruskalControls();
+            $("#algo-control").empty().append(controls);
+            const algorithm = new KruskalMST(graphDrawing.getDecorator());
+            controls.setAlgorithm(algorithm);
+            algorithm.execute();
         });
     }
 }

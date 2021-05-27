@@ -11,7 +11,7 @@ import ImportExport from "./ui_handlers/importexport";
 import GraphGenerate from './ui_handlers/graphgenerate';
 import { EditWeight } from './ui_handlers/editweight';
 import DisplayCustomizer from './ui_handlers/display_customizer';
-import AlgorithmUI from './ui_handlers/algorithm';
+import AlgorithmUI from './ui_handlers/algorithm_menu';
 import { WeightedGraph } from './graph_core/graph';
 import * as Layout from './drawing/layouts';
 import GraphDrawing from './drawing/graphdrawing';
@@ -19,6 +19,7 @@ import GraphDrawing from './drawing/graphdrawing';
 // Double-imports seemingly necessary
 import './components/tabbar';   // Executes the module, to register custom element
 import * as TabBar from './components/tabbar';  // Actually does the import
+import './algorithm/kruskal/kruskal_controls';
 
 function displayNewGraph(tabType: TabBar.TabType) {
     const tabbar: TabBar.TabBar = document.querySelector("tab-bar");

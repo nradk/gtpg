@@ -136,7 +136,9 @@
           <div class="row" id="container"></div> <!-- KonvaJS container -->
 
           <!-- Algorithm control panel -->
-          <div class="row border-top p-2 m-0" id="algo-control"></div>
+          <div class="row border-top p-2 m-0" id="algo-control">
+            <kruskal-controls class="container-fluid"/>
+          </div>
 
           <!-- Graph Generation Modal -->
           <div class="modal fade" id="generateModal" tabindex="-1"
@@ -268,7 +270,29 @@
     </template>
 
     <template id="kruskal-control-template">
-      Howdy!
+        <div class="row pb-2">
+          <b>Kruskal's Minimum Spanning Tree Algorithm</b>
+        </div>
+
+        <div class="row p-2 justify-content-center">
+            <button id="btn-kruskal-play" type="button"
+                                          class="btn btn-outline-success m-1">
+              <i class="bi-play-fill" style="font-size:14pt;"></i> Play
+            </button>
+            <button id="btn-kruskal-pause" type="button"
+                                           class="btn btn-outline-warning m-1">
+              <i class="bi-pause-fill" style="font-size:14pt;"></i> Pause
+            </button>
+            <button id="btn-kruskal-stop" type="button"
+                                          class="btn btn-outline-danger m-1">
+              <i class="bi-stop-fill" style="font-size:14pt;"></i> Stop
+            </button>
+            <button id="btn-kruskal-repeat" type="button"
+                                            class="btn btn-outline-danger m-1">
+              <i class="bi-arrow-repeat" style="font-size:14pt;"></i> Repeat
+            </button>
+        </div>
+
     </template>
 
   </body>
