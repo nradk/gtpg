@@ -2,23 +2,29 @@ import $ from "jquery";
 
 import { AlgorithmControls } from "../../components/algorithm_controls";
 import { Algorithm, AlgorithmState } from "../../algorithm/algorithm";
+import { KruskalMST } from "./kruskal";
+import GraphTabs from "../../ui_handlers/graphtabs";
 
 export class KruskalControls extends AlgorithmControls {
 
-    algorithm: Algorithm;
-    play_btn: JQuery<HTMLElement>;
-    pause_btn: JQuery<HTMLElement>;
-    stop_btn: JQuery<HTMLElement>;
-    repeat_btn: JQuery<HTMLElement>;
-    speed_slider: JQuery<HTMLElement>;
+    private algorithm: Algorithm;
+    private play_btn: JQuery<HTMLElement>;
+    private pause_btn: JQuery<HTMLElement>;
+    private stop_btn: JQuery<HTMLElement>;
+    private repeat_btn: JQuery<HTMLElement>;
+    private speed_slider: JQuery<HTMLElement>;
+    private graphTabs: GraphTabs;
 
-    constructor() {
+    constructor(graphTabs: GraphTabs) {
         super();
         //const shadow = this.attachShadow({mode: 'open'});
         const template: HTMLTemplateElement =
             document.querySelector("#kruskal-control-template");
         const templateFrag = document.importNode(template.content, true);
         this.appendChild(templateFrag);
+
+        this.graphTabs = graphTabs;
+        this.graphTabs.registerTabSwitchCallback(this.onGraphTabSwitch.bind(this));
 
         $(this).addClass('container-fluid');
         this.speed_slider = $(this).find("#algorithm-speed");
@@ -30,7 +36,17 @@ export class KruskalControls extends AlgorithmControls {
             this.algorithm?.pause();
         });
         this.play_btn.on('click', () => {
-            this.algorithm?.resume();
+            if (this.algorithm == undefined) {
+                const success = this.initAlgorithm();
+                if (!success) {
+                    return;
+                }
+            }
+            if (this.algorithm.getState() == "init") {
+                this.algorithm.execute();
+            } else {
+                this.algorithm.resume();
+            }
         });
         this.stop_btn.on('click', () => {
             this.algorithm?.stop();
@@ -45,7 +61,28 @@ export class KruskalControls extends AlgorithmControls {
         });
     }
 
-    setAlgorithm(algorithm: Algorithm) {
+    private initialize() {
+        this.algorithm = undefined;
+        this.algorithmStateChanged("init");
+    }
+
+    private initAlgorithm(): boolean {
+        const graphDrawing = this.graphTabs.getActiveGraphDrawing();
+        if (graphDrawing == undefined) {
+            console.error("No graph present for Kruskal Algorithm.");
+            alert("Please create or open a graph first to apply Kruskal's" +
+                " Algorithm.");
+            return false;
+        }
+        if (graphDrawing.getGraph().getVertexIds().length == 0) {
+            alert("Please provide a graph with at least one vertex!");
+            return false;
+        }
+        this.setAlgorithm(new KruskalMST(graphDrawing.getDecorator()));
+        return true;
+    }
+
+    private setAlgorithm(algorithm: Algorithm) {
         algorithm.setStateChangeCallback(this.algorithmStateChanged.bind(this));
         this.algorithm = algorithm;
     }
@@ -87,6 +124,10 @@ export class KruskalControls extends AlgorithmControls {
             button.addClass("disabled");
             button.attr("disabled", "true");
         }
+    }
+
+    private onGraphTabSwitch() {
+        this.initialize();
     }
 }
 

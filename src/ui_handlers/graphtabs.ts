@@ -10,9 +10,11 @@ export default class GraphTabs {
     tabBar: TabBar = $("tab-bar")[0] as TabBar;
     tabDrawings: {[id: number]: GraphDrawing} = {};
     stage: Konva.Stage;
+    tabSwitchCallbacks: (() => void)[];
 
     constructor(stage: Konva.Stage) {
         this.stage = stage;
+        this.tabSwitchCallbacks = [];
         this.tabBar.setTabCreatedCallback((id: number, tabType: TabType) => {
             let graph: Graph;
             console.log("tab type", tabType);
@@ -39,6 +41,7 @@ export default class GraphTabs {
             this.stage.clear();
             this.tabDrawings[id].setStage(this.stage);
             this.tabDrawings[id].renderGraph();
+            this.tabSwitchCallbacks.forEach(cb => cb());
         });
         this.tabBar.setTabDeactivatedCallback((id: number) => {
             this.tabDrawings[id].detachStage();
@@ -74,5 +77,9 @@ export default class GraphTabs {
 
     getTabBar(): TabBar {
         return this.tabBar;
+    }
+
+    registerTabSwitchCallback(callback: () => void) {
+        this.tabSwitchCallbacks.push(callback);
     }
 }

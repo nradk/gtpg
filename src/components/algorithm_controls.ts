@@ -1,5 +1,5 @@
-import { Algorithm } from "../algorithm/algorithm";
+// import { Algorithm } from "../algorithm/algorithm";
 
 export abstract class AlgorithmControls extends HTMLElement {
-    abstract setAlgorithm(algorithm: Algorithm): void;
+    // abstract setAlgorithm(algorithm: Algorithm): void;
 }
