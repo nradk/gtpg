@@ -108,4 +108,18 @@ export class KruskalMST implements Algorithm {
     setStateChangeCallback(callback: (newState: AlgorithmState) => void) {
         this.stateChangeCallback = callback;
     }
+
+    clearGraphDecoration() {
+        console.log(this.state);
+        if (this.state == "stopped") {
+            const vertices = this.decorator.getGraph().getVertexIds();
+            const edges = this.decorator.getGraph().getEdgeList();
+            for (const vertex of vertices) {
+                this.decorator.setVertexState(vertex, "default");
+            }
+            for (const edge of edges) {
+                this.decorator.setEdgeState(edge[0], edge[1], "default");
+            }
+        }
+    }
 }

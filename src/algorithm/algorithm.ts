@@ -8,4 +8,5 @@ export interface Algorithm {
     setSpeed(speed: number): void;
     getState(): AlgorithmState;
     setStateChangeCallback(callback: (newState: AlgorithmState) => void): void;
+    clearGraphDecoration(): void;
 }

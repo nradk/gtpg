@@ -11,7 +11,7 @@ export class KruskalControls extends AlgorithmControls {
     private play_btn: JQuery<HTMLElement>;
     private pause_btn: JQuery<HTMLElement>;
     private stop_btn: JQuery<HTMLElement>;
-    private repeat_btn: JQuery<HTMLElement>;
+    private clear_btn: JQuery<HTMLElement>;
     private speed_slider: JQuery<HTMLElement>;
     private graphTabs: GraphTabs;
 
@@ -31,7 +31,7 @@ export class KruskalControls extends AlgorithmControls {
         this.pause_btn = $(this).find("#btn-kruskal-pause");
         this.play_btn = $(this).find("#btn-kruskal-play");
         this.stop_btn = $(this).find("#btn-kruskal-stop");
-        this.repeat_btn = $(this).find("#btn-kruskal-repeat");
+        this.clear_btn = $(this).find("#btn-kruskal-clear");
         this.pause_btn.on('click', () => {
             this.algorithm?.pause();
         });
@@ -42,7 +42,8 @@ export class KruskalControls extends AlgorithmControls {
                     return;
                 }
             }
-            if (this.algorithm.getState() == "init") {
+            if (this.algorithm.getState() == "init" ||
+                    this.algorithm.getState() == "stopped") {
                 this.algorithm.execute();
             } else {
                 this.algorithm.resume();
@@ -51,9 +52,8 @@ export class KruskalControls extends AlgorithmControls {
         this.stop_btn.on('click', () => {
             this.algorithm?.stop();
         });
-        this.repeat_btn.on('click', () => {
-            this.algorithm?.stop();
-            this.algorithm?.execute();
+        this.clear_btn.on('click', () => {
+            this.algorithm?.clearGraphDecoration();
         });
         this.speed_slider.on('change', () => {
             const value = this.speed_slider.val() as number;
@@ -93,25 +93,25 @@ export class KruskalControls extends AlgorithmControls {
                 this.changeButtonState(this.play_btn, true);
                 this.changeButtonState(this.pause_btn, false);
                 this.changeButtonState(this.stop_btn, false);
-                this.changeButtonState(this.repeat_btn, false);
+                this.changeButtonState(this.clear_btn, false);
                 break;
             case "paused":
                 this.changeButtonState(this.play_btn, true);
                 this.changeButtonState(this.pause_btn, false);
                 this.changeButtonState(this.stop_btn, true);
-                this.changeButtonState(this.repeat_btn, false);
+                this.changeButtonState(this.clear_btn, false);
                 break;
             case "running":
                 this.changeButtonState(this.play_btn, false);
                 this.changeButtonState(this.pause_btn, true);
                 this.changeButtonState(this.stop_btn, true);
-                this.changeButtonState(this.repeat_btn, false);
+                this.changeButtonState(this.clear_btn, false);
                 break;
             case "stopped":
-                this.changeButtonState(this.play_btn, false);
+                this.changeButtonState(this.play_btn, true);
                 this.changeButtonState(this.pause_btn, false);
                 this.changeButtonState(this.stop_btn, false);
-                this.changeButtonState(this.repeat_btn, true);
+                this.changeButtonState(this.clear_btn, true);
                 break;
         }
     }
