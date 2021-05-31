@@ -4,6 +4,11 @@ import { AlgorithmControls } from "../../components/algorithm_controls";
 import { Algorithm, AlgorithmState } from "../../algorithm/algorithm";
 import { KruskalMST } from "./kruskal";
 import GraphTabs from "../../ui_handlers/graphtabs";
+import * as Util from "../../util";
+import ImportExport from "../../ui_handlers/importexport";
+import * as Layout from "../../drawing/layouts";
+import GraphDrawing from "../../drawing/graphdrawing";
+import { Graph } from "../../graph_core/graph";
 
 export class KruskalControls extends AlgorithmControls {
 
@@ -13,7 +18,11 @@ export class KruskalControls extends AlgorithmControls {
     private stop_btn: JQuery<HTMLElement>;
     private clear_btn: JQuery<HTMLElement>;
     private speed_slider: JQuery<HTMLElement>;
+    private output_tab_btn: JQuery<HTMLElement>;
+    private output_export_btn: JQuery<HTMLElement>;
+    private output_drop_btn: JQuery<HTMLElement>;
     private graphTabs: GraphTabs;
+    private graphDrawing: GraphDrawing;
 
     constructor(graphTabs: GraphTabs) {
         super();
@@ -32,6 +41,9 @@ export class KruskalControls extends AlgorithmControls {
         this.play_btn = $(this).find("#btn-kruskal-play");
         this.stop_btn = $(this).find("#btn-kruskal-stop");
         this.clear_btn = $(this).find("#btn-kruskal-clear");
+        this.output_tab_btn = $(this).find("#btn-kruskal-output-tab");
+        this.output_export_btn = $(this).find("#btn-kruskal-output-export");
+        this.output_drop_btn = $(this).find("#btndrop-kruskal-output");
         this.pause_btn.on('click', () => {
             this.algorithm?.pause();
         });
@@ -43,7 +55,7 @@ export class KruskalControls extends AlgorithmControls {
                 }
             }
             if (this.algorithm.getState() == "init" ||
-                    this.algorithm.getState() == "stopped") {
+                    this.algorithm.getState() == "done") {
                 this.algorithm.execute();
             } else {
                 this.algorithm.resume();
@@ -59,6 +71,36 @@ export class KruskalControls extends AlgorithmControls {
             const value = this.speed_slider.val() as number;
             this.algorithm?.setSpeed(Number(value));
         });
+        this.output_tab_btn.on('click', () => {
+            const graph = this.algorithm?.getOutputGraph();
+            const graphDrawing = this.getGraphDrawingForOutput(graph);
+            Util.createTabWithGraphDrawing(this.graphTabs, graphDrawing,
+                "Kruskal MST");
+        });
+        this.output_export_btn.on('click', () => {
+            const graph = this.algorithm?.getOutputGraph();
+            const graphDrawing = this.getGraphDrawingForOutput(graph);
+            ImportExport.exportGraphDrawing(graphDrawing, "Kruskal_MST.json");
+        });
+
+        this.initialize();
+    }
+
+    private getGraphDrawingForOutput(graph: Graph): GraphDrawing {
+        let layout: Layout.Layout, graphDrawing: GraphDrawing;
+        if (this.graphDrawing == undefined) {
+            console.warn("Graphdrawing undefined, creating circular layout");
+            layout = new Layout.CircularLayout(
+                this.graphTabs.getStageDims());
+            graphDrawing = new GraphDrawing(graph);
+        } else {
+            console.log("Graphdrawing defined, creating fixed layout");
+            layout = new Layout.FixedLayout(
+                this.graphDrawing.getVertexPositions());
+            graphDrawing = new GraphDrawing(graph);
+        }
+        graphDrawing.layoutWithoutRender(layout);
+        return graphDrawing;
     }
 
     private initialize() {
@@ -67,18 +109,18 @@ export class KruskalControls extends AlgorithmControls {
     }
 
     private initAlgorithm(): boolean {
-        const graphDrawing = this.graphTabs.getActiveGraphDrawing();
-        if (graphDrawing == undefined) {
+        this.graphDrawing = this.graphTabs.getActiveGraphDrawing();
+        if (this.graphDrawing == undefined) {
             console.error("No graph present for Kruskal Algorithm.");
             alert("Please create or open a graph first to apply Kruskal's" +
                 " Algorithm.");
             return false;
         }
-        if (graphDrawing.getGraph().getVertexIds().length == 0) {
+        if (this.graphDrawing.getGraph().getVertexIds().length == 0) {
             alert("Please provide a graph with at least one vertex!");
             return false;
         }
-        this.setAlgorithm(new KruskalMST(graphDrawing.getDecorator()));
+        this.setAlgorithm(new KruskalMST(this.graphDrawing.getDecorator()));
         return true;
     }
 
@@ -93,25 +135,29 @@ export class KruskalControls extends AlgorithmControls {
                 this.changeButtonState(this.play_btn, true);
                 this.changeButtonState(this.pause_btn, false);
                 this.changeButtonState(this.stop_btn, false);
-                this.changeButtonState(this.clear_btn, false);
+                this.changeButtonState(this.clear_btn, true);
+                this.changeButtonState(this.output_drop_btn, false);
                 break;
             case "paused":
                 this.changeButtonState(this.play_btn, true);
                 this.changeButtonState(this.pause_btn, false);
                 this.changeButtonState(this.stop_btn, true);
                 this.changeButtonState(this.clear_btn, false);
+                this.changeButtonState(this.output_drop_btn, false);
                 break;
             case "running":
                 this.changeButtonState(this.play_btn, false);
                 this.changeButtonState(this.pause_btn, true);
                 this.changeButtonState(this.stop_btn, true);
                 this.changeButtonState(this.clear_btn, false);
+                this.changeButtonState(this.output_drop_btn, false);
                 break;
-            case "stopped":
+            case "done":
                 this.changeButtonState(this.play_btn, true);
                 this.changeButtonState(this.pause_btn, false);
                 this.changeButtonState(this.stop_btn, false);
                 this.changeButtonState(this.clear_btn, true);
+                this.changeButtonState(this.output_drop_btn, true);
                 break;
         }
     }

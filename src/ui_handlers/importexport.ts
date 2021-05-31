@@ -14,20 +14,9 @@ export default class ImportExport {
 
     exportCurrent() {
         const drawing = this.graphTabs.getActiveGraphDrawing();
-        if (drawing == undefined) {
-            alert("No graph to save!");
-            return;
-        }
-        if (drawing.getGraph().getNumberOfVertices() == 0) {
-            alert("Cannot export an empty graph!");
-            return;
-        }
         const tabname = this.graphTabs.tabBar.getActiveTabTitle();
-        const jsonStr = drawing.toJsonString();
-        const blob = new Blob([jsonStr], {type : 'application/json'});
-        const url = URL.createObjectURL(blob);
         const fileName = tabname.slice(-4) == 'json' ? tabname : tabname + ".json";
-        ImportExport.download(url, fileName);
+        ImportExport.exportGraphDrawing(drawing, fileName);
     }
 
     importNew() {
@@ -56,6 +45,21 @@ export default class ImportExport {
         const newId = tabbar.addTabElement(title, "loaded");
         tabbar.setActiveById(newId);
         this.graphTabs.updateGraphDrawing(newId, drawing);
+    }
+
+    static exportGraphDrawing(drawing: GraphDrawing, fileName: string) {
+        if (drawing == undefined) {
+            alert("No graph to save!");
+            return;
+        }
+        if (drawing.getGraph().getNumberOfVertices() == 0) {
+            alert("Cannot export an empty graph!");
+            return;
+        }
+        const jsonStr = drawing.toJsonString();
+        const blob = new Blob([jsonStr], {type : 'application/json'});
+        const url = URL.createObjectURL(blob);
+        ImportExport.download(url, fileName);
     }
 
     static download(url: string, filename: string) {

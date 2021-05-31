@@ -1,4 +1,6 @@
-export type AlgorithmState = "init" | "running" | "paused" | "stopped";
+import { Graph } from "../graph_core/graph";
+
+export type AlgorithmState = "init" | "running" | "paused" | "done";
 
 export interface Algorithm {
     execute(): void;
@@ -9,4 +11,5 @@ export interface Algorithm {
     getState(): AlgorithmState;
     setStateChangeCallback(callback: (newState: AlgorithmState) => void): void;
     clearGraphDecoration(): void;
+    getOutputGraph(): Graph;
 }

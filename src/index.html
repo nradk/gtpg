@@ -287,15 +287,33 @@
               <i class="bi-stop-fill" style="font-size:14pt;"></i> Stop
             </button>
             <button id="btn-kruskal-clear" type="button"
-                                            class="btn btn-outline-dark m-1">
+                                           class="btn btn-outline-dark m-1">
               <i class="bi-eraser-fill" style="font-size:14pt;"></i> Clear
             </button>
+
+            <div class="btn-group m-1 ml-5" role="group">
+              <div class="btn-group dropdown" role="group">
+                <button id="btndrop-kruskal-output" type="button"
+                  class="btn btn-primary dropdown-toggle"
+                  data-toggle="dropdown"
+                  aria-haspopup="true"
+                  aria-expanded="false" disabled>Output</button>
+                <div role="menu" class="dropdown-menu"
+                  aria-labelledby="btndrop-kruskal-output">
+                  <a class="dropdown-item" id ="btn-kruskal-output-tab"
+                    href="#">New Tab</a>
+                  <a class="dropdown-item" id ="btn-kruskal-output-export"
+                    href="#">Export File</a>
+                </div>
+              </div>
+            </div>
+
         </div>
 
         <div class="row p-2 justify-content-center">
-            <label class="col-lg-1" for="algorithm-speed">Speed</label>
-            <input type="range" class="custom-range col-lg-6"
-                   min=0 max=100 id="algorithm-speed">
+          <label class="col-lg-1" for="algorithm-speed">Speed</label>
+          <input type="range" class="custom-range col-lg-6"
+                              min=0 max=100 id="algorithm-speed">
         </div>
 
     </template>

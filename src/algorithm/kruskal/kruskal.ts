@@ -10,6 +10,7 @@ export class KruskalMST implements Algorithm {
     stateChangeCallback: (newState: AlgorithmState) => void;
     delay: number;
     decorator: Decorator;
+    mst: WeightedGraph;
 
     constructor(decorator: Decorator) {
         this.state = "init";
@@ -26,9 +27,9 @@ export class KruskalMST implements Algorithm {
         }
         this.setState("running");
         const graph = g as WeightedGraph;
-        const mst = new WeightedGraph(false)
+        this.mst = new WeightedGraph(false)
         for (const v of graph.getVertexIds()) {
-            mst.addVertex(v);
+            this.mst.addVertex(v);
         }
         const edges = graph.getEdgeList();
         edges.sort((first, second) => second[2] - first[2]);
@@ -50,7 +51,7 @@ export class KruskalMST implements Algorithm {
             // Check if e connects two vertices in different forests
             if (forests[e[0]] != forests[e[1]]) {
                 // Add e to MST
-                mst.addEdge(e[0], e[1], e[2]);
+                this.mst.addEdge(e[0], e[1], e[2]);
                 edgesAdded += 1;
                 // Select that edge
                 this.decorator.setEdgeState(e[0], e[1], "selected");
@@ -65,7 +66,7 @@ export class KruskalMST implements Algorithm {
             }
             // |E| = |V| - 1 in a tree
             if (edgesAdded == graph.getVertexIds().length - 1) {
-                this.setState("stopped");
+                this.setState("done");
                 clearTimeout(this.timer);
             } else if (this.getState() == "running") {
                 this.timer = setTimeout(this.step, this.delay);
@@ -92,7 +93,7 @@ export class KruskalMST implements Algorithm {
     }
 
     stop() {
-        this.setState("stopped");
+        this.setState("init");
     }
 
     setSpeed(speed: number) {
@@ -110,8 +111,7 @@ export class KruskalMST implements Algorithm {
     }
 
     clearGraphDecoration() {
-        console.log(this.state);
-        if (this.state == "stopped") {
+        if (this.state == "done" || this.state =="init") {
             const vertices = this.decorator.getGraph().getVertexIds();
             const edges = this.decorator.getGraph().getEdgeList();
             for (const vertex of vertices) {
@@ -121,5 +121,9 @@ export class KruskalMST implements Algorithm {
                 this.decorator.setEdgeState(edge[0], edge[1], "default");
             }
         }
+    }
+
+    getOutputGraph() {
+        return this.mst;
     }
 }

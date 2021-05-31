@@ -352,6 +352,10 @@ export default class GraphDrawing {
         return new GraphDrawing.DefaultDecorator(this);
     }
 
+    getVertexPositions(): Layouts.PositionMap {
+        return this.positions;
+    }
+
     static DefaultDecorator = class implements Decorator {
         drawing: GraphDrawing;
 
@@ -375,4 +379,5 @@ export default class GraphDrawing {
             edge.draw();
         }
     }
+
 }
