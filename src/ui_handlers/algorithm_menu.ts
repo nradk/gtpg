@@ -2,8 +2,8 @@ import $ from "jquery";
 import { AlgorithmControls } from "../components/algorithm_controls";
 import GraphTabs from "./graphtabs";
 import { WeightedGraph } from "../graph_core/graph";
-import { KruskalMST } from "../algorithm/kruskal/kruskal";
-import { PrimMST } from "../algorithm/prim/prim";
+import { KruskalMST } from "../algorithm/mst/kruskal";
+import { PrimMST } from "../algorithm/mst/prim";
 
 export default class AlgorithmUI {
 
