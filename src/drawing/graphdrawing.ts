@@ -374,6 +374,15 @@ export default class GraphDrawing {
 
         setEdgeState(startVertexId: number, endVertexId: number,
                      state: DecorationState) {
+            if (!this.drawing.graph.isDirected()) {
+                // Find the correct vertex order for undirected graphs
+                if (endVertexId in this.drawing.edgeDrawings &&
+                        startVertexId in this.drawing.edgeDrawings[endVertexId]) {
+                    const t = startVertexId;
+                    startVertexId = endVertexId;
+                    endVertexId = t;
+                }
+            }
             const edge = this.drawing.edgeDrawings[startVertexId][endVertexId];
             edge.setDecorationState(state);
             edge.draw();

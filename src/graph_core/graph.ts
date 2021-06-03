@@ -16,6 +16,7 @@ export interface Graph {
     removeVertex(vertexId: number): void;
     addEdge(startVertex: number, endVertex: number): void;
     removeEdge(startVertexId: number, endVertexId: number): void;
+    doesEdgeExist(startVertexId: number, endVertexId: number): boolean;
     isDirected(): boolean;
     isWeighted(): boolean;
     toJSON(): object;
@@ -173,6 +174,11 @@ export class UnweightedGraph implements Graph {
                 this.adjacencyList[endVertexId].splice(index, 1);
             }
         }
+    }
+
+    doesEdgeExist(startVertexId: number, endVertexId: number): boolean {
+        return (startVertexId in this.adjacencyList) &&
+            (this.adjacencyList[startVertexId].includes(endVertexId));
     }
 
     isDirected(): boolean {
@@ -363,6 +369,11 @@ export class WeightedGraph implements Graph {
                 delete this.adjacencyMap[endVertexId][startVertexId];
             }
         }
+    }
+
+    doesEdgeExist(startVertexId: number, endVertexId: number): boolean {
+        return (startVertexId in this.adjacencyMap) &&
+            (endVertexId in this.adjacencyMap[startVertexId]);
     }
 
     isDirected(): boolean {
