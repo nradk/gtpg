@@ -1,7 +1,8 @@
 import $ from "jquery";
-import { KruskalControls } from "../algorithm/kruskal/kruskal_controls";
+import { AlgorithmControls } from "../components/algorithm_controls";
 import GraphTabs from "./graphtabs";
 import { WeightedGraph } from "../graph_core/graph";
+import { KruskalMST } from "../algorithm/kruskal/kruskal";
 
 export default class AlgorithmUI {
 
@@ -20,7 +21,8 @@ export default class AlgorithmUI {
                 alert("Kruskal's algorithm needs a weighted undirected graph!");
                 return;
             }
-            const controls = new KruskalControls(graphTabs, graphDrawing);
+            const controls = new AlgorithmControls(KruskalMST,
+                graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });
     }

@@ -5,7 +5,7 @@ import { TabBar, TabType } from "../components/tabbar";
 import GraphDrawing from "../drawing/graphdrawing";
 import { Graph, UnweightedGraph, WeightedGraph } from "../graph_core/graph";
 import { Size } from "../commontypes";
-import { KruskalControls } from "../algorithm/kruskal/kruskal_controls";
+import { AlgorithmControls } from "../components/algorithm_controls";
 
 export default class GraphTabs {
     tabBar: TabBar = $("tab-bar")[0] as TabBar;
@@ -70,7 +70,7 @@ export default class GraphTabs {
         }
     }
 
-    setControlPanelForActiveTab(controlPanel: KruskalControls) {
+    setControlPanelForActiveTab(controlPanel: AlgorithmControls) {
         // TODO properly dispose pre-existing panel
         this.controlPanels[this.tabBar.getActiveTabId()] = controlPanel;
         this.setCorrectControlPanel();

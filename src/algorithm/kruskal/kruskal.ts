@@ -2,7 +2,7 @@ import { Algorithm, AlgorithmState } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { WeightedGraph } from "../../graph_core/graph";
 
-export class KruskalMST implements Algorithm {
+export class KruskalMST extends Algorithm {
 
     step: () => void;
     timer: ReturnType<typeof setTimeout>;
@@ -13,9 +13,9 @@ export class KruskalMST implements Algorithm {
     mst: WeightedGraph;
 
     constructor(decorator: Decorator) {
+        super(decorator);
         this.state = "init";
         this.delay = 400;
-        this.decorator = decorator;
     }
 
     execute() {
@@ -125,5 +125,13 @@ export class KruskalMST implements Algorithm {
 
     getOutputGraph() {
         return this.mst;
+    }
+
+    getFullName() {
+        return "Kruskal's Minimum Spanning Tree Algorithm";
+    }
+
+    getShortName() {
+        return "Kruskal MST";
     }
 }

@@ -19,7 +19,7 @@ import GraphDrawing from './drawing/graphdrawing';
 // Double-imports seemingly necessary
 import './components/tabbar';   // Executes the module, to register custom element
 import * as TabBar from './components/tabbar';  // Actually does the import
-import './algorithm/kruskal/kruskal_controls';
+import './components/algorithm_controls';
 
 function displayNewGraph(tabType: TabBar.TabType) {
     const tabbar: TabBar.TabBar = document.querySelector("tab-bar");
