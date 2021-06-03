@@ -1,5 +1,4 @@
 import $ from "jquery";
-
 import { AlgorithmControls } from "../../components/algorithm_controls";
 import { Algorithm, AlgorithmState } from "../../algorithm/algorithm";
 import { KruskalMST } from "./kruskal";
@@ -12,19 +11,19 @@ import { Graph } from "../../graph_core/graph";
 
 export class KruskalControls extends AlgorithmControls {
 
-    private algorithm: Algorithm;
-    private play_btn: JQuery<HTMLElement>;
-    private pause_btn: JQuery<HTMLElement>;
-    private stop_btn: JQuery<HTMLElement>;
-    private clear_btn: JQuery<HTMLElement>;
-    private speed_slider: JQuery<HTMLElement>;
-    private output_tab_btn: JQuery<HTMLElement>;
-    private output_export_btn: JQuery<HTMLElement>;
-    private output_drop_btn: JQuery<HTMLElement>;
-    private graphTabs: GraphTabs;
-    private graphDrawing: GraphDrawing;
+    private readonly algorithm: Algorithm;
+    private readonly play_btn: JQuery<HTMLElement>;
+    private readonly pause_btn: JQuery<HTMLElement>;
+    private readonly stop_btn: JQuery<HTMLElement>;
+    private readonly clear_btn: JQuery<HTMLElement>;
+    private readonly speed_slider: JQuery<HTMLElement>;
+    private readonly output_tab_btn: JQuery<HTMLElement>;
+    private readonly output_export_btn: JQuery<HTMLElement>;
+    private readonly output_drop_btn: JQuery<HTMLElement>;
+    private readonly graphTabs: GraphTabs;
+    private readonly graphDrawing: GraphDrawing;
 
-    constructor(graphTabs: GraphTabs) {
+    constructor(graphTabs: GraphTabs, graphDrawing: GraphDrawing) {
         super();
         //const shadow = this.attachShadow({mode: 'open'});
         const template: HTMLTemplateElement =
@@ -33,7 +32,9 @@ export class KruskalControls extends AlgorithmControls {
         this.appendChild(templateFrag);
 
         this.graphTabs = graphTabs;
-        this.graphTabs.registerTabSwitchCallback(this.onGraphTabSwitch.bind(this));
+        this.graphDrawing = graphDrawing;
+        this.algorithm = new KruskalMST(this.graphDrawing.getDecorator());
+        this.algorithm.setStateChangeCallback(this.algorithmStateChanged.bind(this));
 
         $(this).addClass('container-fluid');
         this.speed_slider = $(this).find("#algorithm-speed");
@@ -45,45 +46,46 @@ export class KruskalControls extends AlgorithmControls {
         this.output_export_btn = $(this).find("#btn-kruskal-output-export");
         this.output_drop_btn = $(this).find("#btndrop-kruskal-output");
         this.pause_btn.on('click', () => {
-            this.algorithm?.pause();
+            this.algorithm.pause();
         });
         this.play_btn.on('click', () => {
-            if (this.algorithm == undefined) {
-                const success = this.initAlgorithm();
-                if (!success) {
-                    return;
-                }
+            console.log("Play button clicked");
+            if (this.graphDrawing.getGraph().getVertexIds().length == 0) {
+                alert("Please create a graph with at least one vertex!");
+                return;
             }
             if (this.algorithm.getState() == "init" ||
                     this.algorithm.getState() == "done") {
+                this.algorithmStateChanged("init"); // TODO this is bad
                 this.algorithm.execute();
+                console.log("Algorithm executing");
             } else {
+                console.log("Algorithm resuming");
                 this.algorithm.resume();
             }
         });
         this.stop_btn.on('click', () => {
-            this.algorithm?.stop();
+            this.algorithm.stop();
         });
         this.clear_btn.on('click', () => {
-            this.algorithm?.clearGraphDecoration();
+            this.algorithm.clearGraphDecoration();
         });
         this.speed_slider.on('change', () => {
             const value = this.speed_slider.val() as number;
-            this.algorithm?.setSpeed(Number(value));
+            this.algorithm.setSpeed(Number(value));
         });
         this.output_tab_btn.on('click', () => {
-            const graph = this.algorithm?.getOutputGraph();
+            const graph = this.algorithm.getOutputGraph();
             const graphDrawing = this.getGraphDrawingForOutput(graph);
             Util.createTabWithGraphDrawing(this.graphTabs, graphDrawing,
                 "Kruskal MST");
         });
         this.output_export_btn.on('click', () => {
-            const graph = this.algorithm?.getOutputGraph();
+            const graph = this.algorithm.getOutputGraph();
             const graphDrawing = this.getGraphDrawingForOutput(graph);
             ImportExport.exportGraphDrawing(graphDrawing, "Kruskal_MST.json");
         });
-
-        this.initialize();
+        this.algorithmStateChanged("init"); // TODO this is bad
     }
 
     private getGraphDrawingForOutput(graph: Graph): GraphDrawing {
@@ -101,32 +103,6 @@ export class KruskalControls extends AlgorithmControls {
         }
         graphDrawing.layoutWithoutRender(layout);
         return graphDrawing;
-    }
-
-    private initialize() {
-        this.algorithm = undefined;
-        this.algorithmStateChanged("init");
-    }
-
-    private initAlgorithm(): boolean {
-        this.graphDrawing = this.graphTabs.getActiveGraphDrawing();
-        if (this.graphDrawing == undefined) {
-            console.error("No graph present for Kruskal Algorithm.");
-            alert("Please create or open a graph first to apply Kruskal's" +
-                " Algorithm.");
-            return false;
-        }
-        if (this.graphDrawing.getGraph().getVertexIds().length == 0) {
-            alert("Please provide a graph with at least one vertex!");
-            return false;
-        }
-        this.setAlgorithm(new KruskalMST(this.graphDrawing.getDecorator()));
-        return true;
-    }
-
-    private setAlgorithm(algorithm: Algorithm) {
-        algorithm.setStateChangeCallback(this.algorithmStateChanged.bind(this));
-        this.algorithm = algorithm;
     }
 
     private algorithmStateChanged(newState: AlgorithmState) {
@@ -170,10 +146,6 @@ export class KruskalControls extends AlgorithmControls {
             button.addClass("disabled");
             button.attr("disabled", "true");
         }
-    }
-
-    private onGraphTabSwitch() {
-        this.initialize();
     }
 }
 

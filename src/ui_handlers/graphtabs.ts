@@ -5,10 +5,12 @@ import { TabBar, TabType } from "../components/tabbar";
 import GraphDrawing from "../drawing/graphdrawing";
 import { Graph, UnweightedGraph, WeightedGraph } from "../graph_core/graph";
 import { Size } from "../commontypes";
+import { KruskalControls } from "../algorithm/kruskal/kruskal_controls";
 
 export default class GraphTabs {
     tabBar: TabBar = $("tab-bar")[0] as TabBar;
     tabDrawings: {[id: number]: GraphDrawing} = {};
+    controlPanels: {[id: number]: HTMLElement} = {};
     stage: Konva.Stage;
     tabSwitchCallbacks: (() => void)[];
 
@@ -41,6 +43,7 @@ export default class GraphTabs {
             this.stage.clear();
             this.tabDrawings[id].setStage(this.stage);
             this.tabDrawings[id].renderGraph();
+            this.setCorrectControlPanel();
             this.tabSwitchCallbacks.forEach(cb => cb());
         });
         this.tabBar.setTabDeactivatedCallback((id: number) => {
@@ -64,6 +67,23 @@ export default class GraphTabs {
             this.tabDrawings[id].renderGraph();
         } else {
             this.tabDrawings[id] = graphDrawing;
+        }
+    }
+
+    setControlPanelForActiveTab(controlPanel: KruskalControls) {
+        // TODO properly dispose pre-existing panel
+        this.controlPanels[this.tabBar.getActiveTabId()] = controlPanel;
+        this.setCorrectControlPanel();
+    }
+
+    private setCorrectControlPanel() {
+        const controls = this.controlPanels[this.tabBar.getActiveTabId()]
+        const container = document.querySelector("#algo-control");
+        // We do NOT use Jquery remove() here because it gets rid of all the
+        // event handlers as well.
+        container.innerHTML = '';
+        if (controls) {
+            container.appendChild(controls);
         }
     }
 
