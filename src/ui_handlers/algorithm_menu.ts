@@ -5,6 +5,7 @@ import { WeightedGraph } from "../graph_core/graph";
 import { KruskalMST } from "../algorithm/mst/kruskal";
 import { PrimMST } from "../algorithm/mst/prim";
 import { BreadthFirstSearch } from "../algorithm/search/bfs";
+import { DepthFirstSearch } from "../algorithm/search/dfs";
 
 export default class AlgorithmUI {
 
@@ -58,6 +59,20 @@ export default class AlgorithmUI {
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });
+
+        $("#btn-algo-dfs").on('click', () => {
+            const graphDrawing = graphTabs.getActiveGraphDrawing();
+            if (graphDrawing == undefined) {
+                console.error("No graph present for DFS.");
+                alert("Please create or open a graph first to apply DFS" +
+                    " Algorithm.");
+                return false;
+            }
+            const controls = new AlgorithmControls(DepthFirstSearch,
+                graphTabs, graphDrawing);
+            graphTabs.setControlPanelForActiveTab(controls);
+        });
+
 
 
     }
