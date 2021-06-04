@@ -4,6 +4,7 @@ import GraphTabs from "./graphtabs";
 import { WeightedGraph } from "../graph_core/graph";
 import { KruskalMST } from "../algorithm/mst/kruskal";
 import { PrimMST } from "../algorithm/mst/prim";
+import { BreadthFirstSearch } from "../algorithm/search/bfs";
 
 export default class AlgorithmUI {
 
@@ -37,12 +38,27 @@ export default class AlgorithmUI {
             }
             const g = graphDrawing.getGraph();
             if (!(g instanceof WeightedGraph) || g.isDirected()) {
-                alert("Kruskal's algorithm needs a weighted undirected graph!");
+                alert("Prim's algorithm needs a weighted undirected graph!");
                 return;
             }
             const controls = new AlgorithmControls(PrimMST,
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });
+
+        $("#btn-algo-bfs").on('click', () => {
+            const graphDrawing = graphTabs.getActiveGraphDrawing();
+            if (graphDrawing == undefined) {
+                console.error("No graph present for BFS.");
+                alert("Please create or open a graph first to apply BFS" +
+                    " Algorithm.");
+                return false;
+            }
+            const controls = new AlgorithmControls(BreadthFirstSearch,
+                graphTabs, graphDrawing);
+            graphTabs.setControlPanelForActiveTab(controls);
+        });
+
+
     }
 }

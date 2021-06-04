@@ -1,12 +1,13 @@
 import $ from "jquery";
-import { Algorithm, AlgorithmState, AlgorithmClassType } from
-    "../algorithm/algorithm";
+import { Algorithm, AlgorithmState, AlgorithmClassType, VertexInputAlgorithm }
+    from "../algorithm/algorithm";
 import GraphTabs from "../ui_handlers/graphtabs";
 import * as Util from "../util";
 import ImportExport from "../ui_handlers/importexport";
 import * as Layout from "../drawing/layouts";
 import GraphDrawing from "../drawing/graphdrawing";
 import { Graph } from "../graph_core/graph";
+import { ChooseVertex } from "../ui_handlers/choosevertex";
 
 export class AlgorithmControls extends HTMLElement {
 
@@ -39,6 +40,8 @@ export class AlgorithmControls extends HTMLElement {
             this.algorithmStateChanged.bind(this));
 
         $(this).addClass('container-fluid');
+        $(this).find("#algo-name").text(this.algorithm.getFullName());
+
         this.speed_slider = $(this).find("#algorithm-speed");
         this.pause_btn = $(this).find("#btn-algo-pause");
         this.play_btn = $(this).find("#btn-algo-play");
@@ -47,32 +50,19 @@ export class AlgorithmControls extends HTMLElement {
         this.output_tab_btn = $(this).find("#btn-algo-output-tab");
         this.output_export_btn = $(this).find("#btn-algo-output-export");
         this.output_drop_btn = $(this).find("#btndrop-algo-output");
-        $(this).find("#algo-name").text(this.algorithm.getFullName());
-        this.pause_btn.on('click', () => {
-            this.algorithm.pause();
-        });
-        this.play_btn.on('click', () => {
-            console.log("Play button clicked");
-            if (this.graphDrawing.getGraph().getVertexIds().length == 0) {
-                alert("Please create a graph with at least one vertex!");
-                return;
-            }
-            if (this.algorithm.getState() == "init" ||
-                    this.algorithm.getState() == "done") {
-                this.algorithmStateChanged("init"); // TODO this is bad
-                this.algorithm.execute();
-                console.log("Algorithm executing");
-            } else {
-                console.log("Algorithm resuming");
-                this.algorithm.resume();
-            }
-        });
-        this.stop_btn.on('click', () => {
-            this.algorithm.stop();
-        });
-        this.clear_btn.on('click', () => {
-            this.algorithm.clearGraphDecoration();
-        });
+
+        this.pause_btn.on('click', this.onPause.bind(this));
+        if (this.algorithm instanceof VertexInputAlgorithm) {
+            this.play_btn.on('click', () => {
+                ChooseVertex.chooseVertex(vertexId => {
+                    this.onPlay(vertexId);
+                });
+            });
+        } else {
+            this.play_btn.on('click', () => this.onPlay(undefined));
+        }
+        this.stop_btn.on('click', this.onStop.bind(this));
+        this.clear_btn.on('click', this.onClear.bind(this));
         this.speed_slider.on('change', () => {
             const value = this.speed_slider.val() as number;
             this.algorithm.setSpeed(Number(value));
@@ -90,6 +80,40 @@ export class AlgorithmControls extends HTMLElement {
                 this.algorithm.getShortName() + ".json");
         });
         this.algorithmStateChanged("init"); // TODO this is bad
+    }
+
+    private onPlay(inputVertex: number) {
+        console.log("Play button clicked");
+        if (this.graphDrawing.getGraph().getVertexIds().length == 0) {
+            alert("Please create a graph with at least one vertex!");
+            return;
+        }
+        if (this.algorithm.getState() == "init" ||
+            this.algorithm.getState() == "done") {
+            this.algorithmStateChanged("init"); // TODO this is bad
+            if (inputVertex == undefined ||
+                    !(this.algorithm instanceof VertexInputAlgorithm)) {
+                this.algorithm.execute();
+            } else {
+                this.algorithm.executeOnVertex(inputVertex);
+            }
+            console.log("Algorithm executing");
+        } else {
+            console.log("Algorithm resuming");
+            this.algorithm.resume();
+        }
+    }
+
+    private onPause() {
+        this.algorithm.pause();
+    }
+
+    private onStop() {
+        this.algorithm.stop();
+    }
+
+    private onClear() {
+        this.algorithm.clearGraphDecoration();
     }
 
     private getGraphDrawingForOutput(graph: Graph): GraphDrawing {

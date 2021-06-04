@@ -54,7 +54,8 @@
                     Kruskal's Spanning Tree</a>
                   <a class="dropdown-item" id="btn-algo-prim" href="#">
                     Prim's Spanning Tree</a>
-                  <a class="dropdown-item" href="#">Third Algorithm</a>
+                  <a class="dropdown-item" id="btn-algo-bfs"
+                    href="#">Breadth First Search</a>
                   <div class="dropdown-divider"></div>
                   <a class="dropdown-item" href="#">Another category</a>
                 </div>
@@ -201,6 +202,38 @@
                         <label for="inputWeight">New Weight:</label>
                         <input id="inputWeight" class="form-control"
                                                 value="1" type="number"/>
+                      </div>
+                    </fieldset>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                                          data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Change</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vertex Choice Modal -->
+          <div class="modal fade" id="vertexChoiceModal" tabindex="-1"
+               aria-labelledby="vertexChoiceModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="vertexChoiceModalLabel">Choose
+                    Start Vertex</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <form id="vertexChoiceForm">
+                  <div class="modal-body">
+                    <fieldset>
+                      <div class="form-group">
+                        <label for="vertexId">Start Vertex:</label>
+                        <input id="vertexId" class="form-control"
+                                   value="1" type="number"/>
                       </div>
                     </fieldset>
                   </div>
