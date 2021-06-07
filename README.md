@@ -3,6 +3,10 @@
 Graph Theory Playground is an under-construction tool to enable visualization
 of graph theory concepts and algorithms.
 
+Try it at [neerajadh.gitlab.io/graph-theory-playground](https://neerajadh.gitlab.io/graph-theory-playground/#).
+Please be warned that the project is still very much in it's infancy and there
+are a lot of things missing and things that do not work.
+
 ### Implemented Features
 - Undirected and directed graph creation
 - Multitasking with tabs
@@ -11,7 +15,12 @@ of graph theory concepts and algorithms.
 - Save and open graph from local device
 - Weighted graphs
 - Algorithm visualizations:
-  - Kruskal's MST Algorithm
+  - Minimum Spanning Tree Algorithms:
+    - Kruskal'ls Algorithm
+    - Prim's Algorithm
+  - Search Algorithms:
+    - Breadth First Search
+    - Depth First Search
 
 ### Planned Features
 - Save and open graph from browser
