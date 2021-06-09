@@ -224,6 +224,10 @@ export default class EdgeDrawing extends Konva.Group {
                 this.arrow.stroke('#f0f0f0');
                 this.weightText && this.weightText.fill('#f0f0f0');
                 break;
+            case "considering":
+                this.arrow.stroke('#ff851b');
+                this.weightText && this.weightText.fill('#ff851b');
+                break;
         }
     }
 }

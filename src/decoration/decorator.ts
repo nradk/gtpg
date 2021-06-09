@@ -1,6 +1,6 @@
 import { Graph } from "../graph_core/graph";
 
-export type DecorationState = "selected" | "disabled" | "default";
+export type DecorationState = "selected" | "disabled" | "default" | "considering";
 
 export interface Decorator {
     getGraph(): Graph;

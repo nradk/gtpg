@@ -82,18 +82,19 @@ export default class VertexDrawing extends Konva.Group {
         switch (state)  {
             case "default":
                 this.circle.stroke('black');
-                this.circle.strokeWidth(2);
                 this.label.fill('black');
                 break;
             case "selected":
                 this.circle.stroke('#158cba');
-                this.circle.strokeWidth(2);
                 this.label.fill('#158cba');
                 break;
             case "disabled":
                 this.circle.stroke('#f0f0f0');
-                this.circle.strokeWidth(2);
                 this.label.fill('#f0f0f0');
+                break;
+            case "considering":
+                this.circle.stroke('#ff851b');
+                this.label.fill('#ff851b');
                 break;
         }
     }
