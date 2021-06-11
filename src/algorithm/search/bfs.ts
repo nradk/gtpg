@@ -3,11 +3,13 @@ import { VertexInput } from "../../commontypes";
 import { Decorator } from "../../decoration/decorator";
 import { WeightedGraph, UnweightedGraph } from "../../graph_core/graph";
 
+type VertexAndParent = [number, number];
+
 export class BreadthFirstSearch implements Algorithm<VertexInput> {
 
     searchTree: WeightedGraph | UnweightedGraph;;
     inTree: Set<number>;
-    queue: number[];
+    queue: VertexAndParent[];
 
     constructor(private decorator: Decorator) {
     }
@@ -21,7 +23,7 @@ export class BreadthFirstSearch implements Algorithm<VertexInput> {
         }
         const vertexIds = graph.getVertexIds();
         this.inTree = new Set();
-        this.queue = [startVertex.vertexId];
+        this.queue = [[startVertex.vertexId, undefined]];
         this.inTree.add(startVertex.vertexId);
         this.searchTree.addVertex(startVertex.vertexId);
 
@@ -42,26 +44,38 @@ export class BreadthFirstSearch implements Algorithm<VertexInput> {
     }
 
     step(): boolean {
-        const v = this.queue.shift();
+        const [v, vparent] = this.queue.shift();
         const graph = this.decorator.getGraph();
         for (const n of graph.getVertexNeighborIds(v)) {
             if (this.inTree.has(n)) {
                 continue;
             }
-            this.searchTree.addVertex(n);
-            if (this.searchTree instanceof WeightedGraph) {
-                const g = graph as WeightedGraph;
-                this.searchTree.addEdge(v, n, g.getEdgeWeight(v, n));
-            } else {
-                this.searchTree.addEdge(v, n);
-            }
-            this.inTree.add(n);
-
-            this.decorator.setVertexState(n, "selected");
-            this.decorator.setEdgeState(v, n, "selected");
-
-            this.queue.push(n);
+            this.queue.push([n, v]);
+            this.decorator.setVertexState(n, "considering");
+            this.decorator.setEdgeState(v, n, "considering");
         }
+
+        if (!this.inTree.has(v)) {
+            this.searchTree.addVertex(v);
+            this.inTree.add(v);
+            if (vparent != undefined) {
+                if (this.searchTree instanceof WeightedGraph) {
+                    const g = graph as WeightedGraph;
+                    this.searchTree.addEdge(vparent, v,
+                        g.getEdgeWeight(vparent, v));
+                } else {
+                    this.searchTree.addEdge(vparent, v);
+                }
+                this.decorator.setEdgeState(vparent, v, "selected");
+                this.decorator.setVertexState(v, "selected");
+            }
+        } else {
+            // this.decorator.setVertexState(v, "selected");
+            if (vparent != undefined) {
+                this.decorator.setEdgeState(vparent, v, "disabled");
+            }
+        }
+
         return this.queue.length > 0;
     }
 
