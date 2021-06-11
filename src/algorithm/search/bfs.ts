@@ -1,39 +1,32 @@
-import { VertexInputAlgorithm, AlgorithmState } from "../algorithm";
+import { Algorithm } from "../algorithm";
+import { VertexInput } from "../../commontypes";
 import { Decorator } from "../../decoration/decorator";
 import { WeightedGraph, UnweightedGraph } from "../../graph_core/graph";
 
-export class BreadthFirstSearch extends VertexInputAlgorithm {
+export class BreadthFirstSearch implements Algorithm<VertexInput> {
 
-    step: () => void;
-    timer: ReturnType<typeof setTimeout>;
-    state: AlgorithmState;
-    stateChangeCallback: (newState: AlgorithmState) => void;
-    delay: number;
-    decorator: Decorator;
     searchTree: WeightedGraph | UnweightedGraph;;
+    inTree: Set<number>;
+    queue: number[];
 
-    constructor(decorator: Decorator) {
-        super(decorator);
-        this.state = "init";
-        this.delay = 400;
+    constructor(private decorator: Decorator) {
     }
 
-    executeOnVertex(startVertex: number) {
+    initialize(startVertex: VertexInput) {
         const graph = this.decorator.getGraph();
-        this.setState("running");
         if (graph instanceof WeightedGraph) {
             this.searchTree = new WeightedGraph(true);
         } else {
             this.searchTree = new UnweightedGraph(true);
         }
         const vertexIds = graph.getVertexIds();
-        const inTree: Set<number> = new Set();
-        const q = [startVertex];
-        inTree.add(startVertex);
-        this.searchTree.addVertex(startVertex);
+        this.inTree = new Set();
+        this.queue = [startVertex.vertexId];
+        this.inTree.add(startVertex.vertexId);
+        this.searchTree.addVertex(startVertex.vertexId);
 
         for (const v of vertexIds) {
-            if (v == startVertex) {
+            if (v == startVertex.vertexId) {
                 // Select the initial vertex
                 this.decorator.setVertexState(v, "selected");
             } else {
@@ -46,86 +39,30 @@ export class BreadthFirstSearch extends VertexInputAlgorithm {
         for (const edge of graph.getEdgeList()) {
             this.decorator.setEdgeState(edge[0], edge[1], "disabled");
         }
+    }
 
-        this.step = () => {
-            const v = q.shift();
-
-            for (const n of graph.getVertexNeighborIds(v)) {
-                if (inTree.has(n)) {
-                    continue;
-                }
-                this.searchTree.addVertex(n);
-                if (this.searchTree instanceof WeightedGraph) {
-                    const g = graph as WeightedGraph;
-                    this.searchTree.addEdge(v, n, g.getEdgeWeight(v, n));
-                } else {
-                    this.searchTree.addEdge(v, n);
-                }
-                inTree.add(n);
-
-                this.decorator.setVertexState(n, "selected");
-                this.decorator.setEdgeState(v, n, "selected");
-
-                q.push(n);
+    step(): boolean {
+        const v = this.queue.shift();
+        const graph = this.decorator.getGraph();
+        for (const n of graph.getVertexNeighborIds(v)) {
+            if (this.inTree.has(n)) {
+                continue;
             }
-
-
-            if (q.length == 0) {
-                this.setState("done");
-                clearTimeout(this.timer);
-            } else if (this.getState() == "running") {
-                this.timer = setTimeout(this.step, this.delay);
+            this.searchTree.addVertex(n);
+            if (this.searchTree instanceof WeightedGraph) {
+                const g = graph as WeightedGraph;
+                this.searchTree.addEdge(v, n, g.getEdgeWeight(v, n));
+            } else {
+                this.searchTree.addEdge(v, n);
             }
-        };
-        this.timer = setTimeout(this.step, this.delay);
-    }
+            this.inTree.add(n);
 
-    private setState(state: AlgorithmState) {
-        this.state = state;
-        this.stateChangeCallback?.(this.state);
-    }
+            this.decorator.setVertexState(n, "selected");
+            this.decorator.setEdgeState(v, n, "selected");
 
-    pause() {
-        this.setState("paused");
-    }
-
-    resume() {
-        if (this.state != "paused") {
-            throw new Error("Algorithm resumed when it wasn't in a paused state.");
+            this.queue.push(n);
         }
-        this.setState("running");
-        this.timer = setTimeout(this.step, this.delay);
-    }
-
-    stop() {
-        this.setState("init");
-    }
-
-    setSpeed(speed: number) {
-        // speed can go from 0 to 100
-        // That corresponds to a delay from 2s to 10ms
-        this.delay = 10 + (2000 - 10) * (1 - speed / 100);
-    }
-
-    getState(): AlgorithmState {
-        return this.state;
-    }
-
-    setStateChangeCallback(callback: (newState: AlgorithmState) => void) {
-        this.stateChangeCallback = callback;
-    }
-
-    clearGraphDecoration() {
-        if (this.state == "done" || this.state =="init") {
-            const vertices = this.decorator.getGraph().getVertexIds();
-            const edges = this.decorator.getGraph().getEdgeList();
-            for (const vertex of vertices) {
-                this.decorator.setVertexState(vertex, "default");
-            }
-            for (const edge of edges) {
-                this.decorator.setEdgeState(edge[0], edge[1], "default");
-            }
-        }
+        return this.queue.length > 0;
     }
 
     getOutputGraph() {
@@ -138,5 +75,9 @@ export class BreadthFirstSearch extends VertexInputAlgorithm {
 
     getShortName() {
         return "BFS";
+    }
+
+    getDecorator() {
+        return this.decorator;
     }
 }

@@ -6,4 +6,5 @@ export interface Decorator {
     getGraph(): Graph;
     setVertexState(vertexId: number, state: DecorationState): void;
     setEdgeState(startVertexId: number, endVertexId: number, state: DecorationState): void;
+    clearAllDecoration(): void;
 }

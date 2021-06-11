@@ -1,5 +1,6 @@
 import $ from "jquery";
-import { AlgorithmControls } from "../components/algorithm_controls";
+import {  InputlessControls, VertexInputControls }
+    from "../components/algorithm_controls";
 import GraphTabs from "./graphtabs";
 import { WeightedGraph } from "../graph_core/graph";
 import { KruskalMST } from "../algorithm/mst/kruskal";
@@ -24,7 +25,7 @@ export default class AlgorithmUI {
                 alert("Kruskal's algorithm needs a weighted undirected graph!");
                 return;
             }
-            const controls = new AlgorithmControls(KruskalMST,
+            const controls = new InputlessControls(KruskalMST,
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });
@@ -42,7 +43,7 @@ export default class AlgorithmUI {
                 alert("Prim's algorithm needs a weighted undirected graph!");
                 return;
             }
-            const controls = new AlgorithmControls(PrimMST,
+            const controls = new InputlessControls(PrimMST,
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });
@@ -55,7 +56,7 @@ export default class AlgorithmUI {
                     " Algorithm.");
                 return false;
             }
-            const controls = new AlgorithmControls(BreadthFirstSearch,
+            const controls = new VertexInputControls(BreadthFirstSearch,
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });
@@ -68,12 +69,9 @@ export default class AlgorithmUI {
                     " Algorithm.");
                 return false;
             }
-            const controls = new AlgorithmControls(DepthFirstSearch,
+            const controls = new VertexInputControls(DepthFirstSearch,
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });
-
-
-
     }
 }

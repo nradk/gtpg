@@ -387,6 +387,14 @@ export default class GraphDrawing {
             edge.setDecorationState(state);
             edge.draw();
         }
-    }
 
+        clearAllDecoration() {
+            for (const vertex of this.drawing.graph.getVertexIds()) {
+                this.setVertexState(vertex, "default");
+            }
+            for (const edge of this.drawing.graph.getEdgeList()) {
+                this.setEdgeState(edge[0], edge[1], "default");
+            }
+        }
+    }
 }

@@ -3,36 +3,82 @@ import { Decorator } from "../decoration/decorator";
 
 export type AlgorithmState = "init" | "running" | "paused" | "done";
 
-export type AlgorithmClassType = new (decorator: Decorator) => Algorithm;
+export type RunnerClassType<I> = new (decorator: Decorator) => AlgorithmRunner<I>;
 
-export abstract class Algorithm {
-    constructor(protected decorator: Decorator) {
-        console.log("Algorithm created, of type" + (typeof this));
-    }
-
-    abstract execute(): void;
-    abstract pause(): void;
-    abstract resume(): void;
-    abstract stop(): void;
-    abstract setSpeed(speed: number): void;
-    abstract getState(): AlgorithmState;
-    abstract setStateChangeCallback(callback:
-        (newState: AlgorithmState) => void): void;
-    abstract clearGraphDecoration(): void;
-    abstract getOutputGraph(): Graph;
-    abstract getFullName(): string;
-    abstract getShortName(): string;
+export interface Algorithm<I> {
+    initialize(input: I): void;
+    step(): boolean;
+    getOutputGraph(): Graph;
+    getFullName(): string;
+    getShortName(): string;
+    getDecorator(): Decorator;
 }
 
-/**
- * Abstract class for an algorithm that can take a vertex (for instance, the
- * source vertex for Dijkstra's algorithm or the root for trees) as input from
- * the user before executing.
- */
-export abstract class VertexInputAlgorithm extends Algorithm {
-    abstract executeOnVertex(inputVertex: number): void;
-    execute() {
-        throw new Error("You cannot call execute() on a VertexInputAlgorithm!");
+export class AlgorithmRunner<I> {
+    private delay: number;
+    private timer: ReturnType<typeof setTimeout>;
+    private state: AlgorithmState;
+    private stateChangeCallback: (newState: AlgorithmState) => void;
+    private runnerStep: () => void;
+
+    constructor(protected algorithm: Algorithm<I>) {
+        console.log("Algorithm created, of type" + (typeof this));
+        this.delay = 400;
+        this.state = "init";
     }
 
+    execute(input: I): void {
+        this.algorithm.initialize(input);
+        const runnerStep = () => {
+            const goNext = this.algorithm.step();
+            if (goNext) {
+                if (this.state == "running") {
+                    this.timer = setTimeout(runnerStep, this.delay);
+                }
+            } else {
+                this.setState("done");
+            }
+        };
+        this.setState("running");
+        runnerStep();
+    }
+
+    private setState(state: AlgorithmState) {
+        this.state = state;
+        this.stateChangeCallback?.(this.state);
+    }
+
+    setStateChangeCallback(callback: (newState: AlgorithmState) => void) {
+        this.stateChangeCallback = callback;
+    }
+
+    pause() {
+        this.setState("paused");
+    }
+
+    resume() {
+        if (this.state != "paused") {
+            throw new Error("Algorithm resumed when it wasn't in a paused state.");
+        }
+        this.setState("running");
+        this.timer = setTimeout(this.runnerStep, this.delay);
+    }
+
+    stop() {
+        this.setState("init");
+    }
+
+    setSpeed(speed: number) {
+        // speed can go from 0 to 100
+        // That corresponds to a delay from 2s to 10ms
+        this.delay = 10 + (2000 - 10) * (1 - speed / 100);
+    }
+
+    getState(): AlgorithmState {
+        return this.state;
+    }
+
+    getAlgorithm(): Algorithm<I> {
+        return this.algorithm;
+    }
 }

@@ -12,6 +12,8 @@ export interface Size {
     width: number;
 }
 
+export type VertexInput = {vertexId: number};
+
 export type MouseEventCallback = ((e: Konva.KonvaEventObject<MouseEvent>)
                                   => void);
 export type NullaryCallback = () => void;

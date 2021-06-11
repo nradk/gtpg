@@ -1,126 +1,69 @@
-import { Algorithm, AlgorithmState } from "../algorithm";
+import { Algorithm } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { WeightedGraph } from "../../graph_core/graph";
 
-export class KruskalMST extends Algorithm {
+export class KruskalMST implements Algorithm<void> {
 
-    step: () => void;
-    timer: ReturnType<typeof setTimeout>;
-    state: AlgorithmState;
-    stateChangeCallback: (newState: AlgorithmState) => void;
-    delay: number;
-    decorator: Decorator;
     mst: WeightedGraph;
+    edges: number[][];
+    // A disjoint-set data structure for the forests
+    forests: {[vertex: number]: number};
+    edgesAdded: number;
 
-    constructor(decorator: Decorator) {
-        super(decorator);
-        this.state = "init";
-        this.delay = 400;
+    constructor(private decorator: Decorator) {
     }
 
-    execute() {
+    initialize() {
         const g = this.decorator.getGraph();
         if (!(g instanceof WeightedGraph) || g.isDirected()) {
-            console.warn("Kruskal: weighted undirected graph required!");
             alert("Kruskal's algorithm needs a weighted undirected graph!");
-            return;
+            throw new Error("Kruskal: weighted undirected graph required!");
         }
-        this.setState("running");
         const graph = g as WeightedGraph;
         this.mst = new WeightedGraph(false)
         for (const v of graph.getVertexIds()) {
             this.mst.addVertex(v);
         }
-        const edges = graph.getEdgeList();
-        edges.sort((first, second) => second[2] - first[2]);
+        this.edges = graph.getEdgeList();
+        this.edges.sort((first, second) => second[2] - first[2]);
         // Disable all edges
-        for (const e of edges) {
+        for (const e of this.edges) {
             this.decorator.setEdgeState(e[0], e[1], "disabled");
         }
-        // Create a disjoint-set data structure for the forests
-        const forests: {[vertex: number]: number} = {};
+        this.forests = {};
         const vertices = graph.getVertexIds();
         for (let i = 0; i < vertices.length; i++) {
-            forests[vertices[i]] = i;
+            this.forests[vertices[i]] = i;
         }
         // Keep track of how many edges have been added to the MST,
         // so we know when we are done.
-        let edgesAdded = 0;
-        this.step = () => {
-            const e = edges.pop();
-            // Check if e connects two vertices in different forests
-            if (forests[e[0]] != forests[e[1]]) {
-                // Add e to MST
-                this.mst.addEdge(e[0], e[1], e[2]);
-                edgesAdded += 1;
-                // Select that edge
-                this.decorator.setEdgeState(e[0], e[1], "selected");
-                // Merge the forests
-                const fa = forests[e[0]];
-                const fb = forests[e[1]];
-                for (const k of Object.keys(forests)) {
-                    if (forests[k] == fb) {
-                        forests[k] = fa;
-                    }
+        this.edgesAdded = 0;
+
+    }
+
+    step(): boolean {
+        const e = this.edges.pop();
+        this.decorator.setEdgeState(e[0], e[1], "considering");
+        // Check if e connects two vertices in different this.forests
+        if (this.forests[e[0]] != this.forests[e[1]]) {
+            // Add e to MST
+            this.mst.addEdge(e[0], e[1], e[2]);
+            this.edgesAdded += 1;
+            // Select that edge
+            this.decorator.setEdgeState(e[0], e[1], "selected");
+            // Merge the this.forests
+            const fa = this.forests[e[0]];
+            const fb = this.forests[e[1]];
+            for (const k of Object.keys(this.forests)) {
+                if (this.forests[k] == fb) {
+                    this.forests[k] = fa;
                 }
             }
-            // |E| = |V| - 1 in a tree
-            if (edgesAdded == graph.getVertexIds().length - 1) {
-                this.setState("done");
-                clearTimeout(this.timer);
-            } else if (this.getState() == "running") {
-                this.timer = setTimeout(this.step, this.delay);
-            }
-        };
-        this.timer = setTimeout(this.step, this.delay);
-    }
-
-    private setState(state: AlgorithmState) {
-        this.state = state;
-        this.stateChangeCallback?.(this.state);
-    }
-
-    pause() {
-        this.setState("paused");
-    }
-
-    resume() {
-        if (this.state != "paused") {
-            throw new Error("Algorithm resumed when it wasn't in a paused state.");
+        } else {
+            this.decorator.setEdgeState(e[0], e[1], "disabled");
         }
-        this.setState("running");
-        this.timer = setTimeout(this.step, this.delay);
-    }
-
-    stop() {
-        this.setState("init");
-    }
-
-    setSpeed(speed: number) {
-        // speed can go from 0 to 100
-        // That corresponds to a delay from 2s to 10ms
-        this.delay = 10 + (2000 - 10) * (1 - speed / 100);
-    }
-
-    getState(): AlgorithmState {
-        return this.state;
-    }
-
-    setStateChangeCallback(callback: (newState: AlgorithmState) => void) {
-        this.stateChangeCallback = callback;
-    }
-
-    clearGraphDecoration() {
-        if (this.state == "done" || this.state =="init") {
-            const vertices = this.decorator.getGraph().getVertexIds();
-            const edges = this.decorator.getGraph().getEdgeList();
-            for (const vertex of vertices) {
-                this.decorator.setVertexState(vertex, "default");
-            }
-            for (const edge of edges) {
-                this.decorator.setEdgeState(edge[0], edge[1], "default");
-            }
-        }
+        // |E| = |V| - 1 in a tree
+        return this.edgesAdded < this.decorator.getGraph().getVertexIds().length - 1;
     }
 
     getOutputGraph() {
@@ -133,5 +76,9 @@ export class KruskalMST extends Algorithm {
 
     getShortName() {
         return "Kruskal MST";
+    }
+
+    getDecorator(): Decorator {
+        return this.decorator;
     }
 }
