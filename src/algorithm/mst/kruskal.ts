@@ -9,6 +9,7 @@ export class KruskalMST implements Algorithm<void> {
     // A disjoint-set data structure for the forests
     forests: {[vertex: number]: number};
     edgesAdded: number;
+    nextEdge: number[];
 
     constructor(private decorator: Decorator) {
     }
@@ -42,8 +43,14 @@ export class KruskalMST implements Algorithm<void> {
     }
 
     step(): boolean {
-        const e = this.edges.pop();
-        this.decorator.setEdgeState(e[0], e[1], "considering");
+        if (this.nextEdge == undefined) {
+            this.nextEdge = this.edges.pop();
+            const e = this.nextEdge;
+            this.decorator.setEdgeState(e[0], e[1], "considering");
+            // Return now to let the user see the 'considering' state
+            return true;
+        }
+        const e = this.nextEdge;
         // Check if e connects two vertices in different this.forests
         if (this.forests[e[0]] != this.forests[e[1]]) {
             // Add e to MST
@@ -62,6 +69,7 @@ export class KruskalMST implements Algorithm<void> {
         } else {
             this.decorator.setEdgeState(e[0], e[1], "disabled");
         }
+        this.nextEdge = undefined;
         // |E| = |V| - 1 in a tree
         return this.edgesAdded < this.decorator.getGraph().getVertexIds().length - 1;
     }

@@ -10,6 +10,7 @@ export class PrimMST implements Algorithm<void> {
     edgeQ: Heap<number[]>;
     inTree: Set<number>;
     notInTree: Set<number>;
+    nextEdge: number[];
 
     constructor(private decorator: Decorator) {
     }
@@ -64,7 +65,14 @@ export class PrimMST implements Algorithm<void> {
     }
 
     step(): boolean {
-        const edge = this.edgeQ.pop();
+        if (this.nextEdge == undefined) {
+            const e = this.edgeQ.pop();
+            this.decorator.setEdgeState(e[0], e[1], "considering");
+            this.nextEdge = e;
+            // Return here to let the user see the 'considering' decoration
+            return true;
+        }
+        const edge = this.nextEdge;
         const [inside, outside, weight] = edge;
         if (!this.inTree.has(outside)) {
             this.mst.addEdge(inside, outside, weight);
@@ -82,7 +90,10 @@ export class PrimMST implements Algorithm<void> {
                     // this.decorator.setEdgeState(outside, n, "default");
                 }
             }
+        } else {
+            this.decorator.setEdgeState(inside, outside, "disabled");
         }
+        this.nextEdge = undefined;
         return this.notInTree.size > 0;
     }
 
