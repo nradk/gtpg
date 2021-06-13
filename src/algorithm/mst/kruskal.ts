@@ -9,7 +9,6 @@ export class KruskalMST implements Algorithm<void> {
     // A disjoint-set data structure for the forests
     forests: {[vertex: number]: number};
     edgesAdded: number;
-    nextEdge: number[];
 
     constructor(private decorator: Decorator) {
     }
@@ -42,38 +41,6 @@ export class KruskalMST implements Algorithm<void> {
 
     }
 
-    step(): boolean {
-        if (this.nextEdge == undefined) {
-            this.nextEdge = this.edges.pop();
-            const e = this.nextEdge;
-            this.decorator.setEdgeState(e[0], e[1], "considering");
-            // Return now to let the user see the 'considering' state
-            return true;
-        }
-        const e = this.nextEdge;
-        // Check if e connects two vertices in different this.forests
-        if (this.forests[e[0]] != this.forests[e[1]]) {
-            // Add e to MST
-            this.mst.addEdge(e[0], e[1], e[2]);
-            this.edgesAdded += 1;
-            // Select that edge
-            this.decorator.setEdgeState(e[0], e[1], "selected");
-            // Merge the this.forests
-            const fa = this.forests[e[0]];
-            const fb = this.forests[e[1]];
-            for (const k of Object.keys(this.forests)) {
-                if (this.forests[k] == fb) {
-                    this.forests[k] = fa;
-                }
-            }
-        } else {
-            this.decorator.setEdgeState(e[0], e[1], "disabled");
-        }
-        this.nextEdge = undefined;
-        // |E| = |V| - 1 in a tree
-        return this.edgesAdded < this.decorator.getGraph().getVertexIds().length - 1;
-    }
-
     getOutputGraph() {
         return this.mst;
     }
@@ -88,5 +55,38 @@ export class KruskalMST implements Algorithm<void> {
 
     getDecorator(): Decorator {
         return this.decorator;
+    }
+
+    *run(): IterableIterator<void> {
+        while (true) {
+            const e = this.edges.pop();
+            this.decorator.setEdgeState(e[0], e[1], "considering");
+            // Yield now to let the user see the 'considering' state
+            yield;
+            // Check if e connects two vertices in different this.forests
+            if (this.forests[e[0]] != this.forests[e[1]]) {
+                // Add e to MST
+                this.mst.addEdge(e[0], e[1], e[2]);
+                this.edgesAdded += 1;
+                // Select that edge
+                this.decorator.setEdgeState(e[0], e[1], "selected");
+                // Merge the this.forests
+                const fa = this.forests[e[0]];
+                const fb = this.forests[e[1]];
+                for (const k of Object.keys(this.forests)) {
+                    if (this.forests[k] == fb) {
+                        this.forests[k] = fa;
+                    }
+                }
+            } else {
+                this.decorator.setEdgeState(e[0], e[1], "disabled");
+            }
+            // |E| = |V| - 1 in a tree
+            if (this.edgesAdded < this.decorator.getGraph().getVertexIds().length - 1) {
+                yield;
+            } else {
+                break;
+            }
+        }
     }
 }

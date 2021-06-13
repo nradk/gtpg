@@ -10,7 +10,6 @@ export class PrimMST implements Algorithm<void> {
     edgeQ: Heap<number[]>;
     inTree: Set<number>;
     notInTree: Set<number>;
-    nextEdge: number[];
 
     constructor(private decorator: Decorator) {
     }
@@ -64,37 +63,38 @@ export class PrimMST implements Algorithm<void> {
         console.log("graph:", graph.adjacencyMap);
     }
 
-    step(): boolean {
-        if (this.nextEdge == undefined) {
-            const e = this.edgeQ.pop();
-            this.decorator.setEdgeState(e[0], e[1], "considering");
-            this.nextEdge = e;
-            // Return here to let the user see the 'considering' decoration
-            return true;
-        }
-        const edge = this.nextEdge;
-        const [inside, outside, weight] = edge;
-        if (!this.inTree.has(outside)) {
-            this.mst.addEdge(inside, outside, weight);
-            console.log(`Adding edge ${inside}, ${outside} to mst`);
-            this.decorator.setEdgeState(inside, outside, "selected");
-            this.decorator.setVertexState(outside, "selected");
-            this.notInTree.delete(outside);
-            this.inTree.add(outside);
+    *run() {
+        while (true) {
+            const edge = this.edgeQ.pop();
+            this.decorator.setEdgeState(edge[0], edge[1], "considering");
+            // Yield here to let the user see the 'considering' decoration
+            yield;
+            const [inside, outside, weight] = edge;
+            if (!this.inTree.has(outside)) {
+                this.mst.addEdge(inside, outside, weight);
+                console.log(`Adding edge ${inside}, ${outside} to mst`);
+                this.decorator.setEdgeState(inside, outside, "selected");
+                this.decorator.setVertexState(outside, "selected");
+                this.notInTree.delete(outside);
+                this.inTree.add(outside);
 
-            const graph = this.decorator.getGraph() as WeightedGraph;
-            for (const n of graph.getVertexNeighborIds(outside)) {
-                if (!this.inTree.has(n)) {
-                    console.log(`Adding edge ${outside}, ${n} to queue`);
-                    this.edgeQ.add([outside, n, graph.getEdgeWeight(outside, n)]);
-                    // this.decorator.setEdgeState(outside, n, "default");
+                const graph = this.decorator.getGraph() as WeightedGraph;
+                for (const n of graph.getVertexNeighborIds(outside)) {
+                    if (!this.inTree.has(n)) {
+                        console.log(`Adding edge ${outside}, ${n} to queue`);
+                        this.edgeQ.add([outside, n, graph.getEdgeWeight(outside, n)]);
+                        // this.decorator.setEdgeState(outside, n, "default");
+                    }
                 }
+            } else {
+                this.decorator.setEdgeState(inside, outside, "disabled");
             }
-        } else {
-            this.decorator.setEdgeState(inside, outside, "disabled");
+            if (this.notInTree.size > 0) {
+                yield;
+            } else {
+                break;
+            }
         }
-        this.nextEdge = undefined;
-        return this.notInTree.size > 0;
     }
 
     getOutputGraph() {

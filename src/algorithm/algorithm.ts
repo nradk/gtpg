@@ -3,11 +3,9 @@ import { Decorator } from "../decoration/decorator";
 
 export type AlgorithmState = "init" | "running" | "paused" | "done";
 
-export type RunnerClassType<I> = new (decorator: Decorator) => AlgorithmRunner<I>;
-
 export interface Algorithm<I> {
     initialize(input: I): void;
-    step(): boolean;
+    run(): IterableIterator<void>;
     getOutputGraph(): Graph;
     getFullName(): string;
     getShortName(): string;
@@ -29,9 +27,10 @@ export class AlgorithmRunner<I> {
 
     execute(input: I): void {
         this.algorithm.initialize(input);
+        const iterator = this.algorithm.run();
         const runnerStep = () => {
-            const goNext = this.algorithm.step();
-            if (goNext) {
+            const it = iterator.next();
+            if (!it.done) {
                 if (this.state == "running") {
                     this.timer = setTimeout(runnerStep, this.delay);
                 }
@@ -53,6 +52,7 @@ export class AlgorithmRunner<I> {
     }
 
     pause() {
+        clearTimeout(this.timer);
         this.setState("paused");
     }
 
