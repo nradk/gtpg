@@ -230,4 +230,8 @@ export default class EdgeDrawing extends Konva.Group {
                 break;
         }
     }
+
+    getDecorationState(): DecorationState {
+        return this.decorationState;
+    }
 }

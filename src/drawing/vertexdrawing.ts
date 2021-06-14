@@ -103,6 +103,10 @@ export default class VertexDrawing extends Konva.Group {
         }
     }
 
+    getDecorationState(): DecorationState {
+        return this.decorationState;
+    }
+
     addMoveCallback(callback: VertexDrawingEventCallback) {
         this.moveCallbacks.push(callback);
     }

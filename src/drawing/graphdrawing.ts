@@ -356,6 +356,19 @@ export default class GraphDrawing {
         return this.positions;
     }
 
+    private getEdgeDrawingOrder(aVertexId: number, bVertexId: number):
+            [number, number] {
+        if (bVertexId in this.edgeDrawings &&
+            aVertexId in this.edgeDrawings[bVertexId]) {
+            return [bVertexId, aVertexId];
+        } else if (aVertexId in this.edgeDrawings &&
+            bVertexId in this.edgeDrawings[aVertexId]) {
+            return [aVertexId, bVertexId];
+        } else {
+            return null;
+        }
+    }
+
     static DefaultDecorator = class implements Decorator {
         drawing: GraphDrawing;
 
@@ -367,21 +380,28 @@ export default class GraphDrawing {
             return this.drawing.graph;
         }
 
+        getVertexState(vertexId: number): DecorationState {
+            return this.drawing.vertexDrawings[vertexId].getDecorationState();
+        }
+
         setVertexState(vertexId: number, state: DecorationState) {
             this.drawing.vertexDrawings[vertexId].setDecorationState(state);
             this.drawing.vertexDrawings[vertexId].draw();
         }
 
+        getEdgeState(startVertexId: number, endVertexId: number): DecorationState {
+            if (!this.drawing.graph.isDirected()) {
+                [startVertexId, endVertexId] = this.drawing.getEdgeDrawingOrder(
+                    startVertexId, endVertexId);
+            }
+            return this.drawing.edgeDrawings[startVertexId][endVertexId].getDecorationState();
+        }
+
         setEdgeState(startVertexId: number, endVertexId: number,
                      state: DecorationState) {
             if (!this.drawing.graph.isDirected()) {
-                // Find the correct vertex order for undirected graphs
-                if (endVertexId in this.drawing.edgeDrawings &&
-                        startVertexId in this.drawing.edgeDrawings[endVertexId]) {
-                    const t = startVertexId;
-                    startVertexId = endVertexId;
-                    endVertexId = t;
-                }
+                [startVertexId, endVertexId] = this.drawing.getEdgeDrawingOrder(
+                    startVertexId, endVertexId);
             }
             const edge = this.drawing.edgeDrawings[startVertexId][endVertexId];
             edge.setDecorationState(state);
