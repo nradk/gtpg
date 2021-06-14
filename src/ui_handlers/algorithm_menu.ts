@@ -7,6 +7,7 @@ import { KruskalMST } from "../algorithm/mst/kruskal";
 import { PrimMST } from "../algorithm/mst/prim";
 import { BreadthFirstSearch } from "../algorithm/search/bfs";
 import { DepthFirstSearch } from "../algorithm/search/dfs";
+import { DijkstrasShortestPath } from "../algorithm/shortestpath/dijkstra";
 
 export default class AlgorithmUI {
 
@@ -73,5 +74,19 @@ export default class AlgorithmUI {
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });
+
+        $("#btn-algo-dijkstra").on('click', () => {
+            const graphDrawing = graphTabs.getActiveGraphDrawing();
+            if (graphDrawing == undefined) {
+                console.error("No graph present for Dijkstra's Algorithm.");
+                alert("Please create or open a graph first to apply Dijkstra's" +
+                    " Algorithm.");
+                return false;
+            }
+            const controls = new VertexInputControls(DijkstrasShortestPath,
+                graphTabs, graphDrawing);
+            graphTabs.setControlPanelForActiveTab(controls);
+        });
+
     }
 }
