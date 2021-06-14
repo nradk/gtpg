@@ -153,12 +153,16 @@ export default class GraphDrawing {
     }
 
     private getWeightOffset(start: VertexDrawing, end: VertexDrawing): Vector2 {
-        const centroid = this.getCentroid();
-        const edgeCenter: Vector2 = [(start.x() + end.x()) / 2,
-            (end.y() + start.y()) / 2];
-        const offset = Util.getNormalized(Util.getDirectionVector(centroid,
-            edgeCenter));
-        return Util.scalarVectorMultiply(15, offset);
+        const centroidPt = Util.vectorToPoint(this.getCentroid());
+        const startV: Vector2 = [start.x(), start.y()];
+        const endV: Vector2 = [end.x(), end.y()];
+        const centroidOnRight =
+            (end.y() - start.y()) * (centroidPt.x - start.x()) >
+            (centroidPt.y - start.y()) * (end.x() - start.x());
+        const dirVec = Util.getDirectionVectorNormalized(startV, endV);
+        const m = centroidOnRight ? -1 : 1;
+        const orthDirVec: Vector2 = [dirVec[1] / m , -dirVec[0] / m];
+        return Util.scalarVectorMultiply(15, orthDirVec);
     }
 
     addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {

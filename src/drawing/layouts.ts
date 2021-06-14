@@ -199,7 +199,7 @@ export class ForceBasedLayout implements Layout {
                     // Negate because this force is attractive
                     forceMagnitude = - this.C1 * Math.log(dist / this.C2);
                 }
-                const directionVector: Vector2 = Util.getDirectionVectorFromPoints(
+                const directionVector: Vector2 = Util.getDirectionVectorNormalizedFromPoints(
                     startPoint, endPoint);
 
                 const forceVector: Vector2 = Util.scalarVectorMultiply(

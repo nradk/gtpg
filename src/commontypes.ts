@@ -42,13 +42,13 @@ export class Util {
         return Math.pow(start.x - end.x, 2) + Math.pow(start.y - end.y, 2);
     }
 
-    static getDirectionVector(from_: Vector2, to: Vector2): Vector2 {
+    static getDirectionVectorNormalized(from_: Vector2, to: Vector2): Vector2 {
         const d = this.getDistance(from_, to);
         return [(to[0] - from_[0]) / d, (to[1] - from_[1]) / d];
     }
 
-    static getDirectionVectorFromPoints(from_: Point, to: Point) {
-        return this.getDirectionVector(this.pointToVector(from_),
+    static getDirectionVectorNormalizedFromPoints(from_: Point, to: Point) {
+        return this.getDirectionVectorNormalized(this.pointToVector(from_),
                                        this.pointToVector(to));
     }
 
