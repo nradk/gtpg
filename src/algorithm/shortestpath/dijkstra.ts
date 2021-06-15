@@ -9,10 +9,11 @@ type VertexAndDistance = [number, number];
 
 export class DijkstrasShortestPath implements Algorithm<VertexInput> {
 
-    queue: Heap<VertexAndDistance>;
+    private queue: Heap<VertexAndDistance>;
     // The parent of each vertex in the shortest-distance tree
-    parents: {[vId: number]: number};
-    distances: {[vId: number]: number};
+    private parents: {[vId: number]: number};
+    private distances: {[vId: number]: number};
+    private shortestPathTree: WeightedGraph;
 
     constructor(private decorator: Decorator) {
     }
@@ -26,6 +27,7 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
         const vertexIds = graph.getVertexIds();
         const distanceComparator = (a: VertexAndDistance,
             b: VertexAndDistance) => a[1] - b[1];
+        this.shortestPathTree = new WeightedGraph(true);
         this.queue = new Heap<VertexAndDistance>(distanceComparator);
         this.parents = {};
         this.distances = {};
@@ -61,7 +63,10 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
             if (this.distances[v] < vDist) {
                 continue;
             }
+            this.shortestPathTree.addVertex(v);
             if (this.parents[v] != undefined) {
+                this.shortestPathTree.addEdge(this.parents[v], v,
+                    graph.getEdgeWeight(this.parents[v], v));
                 this.decorator.setEdgeState(this.parents[v], v, "selected");
             }
             this.decorator.setVertexState(v, "selected");
@@ -86,7 +91,7 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
     }
 
     getOutputGraph() {
-        return null;
+        return this.shortestPathTree;
     }
 
     getFullName() {
