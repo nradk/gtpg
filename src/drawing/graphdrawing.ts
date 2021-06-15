@@ -8,6 +8,9 @@ import { getMouseEventXY } from "./util";
 import { Vector2,  Util } from "../commontypes";
 import { Decorator, DecorationState } from "../decoration/decorator";
 
+type CentroidCache = { n: number; xSum: number; ySum: number };
+
+
 export default class GraphDrawing {
     private vertexDrawings : {[id: number]: VertexDrawing};
     // For undirected graphs, 'start' is always smaller than 'end'
@@ -21,6 +24,8 @@ export default class GraphDrawing {
     private positions: Layouts.PositionMap;
     private vertexRadius: number;
 
+    private centroidCache: CentroidCache;
+
     constructor(graph?: Graphs.Graph) {
         if (graph === undefined) {
             this.graph = new Graphs.UnweightedGraph(false);
@@ -32,6 +37,11 @@ export default class GraphDrawing {
         this.verticesLayer = new Konva.Layer();
         this.edgesLayer = new Konva.Layer();
         this.vertexRadius = 15;
+
+        this.centroidCache = {
+            n: this.graph.getNumberOfVertices(),
+            xSum: 0, ySum: 0
+        };
     }
 
     setStage(stage: Konva.Stage): void {
@@ -114,6 +124,8 @@ export default class GraphDrawing {
         this.vertexDrawings = {};
         for (const v of Object.keys(this.positions)) {
             const p = this.positions[v];
+            this.centroidCache.xSum += p.x;
+            this.centroidCache.ySum += p.y;
             this.vertexDrawings[v] = new VertexDrawing(p.x, p.y,
                 this.vertexRadius, v.toString());
         }
@@ -175,11 +187,21 @@ export default class GraphDrawing {
             this.vertexDoubleClickHandler.bind(this));
         this.verticesLayer.add(drawing);
         this.verticesLayer.draw();
+
+        this.centroidCache.n += 1;
+        this.centroidCache.xSum += x;
+        this.centroidCache.ySum += y;
     }
 
     vertexMoveHandler(vertex: VertexDrawing) {
         const vid = this.lookupVertexId(vertex);
+        this.centroidCache.xSum -= this.positions[vid].x;
+        this.centroidCache.ySum -= this.positions[vid].y;
+
         this.positions[vid] = {x: vertex.x(), y: vertex.y()};
+
+        this.centroidCache.xSum += this.positions[vid].x;
+        this.centroidCache.ySum += this.positions[vid].y;
     }
 
     vertexClickHandler(vertexDrawing: VertexDrawing) {
@@ -219,6 +241,10 @@ export default class GraphDrawing {
         delete this.positions[vertexId];
         this.verticesLayer.draw();
         this.edgesLayer.draw();
+
+        this.centroidCache.n -= 1;
+        this.centroidCache.xSum -= vertexDrawing.x();
+        this.centroidCache.ySum -= vertexDrawing.y();
     }
 
     lookupVertexId(vertexDrawing: VertexDrawing): number {
@@ -321,14 +347,8 @@ export default class GraphDrawing {
     }
 
     getCentroid(): Vector2 {
-        let x = 0, y = 0;
-        for (const v of Object.values(this.vertexDrawings)) {
-            x += v.x();
-            y += v.y();
-        }
-        const n = Object.values(this.vertexDrawings).length;
-        const centroid: Vector2 = [ x / n, y / n ];
-        return centroid;
+        const n = this.centroidCache.n;
+        return [this.centroidCache.xSum / n, this.centroidCache.ySum / n];;
     }
 
     handleWeightUpdate(start: VertexDrawing, end: VertexDrawing, weight: number) {
