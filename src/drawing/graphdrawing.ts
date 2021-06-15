@@ -140,19 +140,17 @@ export default class GraphDrawing {
             if (!(e[0] in this.edgeDrawings)) {
                 this.edgeDrawings[e[0]] = {};
             }
-            this.edgeDrawings[e[0]][e[1]] = new EdgeDrawing(start, end,
+            this.edgeDrawings[e[0]][e[1]] = new EdgeDrawing(this, start, end,
                 this.graph.isDirected(),
                 this.edgesLayer.draw.bind(this.edgesLayer),
                 this.graph instanceof Graphs.WeightedGraph ?
                     this.graph.getEdgeWeight(e[0], e[1]) : undefined,
-                this.graph instanceof Graphs.WeightedGraph ?
-                    this.getWeightOffset(start, end) : undefined,
                 this.handleWeightUpdate.bind(this)
             );
         }
     }
 
-    private getWeightOffset(start: VertexDrawing, end: VertexDrawing): Vector2 {
+    getWeightOffset(start: VertexDrawing, end: VertexDrawing): Vector2 {
         const centroidPt = Util.vectorToPoint(this.getCentroid());
         const startV: Vector2 = [start.x(), start.y()];
         const endV: Vector2 = [end.x(), end.y()];
@@ -243,12 +241,10 @@ export default class GraphDrawing {
                 return;
             }
         }
-        const edgeDrawing = new EdgeDrawing(start, end,
+        const edgeDrawing = new EdgeDrawing(this, start, end,
             this.graph.isDirected(),
             this.edgesLayer.draw.bind(this.edgesLayer),
             this.graph instanceof Graphs.WeightedGraph ? 0 : undefined,
-            this.graph instanceof Graphs.WeightedGraph ?
-                this.getWeightOffset(start, end) : undefined,
             this.handleWeightUpdate.bind(this)
         );
         this.graph.addEdge(startId, endId);
@@ -358,6 +354,10 @@ export default class GraphDrawing {
 
     getVertexPositions(): Layouts.PositionMap {
         return this.positions;
+    }
+
+    getVertexDrawings() {
+        return this.vertexDrawings;
     }
 
     private getEdgeDrawingOrder(aVertexId: number, bVertexId: number):

@@ -1,6 +1,7 @@
 import Konva from "konva";
 
 import VertexDrawing from "./vertexdrawing";
+import GraphDrawing from "./graphdrawing";
 import { RedrawCallback, Vector2 } from "../commontypes";
 import { getMouseEventXY } from "./util";
 import { DecorationState } from "../decoration/decorator";
@@ -9,8 +10,6 @@ import { EditWeight } from "../ui_handlers/editweight";
 type WeightUpdateCallback = (s: VertexDrawing, e: VertexDrawing, w: number) => void;
 
 export default class EdgeDrawing extends Konva.Group {
-    start: VertexDrawing;
-    end: VertexDrawing;
     directed: boolean;
     redrawCallback: RedrawCallback;
     arrow: Konva.Arrow;
@@ -21,14 +20,17 @@ export default class EdgeDrawing extends Konva.Group {
     weightChangeCallback?: WeightUpdateCallback;
     decorationState: DecorationState;
 
-    constructor(start: VertexDrawing, end: VertexDrawing, directed: boolean,
-                redrawCallback: RedrawCallback, weight?: number,
-                weightOffset?: Vector2,
+    constructor(private readonly graphDrawing: GraphDrawing,
+                private readonly start: VertexDrawing,
+                private readonly end: VertexDrawing,
+                directed: boolean,
+                redrawCallback: RedrawCallback,
+                weight?: number,
                 weightChangeCallback?: WeightUpdateCallback) {
         super();
         this.arrow = new Konva.Arrow({
-            points: [start.x(), start.y(),
-                end.x(), end.y()],
+            points: [this.start.x(), this.start.y(),
+                this.end.x(), this.end.y()],
             stroke: 'black',
             strokeWidth: 2,
             lineCap: 'round',
@@ -57,8 +59,6 @@ export default class EdgeDrawing extends Konva.Group {
             }
         });
         this.arrow.on('click', this.handleClick.bind(this));
-        this.start = start;
-        this.end = end;
         this.directed = directed;
         this.redrawCallback = redrawCallback;
         this.start.addMoveCallback(this.vertexMoveCallback.bind(this));
@@ -91,11 +91,7 @@ export default class EdgeDrawing extends Konva.Group {
             this.weightText.offsetX(this.weightText.width() / 2);
             this.weightText.offsetY(this.weightText.height() / 2);
             this.add(this.weightText);
-            this.weightOffset = weightOffset;
-            if (weightOffset == undefined) {
-                console.warn("Weight offset undefined for weighted edge");
-                this.weightOffset = [5, 5];
-            }
+            this.weightOffset = graphDrawing.getWeightOffset(this.start, this.end);
             this.updateWeightPosition();
         }
     }
@@ -197,6 +193,8 @@ export default class EdgeDrawing extends Konva.Group {
         if (this.weightText == undefined) {
             return;
         }
+        this.weightOffset = this.graphDrawing.getWeightOffset(this.start,
+            this.end);
         var weightAnchor: number[];
         if (this.curvePoint != undefined) {
             weightAnchor = [this.curvePoint.x(), this.curvePoint.y()];
