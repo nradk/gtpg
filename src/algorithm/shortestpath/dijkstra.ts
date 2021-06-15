@@ -34,11 +34,13 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
             if (v == startVertex.vertexId) {
                 // Select the initial vertex, and set its distance to 0
                 this.decorator.setVertexState(v, "selected");
+                this.decorator.setVertexExternalLabel(v, "0");
                 this.distances[v] = 0;
             } else {
                 // Disable all other vertices and set their (initial) distance
                 // to Infinity
                 this.decorator.setVertexState(v, "disabled");
+                this.decorator.setVertexExternalLabel(v, "∞");
                 this.distances[v] = Infinity;
             }
             // Add vertices to the queue
@@ -69,6 +71,7 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
                 if (dist < this.distances[n]) {
                     this.decorator.setEdgeState(v, n, "considering");
                     this.decorator.setVertexState(n, "considering"); yield;
+                    this.decorator.setVertexExternalLabel(n, "" + dist);
                     this.distances[n] = dist;
                     this.parents[n] = v;
                     this.queue.push([n, dist]);
