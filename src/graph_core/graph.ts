@@ -8,7 +8,7 @@ interface WeightedGraphAdjacencies {
 
 export interface Graph {
     getVertexIds(): number[];
-    getVertexNeighborIds(vertexId: number): number[];
+    getVertexNeighborIds(vertexId: number, includeReverse?: boolean): number[];
     getEdgeList(): number[][];
     areNeighbors(startVertex: number, endVertex: number): boolean;
     getNumberOfVertices(): number;
@@ -57,9 +57,18 @@ export class UnweightedGraph implements Graph {
         return Object.keys(this.adjacencyList).map(i => parseInt(i));
     }
 
-    getVertexNeighborIds(vertexId: number): number[] {
-        // TODO is this the correct thing to do for directed graphs?
-        return this.adjacencyList[vertexId] ?? [];
+    // TODO Make the return type a set
+    getVertexNeighborIds(vertexId: number, includeReverse?: boolean): number[] {
+        const neighbors = this.adjacencyList[vertexId] ?? [];
+        if (includeReverse) {
+            for (const v in this.adjacencyList) {
+                const vInt = parseInt(v);
+                if (this.adjacencyList[v].includes(vertexId) && !neighbors.includes(vInt)) {
+                    neighbors.push(vInt);
+                }
+            }
+        }
+        return neighbors;
     }
 
     getEdgeList(): number[][] {
@@ -229,9 +238,19 @@ export class WeightedGraph implements Graph {
         return Object.keys(this.adjacencyMap).map(i => parseInt(i));
     }
 
-    getVertexNeighborIds(vertexId: number): number[] {
-        // TODO is this the correct thing to do for directed graphs?
-        return Object.keys(this.adjacencyMap[vertexId])?.map(v => parseInt(v));
+    // TODO make the return type a set
+    getVertexNeighborIds(vertexId: number, includeReverse?: boolean): number[] {
+        const neighbors = Object.keys(this.adjacencyMap[vertexId])?.map(
+            v => parseInt(v));
+        if (includeReverse) {
+            for (const v in this.adjacencyMap) {
+                const vInt = parseInt(v);
+                if (vertexId in this.adjacencyMap[v] && !neighbors.includes(vInt)) {
+                    neighbors.push(vInt);
+                }
+            }
+        }
+        return neighbors;
     }
 
     // This returns an array of 3-element arrays where the third element is the weight

@@ -8,5 +8,7 @@ export interface Decorator {
     setVertexState(vertexId: number, state: DecorationState): void;
     getEdgeState(startVertexId: number, endVertexId: number): DecorationState;
     setEdgeState(startVertexId: number, endVertexId: number, state: DecorationState): void;
+    setVertexExternalLabel(vertexId: number, text: string): void;
+    clearVertexExternalLabel(vertexId: number): void;
     clearAllDecoration(): void;
 }

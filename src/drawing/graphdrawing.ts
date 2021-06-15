@@ -127,7 +127,7 @@ export default class GraphDrawing {
             this.centroidCache.xSum += p.x;
             this.centroidCache.ySum += p.y;
             this.vertexDrawings[v] = new VertexDrawing(p.x, p.y,
-                this.vertexRadius, v.toString());
+                this.vertexRadius, v.toString(), this, parseInt(v));
         }
     }
 
@@ -179,7 +179,7 @@ export default class GraphDrawing {
         const [x, y] = getMouseEventXY(e);
         const newId = this.graph.addVertex();
         const drawing = new VertexDrawing(x, y, this.vertexRadius,
-            newId.toString());
+            newId.toString(), this, newId);
         this.vertexDrawings[newId] = drawing;
         this.positions[newId] = {x: x, y: y};
         drawing.addClickCallback(this.vertexClickHandler.bind(this));
@@ -194,7 +194,7 @@ export default class GraphDrawing {
     }
 
     vertexMoveHandler(vertex: VertexDrawing) {
-        const vid = this.lookupVertexId(vertex);
+        const vid = vertex.getVertexId();
         this.centroidCache.xSum -= this.positions[vid].x;
         this.centroidCache.ySum -= this.positions[vid].y;
 
@@ -202,6 +202,11 @@ export default class GraphDrawing {
 
         this.centroidCache.xSum += this.positions[vid].x;
         this.centroidCache.ySum += this.positions[vid].y;
+
+        // Notify neighbors so they can update their label positions
+        for (const n of this.graph.getVertexNeighborIds(vid, true)) {
+            this.vertexDrawings[n].updateExternalLabelPosition();
+        }
     }
 
     vertexClickHandler(vertexDrawing: VertexDrawing) {
@@ -380,6 +385,10 @@ export default class GraphDrawing {
         return this.vertexDrawings;
     }
 
+    getStage(): Konva.Stage {
+        return this.stage;
+    }
+
     private getEdgeDrawingOrder(aVertexId: number, bVertexId: number):
             [number, number] {
         if (bVertexId in this.edgeDrawings &&
@@ -429,12 +438,21 @@ export default class GraphDrawing {
             }
             const edge = this.drawing.edgeDrawings[startVertexId][endVertexId];
             edge.setDecorationState(state);
-            edge.draw();
+            this.drawing.getStage().draw();
+        }
+
+        setVertexExternalLabel(vertexId: number, text: string): void {
+            this.drawing.getVertexDrawings()[vertexId].setExternalLabel(text);
+        }
+
+        clearVertexExternalLabel(vertexId: number): void {
+            this.drawing.getVertexDrawings()[vertexId].clearExternalLabel();
         }
 
         clearAllDecoration() {
             for (const vertex of this.drawing.graph.getVertexIds()) {
                 this.setVertexState(vertex, "default");
+                this.drawing.getVertexDrawings()[vertex].clearExternalLabel();
             }
             for (const edge of this.drawing.graph.getEdgeList()) {
                 this.setEdgeState(edge[0], edge[1], "default");

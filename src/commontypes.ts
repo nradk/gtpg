@@ -6,6 +6,7 @@ export interface Point {
 };
 
 export type Vector2 = [number, number];
+export type VectorPolar = [number, number];
 
 export interface Size {
     height: number;

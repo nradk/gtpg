@@ -1,7 +1,10 @@
 import Konva from "konva";
 
 import EdgeDrawing from "./edgedrawing";
+import GraphDrawing from "./graphdrawing";
 import { DecorationState } from "../decoration/decorator";
+import { Util, Vector2 } from "../commontypes";
+import { getBestGapVector } from "../math";
 
 type VertexDrawingEventCallback = (v: VertexDrawing) => void;
 
@@ -14,8 +17,10 @@ export default class VertexDrawing extends Konva.Group {
     clickCallbacks: VertexDrawingEventCallback[];
     doubleClickCallbacks: VertexDrawingEventCallback[];
     edgeDrawings: EdgeDrawing[];
+    externalLabel: Konva.Text;
 
-    constructor(x: number, y: number, radius: number, labelText: string) {
+    constructor(x: number, y: number, radius: number, labelText: string,
+            private graphDrawing: GraphDrawing, private vertexId: number) {
         super({ x: x, y: y, draggable: true });
         this.circle = new Konva.Circle({
             radius: radius,
@@ -112,6 +117,7 @@ export default class VertexDrawing extends Konva.Group {
     }
 
     callMoveCallbacks() {
+        this.updateExternalLabelPosition();
         this.moveCallbacks.forEach(callback => callback(this));
     }
 
@@ -164,5 +170,61 @@ export default class VertexDrawing extends Konva.Group {
         // call vertex 'move' callbacks to trigger redraw of edges
         // (necessary in directed graphs to properly place arrows)
         this.callMoveCallbacks();
+    }
+
+    setExternalLabel(text: string) {
+        if (this.externalLabel == undefined) {
+            this.externalLabel = new Konva.Text({
+                text: text,
+                fontsize: 15,
+                fill: 'black'
+            });
+            this.add(this.externalLabel);
+        } else {
+            this.externalLabel.text(text);
+        }
+        this.updateExternalLabelPosition();
+    }
+
+    updateExternalLabelPosition() {
+        if (this.externalLabel == undefined) {
+            return;
+        }
+        const neighborDirections: Vector2[] = [];
+        const vVect = [this.x(), this.y()];
+        //console.log(`vVect for ${this.vertexId} is ${vVect}`);
+        for (const n of this.graphDrawing.getGraph().getVertexNeighborIds(
+                this.vertexId)) {
+            const nPt = this.graphDrawing.getVertexPositions()[n];
+            const nVect = [nPt.x, nPt.y];
+            //console.log(`Neighbor ${n}'s nVect is ${nVect}`);
+            neighborDirections.push([nVect[0] - vVect[0], nVect[1] - vVect[1]]);
+        }
+        //console.log(`Neighbor directions for ${this.vertexId} are ${neighborDirections}`);
+        const gapVect = getBestGapVector(neighborDirections);
+        const labelPosition = Util.scalarVectorMultiply(this.getRadius() * 2,
+            gapVect);
+        //console.log(`Label position for ${this.vertexId} is ${labelPosition}`);
+        this.externalLabel.x(labelPosition[0]);
+        this.externalLabel.y(labelPosition[1]);
+        this.externalLabel.offsetX(this.externalLabel.width() / 2);
+        this.externalLabel.offsetY(this.externalLabel.height() / 2);
+        this.graphDrawing.getStage().draw();
+    }
+
+    clearExternalLabel(dontRedrawStage?: boolean) {
+        if (this.externalLabel == undefined) {
+            return;
+        }
+        this.externalLabel.remove();
+        this.externalLabel.destroy();
+        this.externalLabel = undefined;
+        if (!dontRedrawStage) {
+            this.graphDrawing.getStage().draw();
+        }
+    }
+
+    getVertexId(): number {
+        return this.vertexId;
     }
 }
