@@ -6,7 +6,7 @@ import * as Graphs from "../graph_core/graph";
 import * as Layouts from "../drawing/layouts";
 import { getMouseEventXY } from "./util";
 import { Vector2,  Util } from "../commontypes";
-import { Decorator, DecorationState } from "../decoration/decorator";
+import { Decorator, DefaultDecorator } from "../decoration/decorator";
 
 type CentroidCache = { n: number; xSum: number; ySum: number };
 
@@ -23,6 +23,7 @@ export default class GraphDrawing {
     private continuousLayoutTimer: number;
     private positions: Layouts.PositionMap;
     private vertexRadius: number;
+    private vertexSelectMode: boolean;
 
     private centroidCache: CentroidCache;
 
@@ -37,6 +38,7 @@ export default class GraphDrawing {
         this.verticesLayer = new Konva.Layer();
         this.edgesLayer = new Konva.Layer();
         this.vertexRadius = 15;
+        this.vertexSelectMode = false;
 
         this.centroidCache = {
             n: this.graph.getNumberOfVertices(),
@@ -48,7 +50,11 @@ export default class GraphDrawing {
         this.stage = stage;
         this.stage.removeChildren();
         this.stage.add(this.edgesLayer).add(this.verticesLayer);
-        this.stage.on('click', this.addVertexToCurrentGraph.bind(this));
+        this.stage.on('click', e => {
+            if (!this.vertexSelectMode && e.target === this.stage) {
+                this.addVertexToCurrentGraph(e);
+            }
+        });
     }
 
     renderGraph(layout?: Layouts.Layout) {
@@ -217,6 +223,11 @@ export default class GraphDrawing {
     }
 
     vertexClickHandler(vertexDrawing: VertexDrawing) {
+        if (this.vertexSelectMode) {
+            // If we are in 'vertex select mode', vertex click is handled
+            // elsewhere. We do nothing here.
+            return;
+        }
         if (this.selectedVertex) {
             this.selectedVertex.unselect();
             if (this.selectedVertex === vertexDrawing) {
@@ -242,7 +253,7 @@ export default class GraphDrawing {
             // Unset the selected vertex if it is going to be deleted
             this.selectedVertex = null;
         }
-        for (const edge of vertexDrawing.edgeDrawings) {
+        for (const edge of vertexDrawing.getEdgeDrawings()) {
             edge.destroy();
         }
         // TODO remove edge drawing from this.edgeDrawings
@@ -267,8 +278,8 @@ export default class GraphDrawing {
     toggleEdge(start: VertexDrawing, end: VertexDrawing) {
         const startId = this.lookupVertexId(start);
         const endId = this.lookupVertexId(end);
-        for (const edgeDrawing of start.edgeDrawings) {
-            const endIndex = end.edgeDrawings.indexOf(edgeDrawing);
+        for (const edgeDrawing of start.getEdgeDrawings()) {
+            const endIndex = end.getEdgeDrawings().indexOf(edgeDrawing);
             if (endIndex >= 0) {
                 start.unregisterEdgeDrawing(edgeDrawing);
                 end.unregisterEdgeDrawing(edgeDrawing);
@@ -381,7 +392,7 @@ export default class GraphDrawing {
     }
 
     getDecorator(): Decorator {
-        return new GraphDrawing.DefaultDecorator(this);
+        return new DefaultDecorator(this);
     }
 
     getVertexPositions(): Layouts.PositionMap {
@@ -392,12 +403,40 @@ export default class GraphDrawing {
         return this.vertexDrawings;
     }
 
+    getEdgeDrawings() {
+        return this.edgeDrawings;
+    }
+
     getStage(): Konva.Stage {
         return this.stage;
     }
 
-    private getEdgeDrawingOrder(aVertexId: number, bVertexId: number):
-            [number, number] {
+    enterVertexSelectMode(): Promise<number> {
+        this.vertexSelectMode = true;
+        this.stage.container().style.cursor = 'crosshair';
+        return new Promise<number>((resolve, reject) => {
+            console.log("Setting up click handler");
+            this.stage.on('click', e => {
+                this.vertexSelectMode = false;
+                this.stage.container().style.cursor = 'default';
+                let target: any = e.target;
+                while (target) {
+                    if (target instanceof VertexDrawing) {
+                        console.log("Clicked on vertex", e.target);
+                        resolve(target.getVertexId());
+                        return;
+                    }
+                    target = target.parent;
+                }
+                console.log("Clicked on something else");
+                console.dir(e);
+                reject();
+            });
+        });
+    }
+
+    getEdgeDrawingOrder(aVertexId: number, bVertexId: number):
+    [number, number] {
         if (bVertexId in this.edgeDrawings &&
             aVertexId in this.edgeDrawings[bVertexId]) {
             return [bVertexId, aVertexId];
@@ -406,64 +445,6 @@ export default class GraphDrawing {
             return [aVertexId, bVertexId];
         } else {
             return null;
-        }
-    }
-
-    static DefaultDecorator = class implements Decorator {
-        drawing: GraphDrawing;
-
-        constructor(graphDrawing: GraphDrawing) {
-            this.drawing = graphDrawing;
-        }
-
-        getGraph(): Graphs.Graph {
-            return this.drawing.graph;
-        }
-
-        getVertexState(vertexId: number): DecorationState {
-            return this.drawing.vertexDrawings[vertexId].getDecorationState();
-        }
-
-        setVertexState(vertexId: number, state: DecorationState) {
-            this.drawing.vertexDrawings[vertexId].setDecorationState(state);
-            this.drawing.vertexDrawings[vertexId].draw();
-        }
-
-        getEdgeState(startVertexId: number, endVertexId: number): DecorationState {
-            if (!this.drawing.graph.isDirected()) {
-                [startVertexId, endVertexId] = this.drawing.getEdgeDrawingOrder(
-                    startVertexId, endVertexId);
-            }
-            return this.drawing.edgeDrawings[startVertexId][endVertexId].getDecorationState();
-        }
-
-        setEdgeState(startVertexId: number, endVertexId: number,
-                     state: DecorationState) {
-            if (!this.drawing.graph.isDirected()) {
-                [startVertexId, endVertexId] = this.drawing.getEdgeDrawingOrder(
-                    startVertexId, endVertexId);
-            }
-            const edge = this.drawing.edgeDrawings[startVertexId][endVertexId];
-            edge.setDecorationState(state);
-            this.drawing.getStage().draw();
-        }
-
-        setVertexExternalLabel(vertexId: number, text: string): void {
-            this.drawing.getVertexDrawings()[vertexId].setExternalLabel(text);
-        }
-
-        clearVertexExternalLabel(vertexId: number): void {
-            this.drawing.getVertexDrawings()[vertexId].clearExternalLabel();
-        }
-
-        clearAllDecoration() {
-            for (const vertex of this.drawing.graph.getVertexIds()) {
-                this.setVertexState(vertex, "default");
-                this.drawing.getVertexDrawings()[vertex].clearExternalLabel();
-            }
-            for (const edge of this.drawing.graph.getEdgeList()) {
-                this.setEdgeState(edge[0], edge[1], "default");
-            }
         }
     }
 }

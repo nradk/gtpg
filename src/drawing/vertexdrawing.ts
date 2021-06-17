@@ -10,14 +10,14 @@ type VertexDrawingEventCallback = (v: VertexDrawing) => void;
 
 export default class VertexDrawing extends Konva.Group {
 
-    decorationState: DecorationState;
-    label: Konva.Text;
-    circle: Konva.Circle;
-    moveCallbacks: VertexDrawingEventCallback[];
-    clickCallbacks: VertexDrawingEventCallback[];
-    doubleClickCallbacks: VertexDrawingEventCallback[];
-    edgeDrawings: EdgeDrawing[];
-    externalLabel: Konva.Text;
+    private decorationState: DecorationState;
+    private label: Konva.Text;
+    private circle: Konva.Circle;
+    private moveCallbacks: VertexDrawingEventCallback[];
+    private clickCallbacks: VertexDrawingEventCallback[];
+    private doubleClickCallbacks: VertexDrawingEventCallback[];
+    private edgeDrawings: EdgeDrawing[];
+    private externalLabel: Konva.Text;
 
     constructor(x: number, y: number, radius: number, labelText: string,
             private graphDrawing: GraphDrawing, private vertexId: number) {
@@ -54,9 +54,8 @@ export default class VertexDrawing extends Konva.Group {
         this.on('mouseover', mouseOverHandler);
         this.on('mouseout', mouseOutHandler);
         this.on('dragmove', dragHandler);
-        const clickHandler = (e: Konva.KonvaEventObject<MouseEvent>) => {
+        const clickHandler = () => {
             this.clickCallbacks.forEach(callback => callback(this));
-            e.cancelBubble = true;
         };
         this.on('click', clickHandler);
         const doubleClickHandler = (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -226,5 +225,9 @@ export default class VertexDrawing extends Konva.Group {
 
     getVertexId(): number {
         return this.vertexId;
+    }
+
+    getEdgeDrawings(): EdgeDrawing[] {
+        return this.edgeDrawings;
     }
 }

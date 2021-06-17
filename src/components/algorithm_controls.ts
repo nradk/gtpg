@@ -6,9 +6,9 @@ import ImportExport from "../ui_handlers/importexport";
 import * as Layout from "../drawing/layouts";
 import GraphDrawing from "../drawing/graphdrawing";
 import { Graph } from "../graph_core/graph";
-import { ChooseVertex } from "../ui_handlers/choosevertex";
 import { VertexInput } from "../commontypes";
 import { Decorator } from "../decoration/decorator";
+import { showMessage, showWarning } from "../ui_handlers/notificationservice";
 
 export class AlgorithmControls extends HTMLElement {
 }
@@ -73,7 +73,7 @@ export abstract class GenericControls extends AlgorithmControls {
         this.algorithmStateChanged("init"); // TODO this is bad
     }
 
-    protected abstract executeAlgorithm(): boolean;
+    protected abstract executeAlgorithm(): void;
     protected abstract getRunner(): AlgorithmRunner<any>;
 
     protected onPlay() {
@@ -178,14 +178,12 @@ export class InputlessControls extends GenericControls {
         $(this).find("#algo-name").text(this.getRunner().getAlgorithm().getFullName());
     }
 
-    executeAlgorithm(): boolean {
+    executeAlgorithm(): void {
         try {
             this.getRunner().execute();
         } catch (ex: any) {
             console.error(ex);
-            return false;
         }
-        return true;
     }
 
     getRunner(): AlgorithmRunner<void> {
@@ -207,16 +205,13 @@ export class VertexInputControls extends GenericControls {
         $(this).find("#algo-name").text(this.getRunner().getAlgorithm().getFullName());
     }
 
-    executeAlgorithm(): boolean {
-        try {
-            ChooseVertex.chooseVertex(vertexId => {
-                this.getRunner().execute({ vertexId: vertexId });
-            });
-        } catch (ex: any) {
-            console.error(ex);
-            return false;
-        }
-        return true;
+    executeAlgorithm(): void {
+        showMessage("Select Vertex", "Please click on a vertex to start from");
+        this.graphDrawing.enterVertexSelectMode().then(selected => {
+            this.getRunner().execute({ vertexId: selected });
+        }).catch(() => {
+            showWarning("No Vertex", "Did not detect a click on any vertex.");
+        });
     }
 
     getRunner(): AlgorithmRunner<VertexInput> {

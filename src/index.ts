@@ -9,7 +9,6 @@ import GraphTabs from "./ui_handlers/graphtabs";
 import AutoLayout from "./ui_handlers/autolayout";
 import ImportExport from "./ui_handlers/importexport";
 import GraphGenerate from './ui_handlers/graphgenerate';
-import { ChooseVertex } from './ui_handlers/choosevertex';
 import DisplayCustomizer from './ui_handlers/display_customizer';
 import AlgorithmUI from './ui_handlers/algorithm_menu';
 import { WeightedGraph } from './graph_core/graph';
@@ -67,7 +66,6 @@ $("#new-test-wtd-graph-btn").on("click", () => {
 const graphTabs = new GraphTabs(stage);
 new AutoLayout(graphTabs);
 new GraphGenerate(graphTabs);
-new ChooseVertex();
 new ImportExport(graphTabs);
 new DisplayCustomizer(graphTabs);
 new AlgorithmUI(graphTabs);
