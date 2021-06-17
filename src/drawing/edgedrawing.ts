@@ -5,7 +5,7 @@ import GraphDrawing from "./graphdrawing";
 import { RedrawCallback, Vector2 } from "../commontypes";
 import { getMouseEventXY } from "./util";
 import { DecorationState } from "../decoration/decorator";
-//import { EditWeight } from "../ui_handlers/editweight";
+import { showWarning } from "../ui_handlers/notificationservice";
 import { EditableText } from "../drawing/editabletext";
 
 type WeightUpdateCallback = (s: VertexDrawing, e: VertexDrawing, w: number) => void;
@@ -86,6 +86,7 @@ export default class EdgeDrawing extends Konva.Group {
                 const weight = Number(text);
                 if (isNaN(weight)) {
                     console.warn("Cannot set a non-numeric weight!");
+                    showWarning("Warning", "Weight must be numeric!");
                     this.weightText.text(this.weight.toString());
                     return;
                 }
