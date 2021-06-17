@@ -6,7 +6,7 @@ import { RedrawCallback, Vector2 } from "../commontypes";
 import { getMouseEventXY } from "./util";
 import { DecorationState } from "../decoration/decorator";
 //import { EditWeight } from "../ui_handlers/editweight";
-import { EditableText } from "../drawing/editable_text";
+import { EditableText } from "../drawing/editabletext";
 
 type WeightUpdateCallback = (s: VertexDrawing, e: VertexDrawing, w: number) => void;
 
@@ -78,18 +78,19 @@ export default class EdgeDrawing extends Konva.Group {
             this.weightText.on('mouseout', () => {
                 document.body.style.cursor = 'default';
             });
-            //this.weightText.on('dblclick', event => {
-                //EditWeight.editWeight(w => {
-                    //this.weightChangeCallback(this.start, this.end, w)
-                    //this.weightText.text(w + "");
-                    //this.redrawCallback();
-                //});
-                //event.cancelBubble = true;
-            //});
             this.weightText.on('click', event => {
                 event.cancelBubble = true;
             });
             this.weightText.updateOffsets();
+            this.weightText.setTextChangeCallback((text: string) => {
+                const weight = Number(text);
+                if (isNaN(weight)) {
+                    console.warn("Cannot set a non-numeric weight!");
+                    this.weightText.text(this.weight.toString());
+                    return;
+                }
+                this.weightChangeCallback?.(this.start, this.end, weight);
+            });
             this.add(this.weightText);
             this.weightOffset = graphDrawing.getWeightOffset(this.start, this.end);
             this.updateWeightPosition();

@@ -2,13 +2,14 @@ import Konva from "konva";
 import { getPosition } from "../util";
 
 export class EditableText extends Konva.Text {
+    private textChangeCallback: (text: string) => void;
+
     constructor(config?: Konva.TextConfig) {
         super(config);
         // This implementation is mostly copied from
         // https://konvajs.org/docs/sandbox/Editable_Text.html, with some
         // modifications to get rid of the Transformer
         this.on('dblclick tbltap', () => {
-            console.info("Edit start");
             this.hide();
             // Find the absolute position of text node
             const textPosition = this.absolutePosition();
@@ -25,12 +26,9 @@ export class EditableText extends Konva.Text {
                 return;
             }
 
-            console.log("Stage container", stage.container());
-            console.log("Stage offset", stage.container().offsetLeft,
-                stage.container().offsetTop);
             stage.draggable(false);
 
-            // Find position to place textarea in by adding the stage's
+            // Find position to place text input in by adding the stage's
             // top-left co-ordinates
             const containerPos = getPosition(stage.container());
             const areaPosition = {
@@ -38,49 +36,49 @@ export class EditableText extends Konva.Text {
                 y: containerPos.y + textPosition.y - this.offsetY()
             }
 
-            // Create a textarea and style it
-            const textarea = document.createElement('input');
-            document.body.appendChild(textarea);
+            // Create a text input and style it
+            const textinput = document.createElement('input');
+            document.body.appendChild(textinput);
 
-            // Apply styles to make the textarea appear as seamless as possible
-            // on top of our Konva Text
-            textarea.type = 'text';
-            textarea.value = this.text();
-            textarea.style.position = 'absolute';
-            textarea.style.top = areaPosition.y + 'px';
-            textarea.style.left = areaPosition.x + 'px';
-            textarea.style.width = 'auto';
-            textarea.style.height = this.height() - this.padding() * 2 + 5 + 'px';
-            textarea.style.fontSize = this.fontSize() + 'px';
-            textarea.style.border = 'none';
-            textarea.style.padding = '0px';
-            textarea.style.margin = '0px';
-            textarea.style.overflow = 'hidden';
-            textarea.style.background = 'none';
-            textarea.style.outline = 'none';
-            textarea.style.resize = 'none';
-            textarea.style.lineHeight = this.lineHeight().toString();
-            textarea.style.fontFamily = this.fontFamily();
-            textarea.style.transformOrigin = 'left top';
-            textarea.style.textAlign = this.align();
-            textarea.style.color = this.fill();
-            textarea.focus();
-            textarea.select();
+            // Apply styles to make the text input appear as seamless as
+            // possible on top of our Konva Text
+            textinput.type = 'text';
+            textinput.value = this.text();
+            textinput.style.position = 'absolute';
+            textinput.style.top = areaPosition.y + 'px';
+            textinput.style.left = areaPosition.x + 'px';
+            textinput.style.width = 'auto';
+            textinput.style.height = this.height() - this.padding() * 2 + 5 + 'px';
+            textinput.style.fontSize = this.fontSize() + 'px';
+            textinput.style.border = 'none';
+            textinput.style.padding = '0px';
+            textinput.style.margin = '0px';
+            textinput.style.overflow = 'hidden';
+            textinput.style.background = 'none';
+            textinput.style.outline = 'none';
+            textinput.style.resize = 'none';
+            textinput.style.lineHeight = this.lineHeight().toString();
+            textinput.style.fontFamily = this.fontFamily();
+            textinput.style.transformOrigin = 'left top';
+            textinput.style.textAlign = this.align();
+            textinput.style.color = this.fill();
+            textinput.focus();
+            textinput.select();
 
             const removeTextarea = () => {
-                console.log("Removing textarea");
                 stage.draggable(true);
-                textarea.parentNode.removeChild(textarea);
+                textinput.parentNode.removeChild(textinput);
                 window.removeEventListener('click', handleOutsideClick);
                 this.updateOffsets();
                 this.show();
                 this.draw();
             };
 
-            textarea.addEventListener('keydown', (e: KeyboardEvent) => {
+            textinput.addEventListener('keydown', (e: KeyboardEvent) => {
                 // hide on enter
                 if (e.key == "Enter") {
-                    this.text(textarea.value);
+                    this.text(textinput.value);
+                    this.textChangeCallback?.(textinput.value);
                     removeTextarea();
                 }
                 // on esc do not set value back to node
@@ -90,8 +88,9 @@ export class EditableText extends Konva.Text {
             });
 
             const handleOutsideClick = (e: MouseEvent) => {
-                if (e.target !== textarea) {
-                    this.text(textarea.value);
+                if (e.target !== textinput) {
+                    this.text(textinput.value);
+                    this.textChangeCallback?.(textinput.value);
                     removeTextarea();
                 }
             };
@@ -104,5 +103,9 @@ export class EditableText extends Konva.Text {
     updateOffsets() {
         this.offsetX(this.width() / 2);
         this.offsetY(this.height() / 2);
+    }
+
+    setTextChangeCallback(callback: (text: string) => void) {
+        this.textChangeCallback = callback;
     }
 }
