@@ -176,6 +176,13 @@ export default class GraphDrawing {
     }
 
     addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
+        // WARNING: BAD HACK! We check to see if the stage has it's 'draggable'
+        // property disabled, because EditableText disables stage dragging when
+        // editing is active and we want to cancel the edit without adding a
+        // new vertex when the user clicks outside the EditableText.
+        if (!this.stage.draggable()) {
+            return;
+        }
         const [x, y] = getMouseEventXY(e);
         const newId = this.graph.addVertex();
         const drawing = new VertexDrawing(x, y, this.vertexRadius,

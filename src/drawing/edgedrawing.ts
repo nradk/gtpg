@@ -5,7 +5,8 @@ import GraphDrawing from "./graphdrawing";
 import { RedrawCallback, Vector2 } from "../commontypes";
 import { getMouseEventXY } from "./util";
 import { DecorationState } from "../decoration/decorator";
-import { EditWeight } from "../ui_handlers/editweight";
+//import { EditWeight } from "../ui_handlers/editweight";
+import { EditableText } from "../drawing/editable_text";
 
 type WeightUpdateCallback = (s: VertexDrawing, e: VertexDrawing, w: number) => void;
 
@@ -15,7 +16,7 @@ export default class EdgeDrawing extends Konva.Group {
     arrow: Konva.Arrow;
     curvePoint: Konva.Circle;
     weight?: number;
-    weightText?: Konva.Text;
+    weightText?: EditableText;
     weightOffset?: Vector2;
     weightChangeCallback?: WeightUpdateCallback;
     decorationState: DecorationState;
@@ -67,7 +68,7 @@ export default class EdgeDrawing extends Konva.Group {
         this.end.registerEdgeDrawing(this);
         this.setEdgePoints();
         if (this.weight != undefined) {
-            this.weightText = new Konva.Text({
+            this.weightText = new EditableText({
                 text: weight + "",
                 fontSize: 14,
             });
@@ -77,19 +78,18 @@ export default class EdgeDrawing extends Konva.Group {
             this.weightText.on('mouseout', () => {
                 document.body.style.cursor = 'default';
             });
-            this.weightText.on('dblclick', event => {
-                EditWeight.editWeight(w => {
-                    this.weightChangeCallback(this.start, this.end, w)
-                    this.weightText.text(w + "");
-                    this.redrawCallback();
-                });
-                event.cancelBubble = true;
-            });
+            //this.weightText.on('dblclick', event => {
+                //EditWeight.editWeight(w => {
+                    //this.weightChangeCallback(this.start, this.end, w)
+                    //this.weightText.text(w + "");
+                    //this.redrawCallback();
+                //});
+                //event.cancelBubble = true;
+            //});
             this.weightText.on('click', event => {
                 event.cancelBubble = true;
             });
-            this.weightText.offsetX(this.weightText.width() / 2);
-            this.weightText.offsetY(this.weightText.height() / 2);
+            this.weightText.updateOffsets();
             this.add(this.weightText);
             this.weightOffset = graphDrawing.getWeightOffset(this.start, this.end);
             this.updateWeightPosition();
