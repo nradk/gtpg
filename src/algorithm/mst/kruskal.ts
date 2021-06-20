@@ -25,13 +25,15 @@ export class KruskalMST implements Algorithm<void> {
             this.mst.addVertex(v);
         }
         this.edges = graph.getEdgeList();
+        console.log('Edges:', this.edges);
+        console.log("Number of edges is", this.edges.length);
         this.edges.sort((first, second) => second[2] - first[2]);
         // Disable all edges
         for (const e of this.edges) {
             this.decorator.setEdgeState(e[0], e[1], "disabled");
         }
         this.forests = {};
-        const vertices = graph.getVertexIds();
+        const vertices = [...graph.getVertexIds()];
         for (let i = 0; i < vertices.length; i++) {
             this.forests[vertices[i]] = i;
         }
@@ -82,7 +84,7 @@ export class KruskalMST implements Algorithm<void> {
                 this.decorator.setEdgeState(e[0], e[1], "disabled");
             }
             // |E| = |V| - 1 in a tree
-            if (this.edgesAdded < this.decorator.getGraph().getVertexIds().length - 1) {
+            if (this.edgesAdded < this.decorator.getGraph().getVertexIds().size - 1) {
                 yield;
             } else {
                 break;

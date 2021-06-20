@@ -77,7 +77,7 @@ export abstract class GenericControls extends AlgorithmControls {
     protected abstract getRunner(): AlgorithmRunner<any>;
 
     protected onPlay() {
-        if (this.graphDrawing.getGraph().getVertexIds().length == 0) {
+        if (this.graphDrawing.getGraph().getVertexIds().size == 0) {
             alert("Please create a graph with at least one vertex!");
             return;
         }

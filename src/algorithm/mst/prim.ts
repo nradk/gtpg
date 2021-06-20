@@ -22,7 +22,7 @@ export class PrimMST implements Algorithm<void> {
         }
         const graph = g as WeightedGraph;
         this.mst = new WeightedGraph(false)
-        const vertexIds = graph.getVertexIds();
+        const vertexIds = [...graph.getVertexIds()];
         for (const v of vertexIds) {
             this.mst.addVertex(v);
         }
@@ -59,8 +59,6 @@ export class PrimMST implements Algorithm<void> {
         for (const edge of graph.getEdgeList()) {
             this.decorator.setEdgeState(edge[0], edge[1], "disabled");
         }
-
-        console.log("graph:", graph.adjacencyMap);
     }
 
     *run() {
@@ -72,7 +70,6 @@ export class PrimMST implements Algorithm<void> {
             const [inside, outside, weight] = edge;
             if (!this.inTree.has(outside)) {
                 this.mst.addEdge(inside, outside, weight);
-                console.log(`Adding edge ${inside}, ${outside} to mst`);
                 this.decorator.setEdgeState(inside, outside, "selected");
                 this.decorator.setVertexState(outside, "selected");
                 this.notInTree.delete(outside);
@@ -81,7 +78,6 @@ export class PrimMST implements Algorithm<void> {
                 const graph = this.decorator.getGraph() as WeightedGraph;
                 for (const n of graph.getVertexNeighborIds(outside)) {
                     if (!this.inTree.has(n)) {
-                        console.log(`Adding edge ${outside}, ${n} to queue`);
                         this.edgeQ.add([outside, n, graph.getEdgeWeight(outside, n)]);
                         // this.decorator.setEdgeState(outside, n, "default");
                     }

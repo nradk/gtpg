@@ -116,7 +116,7 @@ export class GridLayout implements Layout {
         const originX = centerX - d * (w - 1) / 2;
         const originY = centerY - d * (h - 1) / 2;
         const vertexIds = graph.getVertexIds();
-        for (let i = 0; i < vertexIds.length; i++) {
+        for (let i = 0; i < vertexIds.size; i++) {
             positions[vertexIds[i]] = {
                 x : originX + (i % w) * d,
                 y : originY + Math.floor(i / w) * d
@@ -180,7 +180,7 @@ export class ForceBasedLayout implements Layout {
     private computeForces(graph: Graph) {
         // NOTE The algorithm implemented here is (section 12.2) from
         // http://cs.brown.edu/people/rtamassi/gdhandbook/chapters/force-directed.pdf
-        const vertexIds: number[] = graph.getVertexIds().sort();
+        const vertexIds: number[] = [...graph.getVertexIds()].sort();
         const positions = this.positions;
         for (let i = 0; i < vertexIds.length; i++) {
             const start = vertexIds[i];

@@ -290,13 +290,14 @@ export default class GraphDrawing {
                 return;
             }
         }
+        this.graph.addEdge(startId, endId);
         const edgeDrawing = new EdgeDrawing(this, start, end,
             this.graph.isDirected(),
             this.edgesLayer.draw.bind(this.edgesLayer),
-            this.graph instanceof Graphs.WeightedGraph ? 0 : undefined,
+            this.graph instanceof Graphs.WeightedGraph ?
+                this.graph.getEdgeWeight(startId, endId) : undefined,
             this.handleWeightUpdate.bind(this)
         );
-        this.graph.addEdge(startId, endId);
         // The order is important because graph.getEdgeList() returns only
         // (m,n) edges where m < n. We conform to that here.
         if (startId < endId) {

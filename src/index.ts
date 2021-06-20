@@ -51,10 +51,12 @@ $("#new-test-wtd-graph-btn").on("click", () => {
     const newId = tabbar.addTabElement('Test Weighted Graph', "generated");
     tabbar.setActiveById(newId);
     const layout = new Layout.CircularLayout(graphTabs.getStageDims());
+    const w1 = { weight: 1 };
+    const w2 = { weight: 2 };
     const adjacency = {
-        1: { 2: 1, 3: 1},
-        2: { 1: 1, 3: 2},
-        3: { 1: 1, 2: 2},
+        1: { 2: w1, 3: w1},
+        2: { 1: w1, 3: w2},
+        3: { 1: w1, 2: w2},
     };
     const graph = new WeightedGraph(false, adjacency);
     const graphDrawing = new GraphDrawing(graph);
