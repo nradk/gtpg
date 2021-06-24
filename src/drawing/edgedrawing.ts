@@ -90,6 +90,7 @@ export default class EdgeDrawing extends Konva.Group {
                     this.weightText.text(this.weight.toString());
                     return;
                 }
+                this.weight =  weight;
                 this.weightChangeCallback?.(this.start, this.end, weight);
             });
             this.add(this.weightText);
