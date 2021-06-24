@@ -503,4 +503,8 @@ export default class GraphDrawing {
     setAutoLabelScheme(scheme: AutoLabelScheme) {
         this.autoLabelScheme = scheme;
     }
+
+    getAutoLabelScheme(): AutoLabelScheme {
+        return this.autoLabelScheme;
+    }
 }

@@ -8,6 +8,16 @@ export default class AutoLabelOptions {
 
     constructor(graphTabs: GraphTabs) {
         this.graphTabs = graphTabs;
+        const reset = () => $("#vertexLabelRadios").find('input[type=radio]').prop('checked', false);
+        this.graphTabs.registerTabSwitchCallback(() => {
+            const graphdrawing = this.graphTabs.getActiveGraphDrawing();
+            if (graphdrawing == undefined) {
+                return;
+            }
+            const scheme = graphdrawing.getAutoLabelScheme() as string;
+            reset();
+            $("#vertexLabelRadios").find(`input[value=${scheme}]`).prop('checked', true);
+        });
         $("#vertexLabelRadios").find("input[type=radio]").on('click', (e) => {
             const target = e.target as HTMLInputElement;
             // TODO I'm not liking these 'as' casts very much. We're writing
