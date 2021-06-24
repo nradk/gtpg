@@ -24,17 +24,15 @@ export default class ImportExport {
             if (fileList == undefined) {
                 return;
             }
-            console.log(fileList);
             if (fileList.length == 0 || fileList[0].type != 'application/json') {
                 alert("Please select a graph json file.");
                 return;
             }
             fileList[0].text().then(text => {
-                console.log(text);
                 const drawing = GraphDrawing.fromJsonString(text);
                 this.createTab(drawing, fileList[0].name);
             }).catch(e => {
-                console.log(e);
+                console.error(e);
                 alert("Error when reading file!");
             });;
         });

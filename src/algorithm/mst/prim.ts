@@ -62,7 +62,7 @@ export class PrimMST implements Algorithm<void> {
     }
 
     *run() {
-        while (true) {
+        while (this.notInTree.size > 0) {
             const edge = this.edgeQ.pop();
             this.decorator.setEdgeState(edge[0], edge[1], "considering");
             // Yield here to let the user see the 'considering' decoration
@@ -85,11 +85,7 @@ export class PrimMST implements Algorithm<void> {
             } else {
                 this.decorator.setEdgeState(inside, outside, "disabled");
             }
-            if (this.notInTree.size > 0) {
-                yield;
-            } else {
-                break;
-            }
+            yield;
         }
     }
 

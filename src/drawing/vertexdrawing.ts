@@ -4,6 +4,7 @@ import EdgeDrawing from "./edgedrawing";
 import GraphDrawing from "./graphdrawing";
 import { DecorationState } from "../decoration/decorator";
 import { Util, Vector2 } from "../commontypes";
+import { EditableText } from "../drawing/editabletext";
 import { getBestGapVector } from "../math";
 
 type VertexDrawingEventCallback = (v: VertexDrawing) => void;
@@ -11,7 +12,7 @@ type VertexDrawingEventCallback = (v: VertexDrawing) => void;
 export default class VertexDrawing extends Konva.Group {
 
     private decorationState: DecorationState;
-    private label: Konva.Text;
+    private label: EditableText;
     private circle: Konva.Circle;
     private moveCallbacks: VertexDrawingEventCallback[];
     private clickCallbacks: VertexDrawingEventCallback[];
@@ -19,7 +20,7 @@ export default class VertexDrawing extends Konva.Group {
     private edgeDrawings: EdgeDrawing[];
     private externalLabel: Konva.Text;
 
-    constructor(x: number, y: number, radius: number, labelText: string,
+    constructor(x: number, y: number, radius: number,
             private graphDrawing: GraphDrawing, private vertexId: number) {
         super({ x: x, y: y, draggable: true });
         this.circle = new Konva.Circle({
@@ -35,10 +36,14 @@ export default class VertexDrawing extends Konva.Group {
         this.clickCallbacks = [];
         this.doubleClickCallbacks = [];
         this.edgeDrawings = [];
-        this.label = new Konva.Text({
-            text: labelText,
+        const graph = this.graphDrawing.getGraph();
+        this.label = new EditableText({
+            text: graph.getVertexLabel(vertexId) ?? "",
             fontSize: radius,
             fill: 'black'
+        });
+        this.label.setTextChangeCallback((text: string) => {
+            graph.setVertexLabel(this.vertexId, text);
         });
         this.label.offsetX(this.label.width() / 2);
         this.label.offsetY(this.label.height() / 2);

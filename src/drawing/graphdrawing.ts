@@ -5,11 +5,46 @@ import EdgeDrawing from "./edgedrawing";
 import * as Graphs from "../graph_core/graph";
 import * as Layouts from "../drawing/layouts";
 import { getMouseEventXY } from "./util";
+import { getLetterFromInteger } from "../util";
 import { Vector2,  Util } from "../commontypes";
 import { Decorator, DefaultDecorator } from "../decoration/decorator";
 
 type CentroidCache = { n: number; xSum: number; ySum: number };
 
+export type AutoLabelScheme = "abc" | "ABC" | "123";
+
+interface AutoLabeler {
+    nextLabel(): string;
+    reset(): void;
+}
+
+function getAutoLabelerForScheme(scheme: AutoLabelScheme): AutoLabeler {
+    switch (scheme) {
+        case "abc":
+        case "ABC":
+            return new class implements AutoLabeler {
+                private nextCount: number = 0;
+                nextLabel(): string {
+                    this.nextCount += 1;
+                    return getLetterFromInteger(this.nextCount, scheme == "ABC");
+                }
+                reset() {
+                    this.nextCount = 0;
+                }
+            };
+        case "123":
+            return new class implements AutoLabeler {
+                private nextCount: number = 0;
+                nextLabel(): string {
+                    this.nextCount += 1;
+                    return this.nextCount.toString();
+                }
+                reset() {
+                    this.nextCount = 0;
+                }
+            };
+    }
+}
 
 export default class GraphDrawing {
     private vertexDrawings : {[id: number]: VertexDrawing};
@@ -23,7 +58,14 @@ export default class GraphDrawing {
     private continuousLayoutTimer: number;
     private positions: Layouts.PositionMap;
     private vertexRadius: number;
-    private vertexSelectMode: boolean;
+    private vertexSelectMode: boolean = false;
+
+    private autoLabelScheme: AutoLabelScheme = "123";
+    private labelers: {[scheme in AutoLabelScheme]: AutoLabeler} = {
+        "123": getAutoLabelerForScheme("123"),
+        "abc": getAutoLabelerForScheme("abc"),
+        "ABC": getAutoLabelerForScheme("ABC"),
+    };
 
     private centroidCache: CentroidCache;
 
@@ -38,7 +80,6 @@ export default class GraphDrawing {
         this.verticesLayer = new Konva.Layer();
         this.edgesLayer = new Konva.Layer();
         this.vertexRadius = 15;
-        this.vertexSelectMode = false;
 
         this.centroidCache = {
             n: this.graph.getNumberOfVertices(),
@@ -133,7 +174,7 @@ export default class GraphDrawing {
             this.centroidCache.xSum += p.x;
             this.centroidCache.ySum += p.y;
             this.vertexDrawings[v] = new VertexDrawing(p.x, p.y,
-                this.vertexRadius, v.toString(), this, parseInt(v));
+                this.vertexRadius, this, parseInt(v));
         }
     }
 
@@ -181,7 +222,17 @@ export default class GraphDrawing {
         return Util.scalarVectorMultiply(15, orthDirVec);
     }
 
+    private getNextUniqueLabel(): string {
+        const labels = new Set<string>(this.graph.getAllVertexLabels().values());
+        let next: string;
+        do {
+            next = this.labelers[this.autoLabelScheme].nextLabel();
+        } while (labels.has(next));
+        return next;
+    }
+
     addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
+        // TODO:::::
         // WARNING: BAD HACK! We check to see if the stage has it's 'draggable'
         // property disabled, because EditableText disables stage dragging when
         // editing is active and we want to cancel the edit without adding a
@@ -191,8 +242,8 @@ export default class GraphDrawing {
         }
         const [x, y] = getMouseEventXY(e);
         const newId = this.graph.addVertex();
-        const drawing = new VertexDrawing(x, y, this.vertexRadius,
-            newId.toString(), this, newId);
+        this.graph.setVertexLabel(newId, this.getNextUniqueLabel());
+        const drawing = new VertexDrawing(x, y, this.vertexRadius, this, newId);
         this.vertexDrawings[newId] = drawing;
         this.positions[newId] = {x: x, y: y};
         drawing.addClickCallback(this.vertexClickHandler.bind(this));
@@ -447,5 +498,9 @@ export default class GraphDrawing {
         } else {
             return null;
         }
+    }
+
+    setAutoLabelScheme(scheme: AutoLabelScheme) {
+        this.autoLabelScheme = scheme;
     }
 }

@@ -19,7 +19,6 @@ export default class GraphTabs {
         this.tabSwitchCallbacks = [];
         this.tabBar.setTabCreatedCallback((id: number, tabType: TabType) => {
             let graph: Graph;
-            console.log("tab type", tabType);
             switch (tabType) {
                 case "empty-directed":
                     graph = new UnweightedGraph(true);

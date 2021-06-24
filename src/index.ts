@@ -6,6 +6,7 @@ import 'bootswatch/dist/lumen/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 import GraphTabs from "./ui_handlers/graphtabs";
+import AutoLabelOptions from "./ui_handlers/autolabel_options";
 import AutoLayout from "./ui_handlers/autolayout";
 import ImportExport from "./ui_handlers/importexport";
 import GraphGenerate from './ui_handlers/graphgenerate';
@@ -68,6 +69,7 @@ $("#new-test-wtd-graph-btn").on("click", () => {
 const graphTabs = new GraphTabs(stage);
 new AutoLayout(graphTabs);
 new GraphGenerate(graphTabs);
+new AutoLabelOptions(graphTabs);
 new ImportExport(graphTabs);
 new DisplayCustomizer(graphTabs);
 new AlgorithmUI(graphTabs);
