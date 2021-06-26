@@ -1,9 +1,7 @@
 type EmptyEdgeData = { };
 interface WeightedEdgeData extends EmptyEdgeData { weight: number };
 
-interface GraphAdjacencies<EdgeData extends EmptyEdgeData> {
-    [key: number]: {[to_key: number]: EdgeData }
-};
+type GraphAdjacencies<EdgeData extends EmptyEdgeData> = Map<number, Map<number, EdgeData>>;;
 type UnweightedAdjacencies = GraphAdjacencies<EmptyEdgeData>;
 type WeightedAdjacencies = GraphAdjacencies<WeightedEdgeData>;
 
@@ -44,12 +42,32 @@ export function fromJsonObject(jsonObject: any): Graph {
             labels.set(parseInt(key), key);
         });
     }
+    const adjacencies: (WeightedAdjacencies | UnweightedAdjacencies) = new Map();
+    for (const f in obj.adjacencies) {
+        const fromV = parseInt(f);
+        if (isNaN(fromV)) {
+            throw new Error("Non-numeric key found in adjacencies object!");
+        }
+        adjacencies.set(fromV, new Map());
+        for (const t in obj.adjacencies[f]) {
+            const toV = parseInt(t);
+            if (isNaN(toV)) {
+                throw new Error("Non-numeric key found in adjacencies object!");
+            }
+            const edgeData = obj.adjacencies[f][t];
+            if (obj.weighted && !('weight' in edgeData)) {
+                // Just use a weight of 1 if weight was not found
+                edgeData['weight'] = 1;
+            }
+            adjacencies.get(fromV).set(toV, edgeData);
+        }
+    }
     if (obj.weighted) {
-        const adjacencies = obj.adjacencies as WeightedAdjacencies;
-        return new WeightedGraph(obj.directed, adjacencies, labels);
+        return new WeightedGraph(obj.directed,
+            adjacencies as WeightedAdjacencies, labels);
     } else {
-        const adjacencies = obj.adjacencies as UnweightedAdjacencies;
-        return new UnweightedGraph(obj.directed, adjacencies, labels);
+        return new UnweightedGraph(obj.directed,
+            adjacencies as UnweightedAdjacencies, labels);
     }
 }
 
@@ -59,26 +77,25 @@ abstract class DefaultGraph<EdgeData> implements Graph {
     protected vertexLabels: Map<number, string>;
 
     constructor(directed: boolean, adjacencies?: GraphAdjacencies<EdgeData>,
-            vertexLabels?: Map<number, string>) {
+        vertexLabels?: Map<number, string>) {
         this.directed = directed;
-        this.adjacencies = adjacencies ?? {};
+        this.adjacencies = adjacencies ?? new Map();
         this.vertexLabels = vertexLabels ?? new Map<number, string>();
     }
 
     getVertexIds(): Set<number> {
         // All vertices appear as a top-level key in the adjacencies object.
-        return DefaultGraph.keysAsNumberSet(this.adjacencies);
-    }
-
-    private static keysAsNumberSet(obj: {[key: number]: any}): Set<number> {
-        return new Set(Object.keys(obj).map(i => parseInt(i)));
+        return new Set(this.adjacencies.keys());
     }
 
     getVertexNeighborIds(vertexId: number, includeReverse?: boolean): Set<number> {
-        const neighbors = DefaultGraph.keysAsNumberSet(this.adjacencies[vertexId] ?? {});
+        if (!this.adjacencies.has(vertexId)) {
+            throw Error(`Vertex ${vertexId} is not in the graph.`);
+        }
+        const neighbors = new Set(this.adjacencies.get(vertexId).keys());
         if (includeReverse) {
             for (const v of this.getVertexIds()) {
-                if (vertexId in this.adjacencies[v]) {
+                if (this.adjacencies.get(v).has(vertexId)) {
                     neighbors.add(v);
                 }
             }
@@ -87,14 +104,14 @@ abstract class DefaultGraph<EdgeData> implements Graph {
     }
 
     setVertexLabel(vertexId: number, label: string) {
-        if (!(vertexId in this.adjacencies)) {
+        if (!this.adjacencies.has(vertexId)) {
             throw Error(`Vertex ${vertexId} is not in the graph.`);
         }
         this.vertexLabels.set(vertexId, label);
     }
 
     getVertexLabel(vertexId: number): string {
-        if (!(vertexId in this.adjacencies)) {
+        if (!this.adjacencies.has(vertexId)) {
             throw Error(`Vertex ${vertexId} is not in the graph.`);
         }
         return this.vertexLabels.get(vertexId);
@@ -125,15 +142,15 @@ abstract class DefaultGraph<EdgeData> implements Graph {
     // This test is directed for directed graphs, i.e. in directed graphs
     // generally areNeighbors(x, y) !== areNeighbors(y, x)
     areNeighbors(startVertex: number, endVertex: number): boolean {
-        if (!(startVertex in this.adjacencies)) {
+        if (!this.adjacencies.has(startVertex)) {
             throw Error(`Vertex ${startVertex} is not in the graph.`);
         }
-        if (!(endVertex in this.adjacencies)) {
+        if (!this.adjacencies.has(endVertex)) {
             throw Error(`Vertex ${endVertex} is not in the graph.`);
         }
         // Directedness doesn't affect the following test because for
         // undirected graphs edges are stored in both directions.
-        return endVertex in this.adjacencies[startVertex];
+        return this.adjacencies.get(startVertex).has(endVertex);
     }
 
     getNumberOfVertices(): number {
@@ -143,17 +160,16 @@ abstract class DefaultGraph<EdgeData> implements Graph {
     addVertex(vertexId?: number, label?: string): number {
         let newId: number;
         if (vertexId != undefined) {
-            if (vertexId in this.adjacencies) {
+            if (this.adjacencies.has(vertexId)) {
                 throw Error(`Vertex ${vertexId} already exists in the graph.`);
             }
             newId = vertexId;
-        }
-        if (this.getVertexIds().size == 0) {
+        } else if (this.getVertexIds().size == 0) {
             newId = 1;
         } else {
             newId = Math.max(...this.getVertexIds()) + 1;
         }
-        this.adjacencies[newId] = {};
+        this.adjacencies.set(newId, new Map<number, EdgeData>());
         if (label != undefined) {
             this.setVertexLabel(newId, label);
         }
@@ -162,7 +178,7 @@ abstract class DefaultGraph<EdgeData> implements Graph {
 
     // Also removes edges
     removeVertex(vertexId: number) {
-        if (!(vertexId in this.adjacencies)) {
+        if (!this.adjacencies.has(vertexId)) {
             throw Error(`Cannot remove missing vertex ${vertexId}.`);
         }
         for (const otherVertex of this.getVertexIds()) {
@@ -172,16 +188,16 @@ abstract class DefaultGraph<EdgeData> implements Graph {
                 this.removeEdge(otherVertex, vertexId);
             }
         }
-        delete this.adjacencies[vertexId];
+        this.adjacencies.delete(vertexId);
     }
 
     // In an undirected graph, the edge is added in both directions
     addEdge(startVertex: number, endVertex: number) {
-        if (!(startVertex in this.adjacencies)) {
+        if (!this.adjacencies.has(startVertex)) {
             throw Error(`Cannot add an edge because vertex ${startVertex} is` +
                 ` not in the graph.`);
         }
-        if (!(endVertex in this.adjacencies)) {
+        if (!this.adjacencies.has(endVertex)) {
             throw Error(`Cannot add an edge because vertex ${endVertex} is` +
                 `not in the graph.`);
         }
@@ -189,12 +205,12 @@ abstract class DefaultGraph<EdgeData> implements Graph {
         if (startVertex === endVertex) {
             throw Error("Cannot add a loop to a simple graph");
         }
-        if (!(endVertex in this.adjacencies[startVertex])) {
-            this.adjacencies[startVertex][endVertex] = this.initialEdgeData();
+        if (!this.adjacencies.get(startVertex).has(endVertex)) {
+            this.adjacencies.get(startVertex).set(endVertex, this.initialEdgeData());
         }
         if (!this.directed) {
-            if (!(startVertex in this.adjacencies[endVertex])) {
-                this.adjacencies[endVertex][startVertex] = this.initialEdgeData();
+            if (!this.adjacencies.get(endVertex).has(startVertex)) {
+                this.adjacencies.get(endVertex).set(startVertex, this.initialEdgeData());
             }
         }
     }
@@ -202,25 +218,25 @@ abstract class DefaultGraph<EdgeData> implements Graph {
     protected abstract initialEdgeData(): EdgeData;
 
     removeEdge(startVertexId: number, endVertexId: number) {
-        if (!(startVertexId in this.adjacencies)) {
+        if (!this.adjacencies.has(startVertexId)) {
             throw Error(`Cannot remove edge - no vertex ${startVertexId}.`);
         }
-        if (!(endVertexId in this.adjacencies)) {
+        if (!this.adjacencies.has(endVertexId)) {
             throw Error(`Cannot remove edge - no vertex ${endVertexId}.`);
         }
-        if (endVertexId in this.adjacencies[startVertexId]) {
-            delete this.adjacencies[startVertexId][endVertexId];
+        if (this.adjacencies.get(startVertexId).has(endVertexId)) {
+            this.adjacencies.get(startVertexId).delete(endVertexId);
         }
         if (!this.directed) {
-            if (startVertexId in this.adjacencies[endVertexId]) {
-                delete this.adjacencies[endVertexId][startVertexId];
+            if (this.adjacencies.get(endVertexId).has(startVertexId)) {
+                this.adjacencies.get(endVertexId).delete(startVertexId);
             }
         }
     }
 
     doesEdgeExist(startVertexId: number, endVertexId: number): boolean {
-        return (startVertexId in this.adjacencies) && (endVertexId in
-            this.adjacencies[startVertexId]);
+        return this.adjacencies.has(startVertexId) &&
+            this.adjacencies.get(startVertexId).has(endVertexId);
     }
 
     isDirected(): boolean {
@@ -228,8 +244,12 @@ abstract class DefaultGraph<EdgeData> implements Graph {
     }
 
     toJSON(): object {
+        const adjObject: {[f: string]: {[t: string]: EdgeData}} = {};
+        for (const [k, v] of this.adjacencies) {
+            adjObject[k] = Object.fromEntries(v);
+        }
         return {
-            adjacencies: this.adjacencies,
+            adjacencies: adjObject,
             vertexLabels: Object.fromEntries(this.vertexLabels),
             directed: this.directed,
             weighted: this instanceof WeightedGraph
@@ -243,7 +263,7 @@ export class UnweightedGraph extends DefaultGraph<EmptyEdgeData> {
     }
 
     static completeGraph(numVertices: number): Graph {
-        const adjs: UnweightedAdjacencies = {};
+        const adjs: UnweightedAdjacencies = new Map();
         for (let i = 1; i <= numVertices; i++) {
             adjs[i] = [];
             for (let j = 1; j <= numVertices; j++) {
@@ -265,19 +285,19 @@ export class WeightedGraph extends DefaultGraph<WeightedEdgeData> {
         if (!this.areNeighbors(startVertex, endVertex)) {
             throw Error(`There is no edge from ${startVertex} to ${endVertex}`);
         }
-        return this.adjacencies[startVertex][endVertex].weight;
+        return this.adjacencies.get(startVertex).get(endVertex).weight;
     }
 
     setEdgeWeight(startVertex: number, endVertex: number, weight: number) {
-        if (!(startVertex in this.adjacencies)) {
+        if (!this.adjacencies.has(startVertex)) {
             throw Error(`Vertex ${startVertex} is not in the graph.`);
         }
-        if (!(endVertex in this.adjacencies)) {
+        if (!this.adjacencies.has(endVertex)) {
             throw Error(`Vertex ${endVertex} is not in the graph.`);
         }
-        this.adjacencies[startVertex][endVertex] = { weight: weight };
+        this.adjacencies.get(startVertex).set(endVertex, { weight: weight });
         if (!this.directed) {
-            this.adjacencies[endVertex][startVertex] = { weight: weight };
+            this.adjacencies.get(endVertex).set(startVertex, { weight: weight });
         }
     }
 
@@ -295,7 +315,7 @@ export class WeightedGraph extends DefaultGraph<WeightedEdgeData> {
     }
 
     static completeGraph(numVertices: number): Graph {
-        const adjs: WeightedAdjacencies = {};
+        const adjs: WeightedAdjacencies = new Map();
         for (let i = 1; i <= numVertices; i++) {
             adjs[i] = {};
             for (let j = 1; j <= numVertices; j++) {
