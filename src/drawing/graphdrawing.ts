@@ -166,6 +166,10 @@ export default class GraphDrawing {
         this.verticesLayer.draw();
     }
 
+    getVertexRadius(): number {
+        return this.vertexRadius;
+    }
+
     populateVertexDrawings(layout: Layouts.Layout) {
         this.positions = layout.getVertexPositions(this.graph);
         this.vertexDrawings = {};
