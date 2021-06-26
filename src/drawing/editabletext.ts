@@ -13,13 +13,7 @@ export class EditableText extends Konva.Text {
             this.hide();
             // Find the absolute position of text node
             const textPosition = this.absolutePosition();
-            let stage: Konva.Stage = null;
-            const ancestors = this.getAncestors().toArray();
-            for (const anc of ancestors) {
-                if (anc instanceof Konva.Layer) {
-                    stage = anc.getStage();
-                }
-            }
+            const stage = this.getStage();
             if (stage == null) {
                 console.error("Could not find stage of EditableText!");
                 this.show();
@@ -98,6 +92,19 @@ export class EditableText extends Konva.Text {
                 window.addEventListener('click', handleOutsideClick);
             });
         });
+        this.on('mouseover', () => {
+            const stage = this.getStage();
+            if (stage != null) {
+                stage.container().style.cursor = 'text';
+            }
+        });
+        this.on('mouseout', () => {
+            const stage = this.getStage();
+            if (stage != null) {
+                stage.container().style.cursor = 'default';
+            }
+        });
+
     }
 
     updateOffsets() {

@@ -72,12 +72,6 @@ export default class EdgeDrawing extends Konva.Group {
                 text: weight + "",
                 fontSize: 14,
             });
-            this.weightText.on('mouseover', () => {
-                document.body.style.cursor = 'text';
-            });
-            this.weightText.on('mouseout', () => {
-                document.body.style.cursor = 'default';
-            });
             this.weightText.on('click', event => {
                 event.cancelBubble = true;
             });
