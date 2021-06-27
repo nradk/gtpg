@@ -7,6 +7,7 @@ import { getMouseEventXY } from "./util";
 import { DecorationState } from "../decoration/decorator";
 import { showWarning } from "../ui_handlers/notificationservice";
 import { EditableText } from "../drawing/editabletext";
+import { ToolName } from "../ui_handlers/tools";
 
 type WeightUpdateCallback = (s: VertexDrawing, e: VertexDrawing, w: number) => void;
 
@@ -64,15 +65,16 @@ export default class EdgeDrawing extends Konva.Group {
         this.start.registerEdgeDrawing(this);
         this.end.registerEdgeDrawing(this);
         this.setEdgePoints();
+        const weightEditOn: Set<ToolName> = new Set(["default", "text"]);
         if (this.weight != undefined) {
-            this.weightText = new EditableText(this.graphDrawing, {
+            this.weightText = new EditableText(this.graphDrawing, weightEditOn,
+            {
                 text: weight + "",
                 fontSize: 14,
                 hitStrokeWidth: 5,
             });
             this.weightText.on('click', event => {
                 const tool = this.graphDrawing.getTools().getCurrentTool();
-                console.log("EditableText clicked! Tool is", tool);
                 event.cancelBubble = true;
                 if (tool == "delete") {
                     event.cancelBubble = false;
@@ -99,7 +101,6 @@ export default class EdgeDrawing extends Konva.Group {
 
     handleClick(evt: Konva.KonvaEventObject<MouseEvent>) {
         const currentTool = this.graphDrawing.getTools().getCurrentTool();
-        console.log("Edge clicked! Current tool is", currentTool);
         if (currentTool == "default") {
             this.setCurvePointPosition(getMouseEventXY(evt));
             this.updateWeightPosition();

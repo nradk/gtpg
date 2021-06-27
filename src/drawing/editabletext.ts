@@ -1,11 +1,13 @@
 import Konva from "konva";
 import { getPosition } from "../util";
 import GraphDrawing from "../drawing/graphdrawing";
+import { ToolName } from "../ui_handlers/tools";
 
 export class EditableText extends Konva.Text {
     private textChangeCallback: (text: string) => void;
 
-    constructor(private graphDrawing: GraphDrawing, config?: Konva.TextConfig) {
+    constructor(private graphDrawing: GraphDrawing,
+            private readonly editOn: Set<ToolName>, config?: Konva.TextConfig) {
         super(config);
         // This implementation is mostly copied from
         // https://konvajs.org/docs/sandbox/Editable_Text.html, with some
@@ -101,7 +103,7 @@ export class EditableText extends Konva.Text {
         let prevCursor: string = "default";
         this.on('mouseover', () => {
             const currentTool = this.graphDrawing.getTools().getCurrentTool();
-            if (currentTool != "default" && currentTool != "text") {
+            if (!this.editOn.has(currentTool)) {
                 return;
             }
             const stage = this.getStage();
@@ -112,7 +114,7 @@ export class EditableText extends Konva.Text {
         });
         this.on('mouseout', () => {
             const currentTool = this.graphDrawing.getTools().getCurrentTool();
-            if (currentTool != "default" && currentTool != "text") {
+            if (!this.editOn.has(currentTool)) {
                 return;
             }
             const stage = this.getStage();

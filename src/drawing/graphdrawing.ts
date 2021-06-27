@@ -371,7 +371,6 @@ export default class GraphDrawing {
     removeEdge(start: VertexDrawing, end: VertexDrawing) {
         const startId = this.lookupVertexId(start);
         const endId = this.lookupVertexId(end);
-        console.log(`Removing edge ${startId}, ${endId}`);
         for (const edgeDrawing of start.getEdgeDrawings()) {
             const endIndex = end.getEdgeDrawings().indexOf(edgeDrawing);
             if (endIndex >= 0) {
@@ -492,21 +491,17 @@ export default class GraphDrawing {
         this.vertexSelectMode = true;
         this.stage.container().style.cursor = 'crosshair';
         return new Promise<number>((resolve, reject) => {
-            console.log("Setting up click handler");
             this.stage.on('click', e => {
                 this.vertexSelectMode = false;
                 this.stage.container().style.cursor = 'default';
                 let target: any = e.target;
                 while (target) {
                     if (target instanceof VertexDrawing) {
-                        console.log("Clicked on vertex", e.target);
                         resolve(target.getVertexId());
                         return;
                     }
                     target = target.parent;
                 }
-                console.log("Clicked on something else");
-                console.dir(e);
                 reject();
             });
         });
