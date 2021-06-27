@@ -6,17 +6,18 @@ import GraphDrawing from "../drawing/graphdrawing";
 import { Graph, UnweightedGraph, WeightedGraph } from "../graph_core/graph";
 import { Size } from "../commontypes";
 import { AlgorithmControls } from "../components/algorithm_controls";
+import { Tools } from "./tools";
 
 export default class GraphTabs {
     tabBar: TabBar = $("tab-bar")[0] as TabBar;
     tabDrawings: {[id: number]: GraphDrawing} = {};
     controlPanels: {[id: number]: HTMLElement} = {};
-    stage: Konva.Stage;
     tabSwitchCallbacks: (() => void)[];
+    tools: Tools;
 
-    constructor(stage: Konva.Stage) {
-        this.stage = stage;
+    constructor(private stage: Konva.Stage) {
         this.tabSwitchCallbacks = [];
+        this.tools = new Tools(this);
         this.tabBar.setTabCreatedCallback((id: number, tabType: TabType) => {
             let graph: Graph;
             switch (tabType) {
@@ -40,7 +41,7 @@ export default class GraphTabs {
         this.tabBar.setTabActivatedCallback((id: number) => {
             this.stage.removeChildren();
             this.stage.clear();
-            this.tabDrawings[id].setStage(this.stage);
+            this.tabDrawings[id].setEnvironment(this.stage, this.tools);
             this.tabDrawings[id].renderGraph();
             this.setCorrectControlPanel();
             this.tabSwitchCallbacks.forEach(cb => cb());
@@ -62,7 +63,7 @@ export default class GraphTabs {
             this.stage.destroyChildren();
             this.stage.clear();
             this.tabDrawings[id] = graphDrawing;
-            this.tabDrawings[id].setStage(this.stage);
+            this.tabDrawings[id].setEnvironment(this.stage, this.tools);
             this.tabDrawings[id].renderGraph();
         } else {
             this.tabDrawings[id] = graphDrawing;
@@ -100,5 +101,13 @@ export default class GraphTabs {
 
     registerTabSwitchCallback(callback: () => void) {
         this.tabSwitchCallbacks.push(callback);
+    }
+
+    getTools() {
+        return this.tools;
+    }
+
+    getStage() {
+        return this.stage;
     }
 }

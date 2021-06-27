@@ -8,6 +8,7 @@ import { getMouseEventXY } from "./util";
 import { getLetterFromInteger } from "../util";
 import { Vector2,  Util } from "../commontypes";
 import { Decorator, DefaultDecorator } from "../decoration/decorator";
+import { Tools } from "../ui_handlers/tools";
 
 type CentroidCache = { n: number; xSum: number; ySum: number };
 
@@ -59,6 +60,7 @@ export default class GraphDrawing {
     private positions: Layouts.PositionMap;
     private vertexRadius: number;
     private vertexSelectMode: boolean = false;
+    private tools: Tools;
 
     private autoLabelScheme: AutoLabelScheme = "123";
     private labelers: {[scheme in AutoLabelScheme]: AutoLabeler} = {
@@ -87,8 +89,9 @@ export default class GraphDrawing {
         };
     }
 
-    setStage(stage: Konva.Stage): void {
+    setEnvironment(stage: Konva.Stage, tools: Tools): void {
         this.stage = stage;
+        this.tools = tools;
         this.stage.removeChildren();
         this.stage.add(this.edgesLayer).add(this.verticesLayer);
         this.stage.on('click', e => {
@@ -186,8 +189,6 @@ export default class GraphDrawing {
         for (const v of Object.keys(this.vertexDrawings)) {
             this.vertexDrawings[v].addClickCallback(
                 this.vertexClickHandler.bind(this));
-            this.vertexDrawings[v].addDoubleClickCallback(
-                this.vertexDoubleClickHandler.bind(this));
             this.vertexDrawings[v].addMoveCallback(
                 this.vertexMoveHandler.bind(this));
         }
@@ -244,6 +245,9 @@ export default class GraphDrawing {
         if (!this.stage.draggable()) {
             return;
         }
+        if (this.getTools().getCurrentTool() != "default") {
+            return;
+        }
         const [x, y] = getMouseEventXY(e);
         const newId = this.graph.addVertex();
         this.graph.setVertexLabel(newId, this.getNextUniqueLabel());
@@ -251,8 +255,6 @@ export default class GraphDrawing {
         this.vertexDrawings[newId] = drawing;
         this.positions[newId] = {x: x, y: y};
         drawing.addClickCallback(this.vertexClickHandler.bind(this));
-        drawing.addDoubleClickCallback(
-            this.vertexDoubleClickHandler.bind(this));
         this.verticesLayer.add(drawing);
         this.verticesLayer.draw();
 
@@ -279,31 +281,36 @@ export default class GraphDrawing {
 
     vertexClickHandler(vertexDrawing: VertexDrawing) {
         if (this.vertexSelectMode) {
+            // TODO this should be made into a tool
             // If we are in 'vertex select mode', vertex click is handled
             // elsewhere. We do nothing here.
             return;
         }
-        if (this.selectedVertex) {
-            this.selectedVertex.unselect();
-            if (this.selectedVertex === vertexDrawing) {
-                this.selectedVertex = null;
-                return;
-            }
-            this.toggleEdge(this.selectedVertex, vertexDrawing);
-            this.selectedVertex = null;
-        } else {
-            if (vertexDrawing.isSelected()) {
-                vertexDrawing.unselect();
+        if (this.tools.getCurrentTool() == "delete") {
+            this.deleteVertex(vertexDrawing);
+        } else if (this.tools.getCurrentTool() == "default") {
+            if (this.selectedVertex) {
+                this.selectedVertex.unselect();
+                if (this.selectedVertex === vertexDrawing) {
+                    this.selectedVertex = null;
+                    return;
+                }
+                this.addEdge(this.selectedVertex, vertexDrawing);
                 this.selectedVertex = null;
             } else {
-                vertexDrawing.select();
-                this.selectedVertex = vertexDrawing;
+                if (vertexDrawing.isSelected()) {
+                    vertexDrawing.unselect();
+                    this.selectedVertex = null;
+                } else {
+                    vertexDrawing.select();
+                    this.selectedVertex = vertexDrawing;
+                }
             }
-        }
+        } // Do nothing for 'text' tool
         this.verticesLayer.draw();
     }
 
-    vertexDoubleClickHandler(vertexDrawing: VertexDrawing) {
+    private deleteVertex(vertexDrawing: VertexDrawing) {
         if (vertexDrawing === this.selectedVertex) {
             // Unset the selected vertex if it is going to be deleted
             this.selectedVertex = null;
@@ -330,20 +337,11 @@ export default class GraphDrawing {
         return parseInt(Object.keys(m).find(key => m[key] === vertexDrawing));
     }
 
-    toggleEdge(start: VertexDrawing, end: VertexDrawing) {
+    private addEdge(start: VertexDrawing, end: VertexDrawing) {
         const startId = this.lookupVertexId(start);
         const endId = this.lookupVertexId(end);
-        for (const edgeDrawing of start.getEdgeDrawings()) {
-            const endIndex = end.getEdgeDrawings().indexOf(edgeDrawing);
-            if (endIndex >= 0) {
-                start.unregisterEdgeDrawing(edgeDrawing);
-                end.unregisterEdgeDrawing(edgeDrawing);
-                edgeDrawing.destroy();
-                this.edgesLayer.draw();
-                delete this.edgeDrawings[startId][endId];
-                this.graph.removeEdge(startId, endId);
-                return;
-            }
+        if (this.graph.doesEdgeExist(startId, endId)) {
+            return;
         }
         this.graph.addEdge(startId, endId);
         const edgeDrawing = new EdgeDrawing(this, start, end,
@@ -368,6 +366,25 @@ export default class GraphDrawing {
         }
         this.edgesLayer.add(edgeDrawing);
         this.edgesLayer.draw();
+    }
+
+    removeEdge(start: VertexDrawing, end: VertexDrawing) {
+        const startId = this.lookupVertexId(start);
+        const endId = this.lookupVertexId(end);
+        console.log(`Removing edge ${startId}, ${endId}`);
+        for (const edgeDrawing of start.getEdgeDrawings()) {
+            const endIndex = end.getEdgeDrawings().indexOf(edgeDrawing);
+            if (endIndex >= 0) {
+                start.unregisterEdgeDrawing(edgeDrawing);
+                end.unregisterEdgeDrawing(edgeDrawing);
+                edgeDrawing.destroy();
+                this.edgesLayer.draw();
+                delete this.edgeDrawings[startId][endId];
+                this.graph.removeEdge(startId, endId);
+                return;
+            }
+        }
+        throw new Error("No edge exists between the given vertices!");
     }
 
     toJsonString(): string {
@@ -465,6 +482,10 @@ export default class GraphDrawing {
 
     getStage(): Konva.Stage {
         return this.stage;
+    }
+
+    getTools(): Tools {
+        return this.tools;
     }
 
     enterVertexSelectMode(): Promise<number> {

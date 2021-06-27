@@ -34,6 +34,7 @@ export default class EdgeDrawing extends Konva.Group {
                 this.end.x(), this.end.y()],
             stroke: 'black',
             strokeWidth: 2,
+            hitStrokeWidth: 7,
             lineCap: 'round',
             lineJoin: 'round',
             pointerLength: directed? 10 : 0,
@@ -47,16 +48,12 @@ export default class EdgeDrawing extends Konva.Group {
             if (this.curvePoint != undefined) {
                 this.curvePoint.opacity(1);
                 this.redrawCallback();
-            } else {
-                document.body.style.cursor = 'crosshair';
             }
         });
         this.arrow.on('mouseout', () => {
             if (this.curvePoint != undefined) {
                 this.curvePoint.opacity(0);
                 this.redrawCallback();
-            } else {
-                document.body.style.cursor = 'default';
             }
         });
         this.arrow.on('click', this.handleClick.bind(this));
@@ -68,12 +65,19 @@ export default class EdgeDrawing extends Konva.Group {
         this.end.registerEdgeDrawing(this);
         this.setEdgePoints();
         if (this.weight != undefined) {
-            this.weightText = new EditableText({
+            this.weightText = new EditableText(this.graphDrawing, {
                 text: weight + "",
                 fontSize: 14,
+                hitStrokeWidth: 5,
             });
             this.weightText.on('click', event => {
+                const tool = this.graphDrawing.getTools().getCurrentTool();
+                console.log("EditableText clicked! Tool is", tool);
                 event.cancelBubble = true;
+                if (tool == "delete") {
+                    event.cancelBubble = false;
+                    this.handleClick(event);
+                }
             });
             this.weightText.updateOffsets();
             this.weightText.setTextChangeCallback((text: string) => {
@@ -94,8 +98,14 @@ export default class EdgeDrawing extends Konva.Group {
     }
 
     handleClick(evt: Konva.KonvaEventObject<MouseEvent>) {
-        this.setCurvePointPosition(getMouseEventXY(evt));
-        this.updateWeightPosition();
+        const currentTool = this.graphDrawing.getTools().getCurrentTool();
+        console.log("Edge clicked! Current tool is", currentTool);
+        if (currentTool == "default") {
+            this.setCurvePointPosition(getMouseEventXY(evt));
+            this.updateWeightPosition();
+        } else if (currentTool == "delete") {
+            this.graphDrawing.removeEdge(this.start, this.end);
+        }
         evt.cancelBubble = true;
     }
 

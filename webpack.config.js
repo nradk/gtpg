@@ -42,6 +42,17 @@ module.exports = {
                         publicPath: 'webfonts',
                     },
                 }
+            },
+            {
+                test: /\.svg$/,
+                use: {
+                    loader: 'file-loader',
+                    options: {
+                        name: '[name].[ext]',
+                        outputPath: 'img',
+                        publicPath: 'img',
+                    }
+                }
             }
         ],
     },

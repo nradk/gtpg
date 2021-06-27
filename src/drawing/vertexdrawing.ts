@@ -15,7 +15,6 @@ export default class VertexDrawing extends Konva.Group {
     private circle: Konva.Circle;
     private moveCallbacks: VertexDrawingEventCallback[];
     private clickCallbacks: VertexDrawingEventCallback[];
-    private doubleClickCallbacks: VertexDrawingEventCallback[];
     private edgeDrawings: EdgeDrawing[];
     private externalLabel: Konva.Text;
 
@@ -33,7 +32,6 @@ export default class VertexDrawing extends Konva.Group {
         this.moveCallbacks = [];
         this.moveCallbacks = [];
         this.clickCallbacks = [];
-        this.doubleClickCallbacks = [];
         this.edgeDrawings = [];
         const graph = this.graphDrawing.getGraph();
         this.label = new Konva.Text({
@@ -59,11 +57,6 @@ export default class VertexDrawing extends Konva.Group {
             this.clickCallbacks.forEach(callback => callback(this));
         };
         this.on('click', clickHandler);
-        const doubleClickHandler = (e: Konva.KonvaEventObject<MouseEvent>) => {
-            this.doubleClickCallbacks.forEach(callback => callback(this));
-            e.cancelBubble = true;
-        };
-        this.on('dblclick', doubleClickHandler);
     }
 
     getRadius(): number{
@@ -136,17 +129,6 @@ export default class VertexDrawing extends Konva.Group {
         const idx = this.clickCallbacks.indexOf(callback);
         if (idx >= 0) {
             this.clickCallbacks.splice(idx, 1);
-        }
-    }
-
-    addDoubleClickCallback(callback: VertexDrawingEventCallback) {
-        this.doubleClickCallbacks.push(callback);
-    }
-
-    removeDoubleClickCallback(callback: VertexDrawingEventCallback) {
-        const idx = this.doubleClickCallbacks.indexOf(callback);
-        if (idx >= 0) {
-            this.doubleClickCallbacks.splice(idx, 1);
         }
     }
 

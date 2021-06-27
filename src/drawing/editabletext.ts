@@ -1,16 +1,21 @@
 import Konva from "konva";
 import { getPosition } from "../util";
+import GraphDrawing from "../drawing/graphdrawing";
 
 export class EditableText extends Konva.Text {
     private textChangeCallback: (text: string) => void;
 
-    constructor(config?: Konva.TextConfig) {
+    constructor(private graphDrawing: GraphDrawing, config?: Konva.TextConfig) {
         super(config);
         // This implementation is mostly copied from
         // https://konvajs.org/docs/sandbox/Editable_Text.html, with some
         // modifications to get rid of the Transformer
-        this.on('dblclick tbltap', () => {
-            this.hide();
+        this.on('dblclick dbltap', () => {
+            // Handle events only on certain tools
+            const currentTool = this.graphDrawing.getTools().getCurrentTool();
+            if (currentTool != "default" && currentTool != "text") {
+                return;
+            }
             // Find the absolute position of text node
             const textPosition = this.absolutePosition();
             const stage = this.getStage();
@@ -20,6 +25,7 @@ export class EditableText extends Konva.Text {
                 return;
             }
 
+            this.hide();
             stage.draggable(false);
 
             // Find position to place text input in by adding the stage's
@@ -92,16 +98,26 @@ export class EditableText extends Konva.Text {
                 window.addEventListener('click', handleOutsideClick);
             });
         });
+        let prevCursor: string = "default";
         this.on('mouseover', () => {
+            const currentTool = this.graphDrawing.getTools().getCurrentTool();
+            if (currentTool != "default" && currentTool != "text") {
+                return;
+            }
             const stage = this.getStage();
+            prevCursor = stage.container().style.cursor;
             if (stage != null) {
                 stage.container().style.cursor = 'text';
             }
         });
         this.on('mouseout', () => {
+            const currentTool = this.graphDrawing.getTools().getCurrentTool();
+            if (currentTool != "default" && currentTool != "text") {
+                return;
+            }
             const stage = this.getStage();
             if (stage != null) {
-                stage.container().style.cursor = 'default';
+                stage.container().style.cursor = prevCursor;
             }
         });
 

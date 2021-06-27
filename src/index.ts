@@ -4,6 +4,7 @@ import $ from "jquery";
 import 'bootstrap';
 import 'bootswatch/dist/lumen/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import './img/x-lg.svg';
 
 import GraphTabs from "./ui_handlers/graphtabs";
 import AutoLabelOptions from "./ui_handlers/autolabel_options";
