@@ -14,6 +14,8 @@ are a lot of things missing and things that do not work.
 - Four auto-layout algorithms
 - Save and open graph from local device
 - Weighted graphs
+- Editable vertex labels
+- Tool-based design with tools to delete objects, add/edit and move objects
 - Algorithm visualizations:
   - Minimum Spanning Tree Algorithms:
     - Kruskal'ls Algorithm
@@ -21,11 +23,17 @@ are a lot of things missing and things that do not work.
   - Search Algorithms:
     - Breadth First Search
     - Depth First Search
+  - Shortest Path Algorithms:
+    - Dijkstra's Algorithm
+  - Walk-Finding Algorithms:
+    - Fleury's Algorithm for Euler trails/cycles
+  - Decomposition Algorithms:
+    - Hopcroft and Tarjan's Algorithm for Biconnected Components and
+      Articulation Points
 
 ### Planned Features
 - Save and open graph from browser
 - Text annotations on graphs
-- Editable vertex labels
 - Multigraphs
 - Better customization of display sizes and colors
 - More algorithm visualizations
