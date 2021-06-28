@@ -82,3 +82,15 @@ export class AlgorithmRunner<I> {
         return this.algorithm;
     }
 }
+
+export class HeadlessRunner<I> {
+    constructor(private algorithm: Algorithm<I>) {
+    }
+
+    run(input: I): Graph {
+        this.algorithm.initialize(input);
+        const it = this.algorithm.run();
+        while (!it.next().done);
+        return this.algorithm.getOutputGraph();
+    }
+}

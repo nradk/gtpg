@@ -21,6 +21,8 @@ export interface Graph {
     doesEdgeExist(startVertexId: number, endVertexId: number): boolean;
     isDirected(): boolean;
     toJSON(): object;
+    clone(): Graph;
+    populateLabelsFromIds(): void;
 }
 
 export function fromJsonString(jsonString: string): Graph {
@@ -254,6 +256,16 @@ abstract class DefaultGraph<EdgeData> implements Graph {
             directed: this.directed,
             weighted: this instanceof WeightedGraph
         };
+    }
+
+    clone(): Graph {
+        return fromJsonObject(this.toJSON());
+    }
+
+    populateLabelsFromIds() {
+        for (const v of this.getVertexIds()) {
+            this.vertexLabels.set(v, v.toString());
+        }
     }
 }
 

@@ -73,3 +73,35 @@ export class DefaultDecorator implements Decorator {
         }
     }
 }
+
+export class HeadlessDecorator implements Decorator {
+    constructor(private graph: Graph) {
+    }
+
+    getGraph(): Graph {
+        return this.graph;
+    }
+
+    getVertexState(_: number): DecorationState {
+        return "default";
+    }
+
+    setVertexState(_: number, __: DecorationState): void {
+    }
+
+    getEdgeState(_: number, __: number): DecorationState {
+        return "default";
+    }
+
+    setEdgeState(_: number, __: number, ___: DecorationState): void {
+    }
+
+    setVertexExternalLabel(_: number, __: string): void {
+    }
+
+    clearVertexExternalLabel(_: number): void {
+    }
+
+    clearAllDecoration(): void {
+    }
+}

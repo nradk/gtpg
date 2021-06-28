@@ -8,6 +8,7 @@ import { PrimMST } from "../algorithm/mst/prim";
 import { BreadthFirstSearch } from "../algorithm/search/bfs";
 import { DepthFirstSearch } from "../algorithm/search/dfs";
 import { DijkstrasShortestPath } from "../algorithm/shortestpath/dijkstra";
+import { FleuryEulerTrail } from "../algorithm/walks/euler";
 
 export default class AlgorithmUI {
 
@@ -84,6 +85,19 @@ export default class AlgorithmUI {
                 return false;
             }
             const controls = new VertexInputControls(DijkstrasShortestPath,
+                graphTabs, graphDrawing);
+            graphTabs.setControlPanelForActiveTab(controls);
+        });
+
+        $("#btn-algo-fleury").on('click', () => {
+            const graphDrawing = graphTabs.getActiveGraphDrawing();
+            if (graphDrawing == undefined) {
+                console.error("No graph present for Fleury's Algorithm.");
+                alert("Please create or open a graph first to apply Fleury's" +
+                    " Algorithm.");
+                return false;
+            }
+            const controls = new InputlessControls(FleuryEulerTrail,
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });
