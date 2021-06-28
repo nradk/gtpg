@@ -1,4 +1,4 @@
-import { VectorPolar, Vector2 } from "./commontypes";
+import { VectorPolar, Vector2, Util } from "./commontypes";
 
 // Returns the counter-clockwise angle (in radians) that the vector makes with
 // the x-axis. Return value in [0, 2pi)
@@ -37,6 +37,11 @@ export function getAngleDifference(alpha: number, beta: number): number {
 // Given an array of vectors, return a vector that bisects the highest angle
 // distance between two circularly (??) consecutive vectors in the array.
 export function getBestGapVector(vectors: Vector2[]): Vector2 {
+    // For a single vector, return its negation, i.e. literally the opposite
+    // direction.
+    if (vectors.length == 1) {
+        return Util.scalarVectorMultiply(-1, Util.getNormalized(vectors[0]));
+    }
     const polarVectors: VectorPolar[] = vectors.map(getPolarVector);
     polarVectors.sort((a, b) => a[1] - b[1]);
     let maxI = 0;
