@@ -56,20 +56,26 @@ export abstract class GenericControls extends AlgorithmControls {
             const value = this.speed_slider.val() as number;
             this.getRunner().setSpeed(Number(value));
         });
-        this.output_tab_btn.on('click', () => {
+        type ExportType = "file" | "tab"
+        const exportOutput = (how: ExportType) => {
             const runner = this.getRunner();
             const graph = runner.getAlgorithm().getOutputGraph();
+            if (graph == null) {
+                alert("The algorithm did not generate any output!");
+                return;
+            }
             const graphDrawing = this.getGraphDrawingForOutput(graph);
-            Util.createTabWithGraphDrawing(this.graphTabs, graphDrawing,
-                runner.getAlgorithm().getShortName());
-        });
-        this.output_export_btn.on('click', () => {
-            const runner = this.getRunner();
-            const graph = runner.getAlgorithm().getOutputGraph();
-            const graphDrawing = this.getGraphDrawingForOutput(graph);
-            ImportExport.exportGraphDrawing(graphDrawing,
-                runner.getAlgorithm().getShortName() + ".json");
-        });
+            if (how == "tab") {
+                Util.createTabWithGraphDrawing(this.graphTabs, graphDrawing,
+                    runner.getAlgorithm().getShortName());
+            } else {
+                ImportExport.exportGraphDrawing(graphDrawing,
+                    runner.getAlgorithm().getShortName() + ".json");
+            }
+
+        };
+        this.output_tab_btn.on('click', () => exportOutput('tab'));
+        this.output_export_btn.on('click', () => exportOutput('file'));
         this.algorithmStateChanged("init"); // TODO this is bad
     }
 
