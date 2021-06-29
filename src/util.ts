@@ -36,3 +36,21 @@ export function getLetterFromInteger(n: number, uppercase: boolean): string {
     }
     return s;
 }
+
+// Returns all nonnegative integers of width n bits with exactly k bits set.
+export function combinationBits(n: number, k: number): Set<number> {
+    if (k > n) {
+        return new Set<number>([]);
+    }
+    if (k == 0) {
+        return new Set<number>([0]);
+    }
+    const k_1bits = combinationBits(n - 1, k - 1);
+    const kbits = combinationBits(n - 1, k);
+    const out = new Set<number>();
+    for (const i of k_1bits) {
+        out.add(i | (1 << (n - 1)));
+    }
+    kbits.forEach(i => out.add(i));
+    return out;
+}

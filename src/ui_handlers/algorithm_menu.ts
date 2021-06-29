@@ -9,6 +9,7 @@ import { BreadthFirstSearch } from "../algorithm/search/bfs";
 import { DepthFirstSearch } from "../algorithm/search/dfs";
 import { DijkstrasShortestPath } from "../algorithm/shortestpath/dijkstra";
 import { FleuryEulerTrail } from "../algorithm/walks/euler";
+import { BHKHamiltonPath } from "../algorithm/walks/hamilton";
 import { ArticulationPoints } from "../algorithm/decompose/articulation";
 
 export default class AlgorithmUI {
@@ -112,6 +113,19 @@ export default class AlgorithmUI {
                 return false;
             }
             const controls = new InputlessControls(ArticulationPoints,
+                graphTabs, graphDrawing);
+            graphTabs.setControlPanelForActiveTab(controls);
+        });
+
+        $("#btn-algo-bhk").on('click', () => {
+            const graphDrawing = graphTabs.getActiveGraphDrawing();
+            if (graphDrawing == undefined) {
+                console.error("No graph present for Bellman-Held-Karp algorithm.");
+                alert("Please create or open a graph first to apply Bellman-Held-Karp" +
+                    " Algorithm.");
+                return false;
+            }
+            const controls = new InputlessControls(BHKHamiltonPath,
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });

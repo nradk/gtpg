@@ -1,7 +1,7 @@
-import { Algorithm, HeadlessRunner } from "../algorithm";
-import { Decorator, HeadlessDecorator } from "../../decoration/decorator";
-import { Graph, WeightedGraph, UnweightedGraph } from "../../graph_core/graph";
-import { BreadthFirstSearch } from "../search/bfs";
+import { Algorithm } from "../algorithm";
+import { Decorator } from "../../decoration/decorator";
+import { Graph } from "../../graph_core/graph";
+import { isSingleComponent } from "../../graph_core/graph_util";
 
 export class ArticulationPoints implements Algorithm<void> {
 
@@ -10,20 +10,13 @@ export class ArticulationPoints implements Algorithm<void> {
     constructor(private decorator: Decorator) {
     }
 
-    private isSingleComponent(graph: Graph): boolean {
-        const start = graph.getVertexIds().values().next().value;
-        const bfs = new BreadthFirstSearch(new HeadlessDecorator(graph));
-        const tree = (new HeadlessRunner(bfs)).run({ vertexId: start });
-        return tree.getVertexIds().size == graph.getVertexIds().size;
-    }
-
     initialize() {
         const graph = this.decorator.getGraph();
         if (graph.isDirected()) {
             alert("Articulation points algorithm only supports undirected graphs!");
             throw new Error("Articulation: undirected graph required!");
         }
-        if (!this.isSingleComponent(graph)) {
+        if (!isSingleComponent(graph)) {
             alert("Please provide a graph with a single connected component.");
             throw new Error("Articulation: More than 1 component!");
         }

@@ -1,7 +1,7 @@
-import { Algorithm, HeadlessRunner } from "../algorithm";
-import { Decorator, HeadlessDecorator } from "../../decoration/decorator";
-import { Graph, WeightedGraph, UnweightedGraph } from "../../graph_core/graph";
-import { BreadthFirstSearch } from "../search/bfs";
+import { Algorithm } from "../algorithm";
+import { Decorator } from "../../decoration/decorator";
+import { Graph, WeightedGraph } from "../../graph_core/graph";
+import { isSingleComponent } from "../../graph_core/graph_util";
 
 export class FleuryEulerTrail implements Algorithm<void> {
 
@@ -10,13 +10,6 @@ export class FleuryEulerTrail implements Algorithm<void> {
     private startVertex: number;
 
     constructor(private decorator: Decorator) {
-    }
-
-    private isSingleComponent(graph: Graph): boolean {
-        const start = graph.getVertexIds().values().next().value;
-        const bfs = new BreadthFirstSearch(new HeadlessDecorator(graph));
-        const tree = (new HeadlessRunner(bfs)).run({ vertexId: start });
-        return tree.getVertexIds().size == graph.getVertexIds().size;
     }
 
     // The third value returned is the id of a vertex with odd degree, if one
@@ -70,7 +63,7 @@ export class FleuryEulerTrail implements Algorithm<void> {
             alert("Fleury's algorithm only supports undirected unweighted graphs!");
             throw new Error("Fluery: undirected unweighted graph required!");
         }
-        if (!this.isSingleComponent(graph)) {
+        if (!isSingleComponent(graph)) {
             alert("The graph contains more than one component so it doesn't" +
                 " have an Euler trail or an Euler cycle!");
             throw new Error("Fluery: More than 1 component!");
@@ -89,7 +82,7 @@ export class FleuryEulerTrail implements Algorithm<void> {
             this.startVertex = graph.getVertexIds().values().next().value;
         }
 
-        this.trail = new WeightedGraph(false);
+        this.trail = new WeightedGraph(true);
 
         this.trail.addVertex(this.startVertex,
             this.graph.getVertexLabel(this.startVertex));
