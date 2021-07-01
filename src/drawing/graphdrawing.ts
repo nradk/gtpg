@@ -3,11 +3,12 @@ import Konva from "konva";
 import VertexDrawing from "./vertexdrawing";
 import EdgeDrawing from "./edgedrawing";
 import * as Graphs from "../graph_core/graph";
+import { EuclideanGraph } from "../graph_core/euclidean_graph";
 import * as Layouts from "../drawing/layouts";
 import { getMouseEventXY } from "./util";
-import { getLetterFromInteger } from "../util";
+import { getLetterFromInteger, getTwoLevelKeyList } from "../util";
 import { Vector2, Util, Point } from "../commontypes";
-import { Decorator, DefaultDecorator } from "../decoration/decorator";
+import { Decorator, DefaultDecorator, EuclideanDecorator } from "../decoration/decorator";
 import { Tools } from "../ui_handlers/tools";
 
 type CentroidCache = { n: number; xSum: number; ySum: number };
@@ -24,7 +25,7 @@ function getAutoLabelerForScheme(scheme: AutoLabelScheme): AutoLabeler {
         case "abc":
         case "ABC":
             return new class implements AutoLabeler {
-                private nextCount: number = 0;
+                protected nextCount: number = 0;
                 nextLabel(): string {
                     this.nextCount += 1;
                     return getLetterFromInteger(this.nextCount, scheme == "ABC");
@@ -35,7 +36,7 @@ function getAutoLabelerForScheme(scheme: AutoLabelScheme): AutoLabeler {
             };
         case "123":
             return new class implements AutoLabeler {
-                private nextCount: number = 0;
+                protected nextCount: number = 0;
                 nextLabel(): string {
                     this.nextCount += 1;
                     return this.nextCount.toString();
@@ -47,31 +48,31 @@ function getAutoLabelerForScheme(scheme: AutoLabelScheme): AutoLabeler {
     }
 }
 
-export default class GraphDrawing {
-    private vertexDrawings : {[id: number]: VertexDrawing};
+export class GraphDrawing {
+    protected vertexDrawings : {[id: number]: VertexDrawing};
     // For undirected graphs, 'start' is always smaller than 'end'
-    private edgeDrawings : {[start: number]: { [end: number]: EdgeDrawing }};
-    private graph : Graphs.Graph;
-    private selectedVertex : VertexDrawing;
-    private stage : Konva.Stage;
-    private verticesLayer : Konva.Layer;
-    private edgesLayer : Konva.Layer;
-    private continuousLayoutTimer: number;
-    private positions: Layouts.PositionMap;
-    private vertexRadius: number;
-    private vertexSelectMode: boolean = false;
-    private tools: Tools;
+    protected edgeDrawings : {[start: number]: { [end: number]: EdgeDrawing }};
+    protected graph : Graphs.Graph;
+    protected selectedVertex : VertexDrawing;
+    protected stage : Konva.Stage;
+    protected verticesLayer : Konva.Layer;
+    protected edgesLayer : Konva.Layer;
+    protected continuousLayoutTimer: number;
+    protected positions: Layouts.PositionMap;
+    protected vertexRadius: number;
+    protected vertexSelectMode: boolean = false;
+    protected tools: Tools;
 
-    private autoLabelScheme: AutoLabelScheme = "123";
-    private labelers: {[scheme in AutoLabelScheme]: AutoLabeler} = {
+    protected autoLabelScheme: AutoLabelScheme = "123";
+    protected labelers: {[scheme in AutoLabelScheme]: AutoLabeler} = {
         "123": getAutoLabelerForScheme("123"),
         "abc": getAutoLabelerForScheme("abc"),
         "ABC": getAutoLabelerForScheme("ABC"),
     };
 
-    private centroidCache: CentroidCache;
+    protected centroidCache: CentroidCache;
 
-    constructor(graph?: Graphs.Graph) {
+    protected constructor(graph?: Graphs.Graph) {
         if (graph === undefined) {
             this.graph = new Graphs.UnweightedGraph(false);
         } else {
@@ -87,6 +88,17 @@ export default class GraphDrawing {
             n: this.graph.getNumberOfVertices(),
             xSum: 0, ySum: 0
         };
+    }
+
+    static create(forGraph?: Graphs.Graph): GraphDrawing {
+        if (forGraph == undefined) {
+            return new GraphDrawing();
+        }
+        if (forGraph instanceof EuclideanGraph) {
+            return new EuclideanGraphDrawing(forGraph);
+        } else {
+            return new GraphDrawing(forGraph);
+        }
     }
 
     setEnvironment(stage: Konva.Stage, tools: Tools): void {
@@ -206,7 +218,7 @@ export default class GraphDrawing {
         }
     }
 
-    private createEdgeDrawing(startId: number, endId: number) {
+    createEdgeDrawing(startId: number, endId: number) {
         const start = this.vertexDrawings[startId];
         const end   = this.vertexDrawings[endId];
         return  new EdgeDrawing(this, start, end,
@@ -231,7 +243,7 @@ export default class GraphDrawing {
         return Util.scalarVectorMultiply(15, orthDirVec);
     }
 
-    private getNextUniqueLabel(): string {
+    protected getNextUniqueLabel(): string {
         const labels = new Set<string>(this.graph.getAllVertexLabels().values());
         let next: string;
         do {
@@ -315,7 +327,7 @@ export default class GraphDrawing {
         this.verticesLayer.draw();
     }
 
-    private deleteVertex(vertexDrawing: VertexDrawing) {
+    protected deleteVertex(vertexDrawing: VertexDrawing) {
         if (vertexDrawing === this.selectedVertex) {
             // Unset the selected vertex if it is going to be deleted
             this.selectedVertex = null;
@@ -342,20 +354,18 @@ export default class GraphDrawing {
         return parseInt(Object.keys(m).find(key => m[key] === vertexDrawing));
     }
 
-    private addEdge(start: VertexDrawing, end: VertexDrawing) {
+    protected addEdge(start: VertexDrawing, end: VertexDrawing) {
         const startId = this.lookupVertexId(start);
         const endId = this.lookupVertexId(end);
         if (this.graph.doesEdgeExist(startId, endId)) {
             return;
         }
         this.graph.addEdge(startId, endId);
-        const edgeDrawing = new EdgeDrawing(this, start, end,
-            this.graph.isDirected(),
-            this.edgesLayer.draw.bind(this.edgesLayer),
-            this.graph instanceof Graphs.WeightedGraph ?
-                this.graph.getEdgeWeight(startId, endId) : undefined,
-            this.handleWeightUpdate.bind(this)
-        );
+        const edgeDrawing = this.createEdgeDrawing(startId, endId);
+        this.storeAndShowEdgeDrawing(edgeDrawing, startId, endId);
+    }
+
+    storeAndShowEdgeDrawing(edgeDrawing: EdgeDrawing, startId: number, endId: number) {
         // The order is important because graph.getEdgeList() returns only
         // (m,n) edges where m < n. We conform to that here.
         if (startId < endId) {
@@ -373,10 +383,16 @@ export default class GraphDrawing {
         this.edgesLayer.draw();
     }
 
-    // Don't call this for Euclidean Graphs
     removeEdge(start: VertexDrawing, end: VertexDrawing) {
         const startId = this.lookupVertexId(start);
         const endId = this.lookupVertexId(end);
+        this.removeEdgeDrawing(startId, endId);
+        this.graph.removeEdge(startId, endId);
+    }
+
+    removeEdgeDrawing(startId: number, endId: number) {
+        const start = this.vertexDrawings[startId];
+        const end = this.vertexDrawings[endId];
         for (const edgeDrawing of start.getEdgeDrawings()) {
             const endIndex = end.getEdgeDrawings().indexOf(edgeDrawing);
             if (endIndex >= 0) {
@@ -385,11 +401,14 @@ export default class GraphDrawing {
                 edgeDrawing.destroy();
                 this.edgesLayer.draw();
                 delete this.edgeDrawings[startId][endId];
-                this.graph.removeEdge(startId, endId);
                 return;
             }
         }
-        throw new Error("No edge exists between the given vertices!");
+        throw new Error("No edge drawing exists between the given vertices!");
+    }
+
+    getEdgeDrawingKeyList() {
+        return getTwoLevelKeyList(this.edgeDrawings);
     }
 
     toJsonString(): string {
@@ -399,7 +418,7 @@ export default class GraphDrawing {
                 y: this.vertexDrawings[v].y()
             };
         }
-        const edges = this.graph.getEdgeList();
+        const edges = this.getEdgeDrawingKeyList();
         const curvePointPositions: {[v1: number]: {[v2: number]: Vector2}} = {};
         for (const edge of edges) {
             const edgeDrawing = this.edgeDrawings[edge[0]][edge[1]];
@@ -424,10 +443,10 @@ export default class GraphDrawing {
         const entries = Object.entries(data.vertexPositions);
         const positions: Layouts.PositionMap =
             new Map(entries.map(([key, value]) => [parseInt(key), value]));
-        const gd = new GraphDrawing(Graphs.fromJsonObject(data.graph));
+        const gd = GraphDrawing.create(Graphs.fromJsonObject(data.graph));
         const layout = new Layouts.FixedLayout(positions);
         gd.layoutWithoutRender(layout);
-        const edgeList = gd.graph.getEdgeList();
+        const edgeList = getTwoLevelKeyList(data.curvePointPositions);
         for (const edge of edgeList) {
             const ed = gd.getEdgeDrawing(edge[0], edge[1]);
             const curvePointPosition = data.curvePointPositions[edge[0]][edge[1]];
@@ -535,5 +554,20 @@ export default class GraphDrawing {
 
     getAutoLabelScheme(): AutoLabelScheme {
         return this.autoLabelScheme;
+    }
+}
+
+export class EuclideanGraphDrawing extends GraphDrawing {
+
+    constructor(graph: EuclideanGraph) {
+        super(graph);
+    }
+
+    populateEdgeDrawings() {
+        this.edgeDrawings = {};
+    }
+
+    getDecorator() {
+        return new EuclideanDecorator(this);
     }
 }

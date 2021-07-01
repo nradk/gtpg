@@ -4,7 +4,7 @@ import GraphTabs from "../ui_handlers/graphtabs";
 import * as Util from "../util";
 import ImportExport from "../ui_handlers/importexport";
 import * as Layout from "../drawing/layouts";
-import GraphDrawing from "../drawing/graphdrawing";
+import { GraphDrawing } from "../drawing/graphdrawing";
 import { Graph } from "../graph_core/graph";
 import { VertexInput } from "../commontypes";
 import { Decorator } from "../decoration/decorator";
@@ -115,12 +115,12 @@ export abstract class GenericControls extends AlgorithmControls {
             console.warn("Graphdrawing undefined, creating circular layout");
             layout = new Layout.CircularLayout(
                 this.graphTabs.getStageDims());
-            graphDrawing = new GraphDrawing(graph);
+            graphDrawing = GraphDrawing.create(graph);
         } else {
             console.log("Graphdrawing defined, creating fixed layout");
             layout = new Layout.FixedLayout(
                 this.graphDrawing.getVertexPositions());
-            graphDrawing = new GraphDrawing(graph);
+            graphDrawing = GraphDrawing.create(graph);
         }
         graphDrawing.layoutWithoutRender(layout);
         return graphDrawing;

@@ -1,7 +1,7 @@
 import Konva from "konva";
 
 import EdgeDrawing from "./edgedrawing";
-import GraphDrawing from "./graphdrawing";
+import { GraphDrawing } from "./graphdrawing";
 import { DecorationState, DefaultDecorator } from "../decoration/decorator";
 import { Util, Vector2 } from "../commontypes";
 import { getBestGapVector } from "../math";

@@ -2,8 +2,9 @@ import Konva from 'konva';
 import $ from "jquery";
 
 import { TabBar, TabType } from "../components/tabbar";
-import GraphDrawing from "../drawing/graphdrawing";
+import { GraphDrawing, EuclideanGraphDrawing } from "../drawing/graphdrawing";
 import { Graph, UnweightedGraph, WeightedGraph } from "../graph_core/graph";
+import { EuclideanGraph } from "../graph_core/euclidean_graph";
 import { Size } from "../commontypes";
 import { AlgorithmControls } from "../components/algorithm_controls";
 import { Tools } from "./tools";
@@ -33,10 +34,17 @@ export default class GraphTabs {
                 case "empty-undirected-weighted":
                     graph = new WeightedGraph(false);
                     break;
+                case "empty-euclidean":
+                    graph = new EuclideanGraph();
+                    break;
                 default:
                     graph = new UnweightedGraph(true);
             }
-            this.tabDrawings[id] = new GraphDrawing(graph);
+            if (graph instanceof EuclideanGraph) {
+                this.tabDrawings[id] = new EuclideanGraphDrawing(graph);
+            } else {
+                this.tabDrawings[id] = GraphDrawing.create(graph);
+            }
         });
         this.tabBar.setTabActivatedCallback((id: number) => {
             this.stage.removeChildren();

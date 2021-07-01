@@ -1,5 +1,5 @@
 import GraphTabs from "./ui_handlers/graphtabs";
-import GraphDrawing from "./drawing/graphdrawing";
+import { GraphDrawing } from "./drawing/graphdrawing";
 import { Point } from "./commontypes";
 
 export function createTabWithGraphDrawing(graphTabs: GraphTabs,
@@ -53,4 +53,14 @@ export function combinationBits(n: number, k: number): Set<number> {
     }
     kbits.forEach(i => out.add(i));
     return out;
+}
+
+export function getTwoLevelKeyList(obj: {[k1: number]: {[k2: number]: any}}): number[][] {
+    const keys: number[][] = [];
+    for (const f of Object.keys(obj)) {
+        for (const t of Object.keys(obj[f])) {
+            keys.push([parseInt(f), parseInt(t)]);
+        }
+    }
+    return keys;
 }

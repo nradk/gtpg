@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { getPosition } from "../util";
-import GraphDrawing from "../drawing/graphdrawing";
+import { GraphDrawing } from "../drawing/graphdrawing";
 import { ToolName } from "../ui_handlers/tools";
 
 export class EditableText extends Konva.Text {

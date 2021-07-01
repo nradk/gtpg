@@ -93,7 +93,7 @@ export class EuclideanGraph implements Graph {
 
 
     addEdge(_: number, __: number): void {
-        throw new Error("Cannot add an edge to an Euclidean Graph!");
+        // throw new Error("Cannot add an edge to an Euclidean Graph!");
     }
 
 

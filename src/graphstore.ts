@@ -1,4 +1,4 @@
-import GraphDrawing from "./drawing/graphdrawing";
+import { GraphDrawing } from "./drawing/graphdrawing";
 
 export interface GraphDrawingStore {
     getAllGraphDrawingIds(): number[];

@@ -44,6 +44,9 @@ $("#new-undirected-graph-btn").on("click", () => {
 $("#new-directed-graph-btn").on("click", () => {
     displayNewGraph("empty-directed");
 });
+$("#new-euclidean-graph-btn").on("click", () => {
+    displayNewGraph("empty-euclidean");
+});
 
 const graphTabs = new GraphTabs(stage);
 new AutoLayout(graphTabs);

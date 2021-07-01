@@ -1,7 +1,7 @@
 import Konva from "konva";
 
 import VertexDrawing from "./vertexdrawing";
-import GraphDrawing from "./graphdrawing";
+import { GraphDrawing } from "./graphdrawing";
 import { RedrawCallback, Vector2 } from "../commontypes";
 import { getMouseEventXY } from "./util";
 import { DecorationState, DefaultDecorator } from "../decoration/decorator";

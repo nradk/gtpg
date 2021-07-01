@@ -1,6 +1,6 @@
 import $ from "jquery";
 import GraphTabs from "./graphtabs";
-import GraphDrawing from "../drawing/graphdrawing";
+import { GraphDrawing } from "../drawing/graphdrawing";
 
 export default class ImportExport {
     graphTabs: GraphTabs;

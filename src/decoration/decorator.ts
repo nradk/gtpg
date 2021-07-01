@@ -1,5 +1,5 @@
 import { Graph } from "../graph_core/graph";
-import GraphDrawing from "../drawing/graphdrawing";
+import { GraphDrawing, EuclideanGraphDrawing } from "../drawing/graphdrawing";
 
 export class DecorationState {
     static readonly DEFAULT = new DecorationState();
@@ -31,7 +31,7 @@ export interface Decorator {
 }
 
 export class DefaultDecorator implements Decorator {
-    private drawing: GraphDrawing;
+    protected drawing: GraphDrawing;
     static readonly auxiliaryColors = ["#795548", "#FFEB3B",
         "#C0CA33", "#43A047", "#009688", "#2196F3", "#673AB7", "#E91E63",
         "#9C27B0", "#546E7A"];
@@ -94,6 +94,58 @@ export class DefaultDecorator implements Decorator {
         }
         for (const edge of this.drawing.getGraph().getEdgeList()) {
             this.setEdgeState(edge[0], edge[1], DecorationState.DEFAULT);
+        }
+    }
+}
+
+export class EuclideanDecorator extends DefaultDecorator {
+    constructor(graphDrawing: EuclideanGraphDrawing) {
+        super(graphDrawing);
+    }
+
+    getEdgeState(startVertexId: number, endVertexId: number): DecorationState {
+        const edgeInOrder =  this.drawing.getEdgeDrawingOrder(
+            startVertexId, endVertexId);
+        if (edgeInOrder == null) {
+            // If no edge drawing exists, then the state is disabled
+            return DecorationState.DISABLED;
+        }
+        [startVertexId, endVertexId] = edgeInOrder;
+        return this.drawing.getEdgeDrawings()[startVertexId][endVertexId]
+            .getDecorationState();
+    }
+
+    setEdgeState(startVertexId: number, endVertexId: number,
+            state: DecorationState) {
+        const edgeInOrder =  this.drawing.getEdgeDrawingOrder(
+            startVertexId, endVertexId);
+        if (edgeInOrder == null) {
+            if (state !== DecorationState.DISABLED) {
+                const ed = this.drawing.createEdgeDrawing(startVertexId, endVertexId);
+                this.drawing.storeAndShowEdgeDrawing(ed, startVertexId, endVertexId);
+                ed.setDecorationState(state);
+            }
+        } else {
+            [startVertexId, endVertexId] = edgeInOrder;
+            if (state === DecorationState.DISABLED) {
+                // We need to remove the edge drawing in this case
+                this.drawing.removeEdgeDrawing(startVertexId, endVertexId);
+            } else  {
+                const edge = this.drawing.getEdgeDrawings()[startVertexId][endVertexId];
+                edge.setDecorationState(state);
+            }
+        }
+        this.drawing.getStage().draw();
+    }
+
+    clearAllDecoration() {
+        for (const vertex of this.drawing.getGraph().getVertexIds()) {
+            this.setVertexState(vertex, DecorationState.DEFAULT);
+            this.drawing.getVertexDrawings()[vertex].clearExternalLabel();
+        }
+        const edges: number[][] = this.drawing.getEdgeDrawingKeyList();
+        for (const [f, t] of edges) {
+            this.setEdgeState(f, t, DecorationState.DISABLED);
         }
     }
 }
