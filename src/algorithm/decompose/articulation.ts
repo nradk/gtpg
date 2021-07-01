@@ -59,6 +59,7 @@ export class ArticulationPoints implements Algorithm<void> {
         const decorator = this.decorator;
         const s: number[][] = [];
         const firstVertex = this.graph.getVertexIds().values().next().value;
+        let componentIndex = 0;
         function *art(u: number, v: number) {
             dfn[u] = num;
             L[u] = num;
@@ -79,9 +80,11 @@ export class ArticulationPoints implements Algorithm<void> {
                     if (L[w] >= dfn[u]) {
                         // Found a biconnected component
                         let edge: number[];
+                        const edgeState = DecorationState.getAuxiliaryState(componentIndex);
+                        componentIndex++;
                         do {
                             edge = s.pop();
-                            decorator.setEdgeState(edge[0], edge[1], DecorationState.DEFAULT);
+                            decorator.setEdgeState(edge[0], edge[1], edgeState);
                             if (decorator.getVertexState(edge[0]) !== DecorationState.SELECTED) {
                                 decorator.setVertexState(edge[0], DecorationState.DEFAULT);
                             }

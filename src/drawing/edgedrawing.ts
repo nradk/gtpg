@@ -4,7 +4,7 @@ import VertexDrawing from "./vertexdrawing";
 import GraphDrawing from "./graphdrawing";
 import { RedrawCallback, Vector2 } from "../commontypes";
 import { getMouseEventXY } from "./util";
-import { DecorationState } from "../decoration/decorator";
+import { DecorationState, DefaultDecorator } from "../decoration/decorator";
 import { showWarning } from "../ui_handlers/notificationservice";
 import { EditableText } from "../drawing/editabletext";
 import { ToolName } from "../ui_handlers/tools";
@@ -101,7 +101,7 @@ export default class EdgeDrawing extends Konva.Group {
 
     handleClick(evt: Konva.KonvaEventObject<MouseEvent>) {
         const currentTool = this.graphDrawing.getTools().getCurrentTool();
-        if (currentTool == DecorationState.DEFAULT) {
+        if (currentTool == "default") {
             this.setCurvePointPosition(getMouseEventXY(evt));
             this.updateWeightPosition();
         } else if (currentTool == "delete") {
@@ -234,6 +234,10 @@ export default class EdgeDrawing extends Konva.Group {
                 this.arrow.stroke('#ff851b');
                 this.weightText && this.weightText.fill('#ff851b');
                 break;
+            default:
+                const color = DefaultDecorator.getAuxiliaryColor(state.getAuxiliaryId());
+                this.arrow.stroke(color);
+                this.weightText && this.weightText.fill(color);
         }
     }
 

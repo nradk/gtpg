@@ -2,7 +2,7 @@ import Konva from "konva";
 
 import EdgeDrawing from "./edgedrawing";
 import GraphDrawing from "./graphdrawing";
-import { DecorationState } from "../decoration/decorator";
+import { DecorationState, DefaultDecorator } from "../decoration/decorator";
 import { Util, Vector2 } from "../commontypes";
 import { getBestGapVector } from "../math";
 import { EditableText } from "./editabletext";
@@ -103,6 +103,12 @@ export default class VertexDrawing extends Konva.Group {
                 this.circle.stroke('#ff851b');
                 this.circle.fill('white');
                 this.label.fill('#ff851b');
+                break;
+            default:
+                const color = DefaultDecorator.getAuxiliaryColor(state.getAuxiliaryId());
+                this.circle.stroke(color);
+                this.circle.fill('white');
+                this.label.fill(color);
                 break;
         }
     }

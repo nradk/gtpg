@@ -6,6 +6,17 @@ export class DecorationState {
     static readonly SELECTED = new DecorationState();
     static readonly DISABLED = new DecorationState();
     static readonly CONSIDERING = new DecorationState();
+
+    private constructor(private id?: number) {
+    }
+
+    static getAuxiliaryState(id: number): DecorationState {
+        return new DecorationState(id);
+    }
+
+    getAuxiliaryId(): number {
+        return this.id;
+    }
 }
 
 export interface Decorator {
@@ -21,9 +32,17 @@ export interface Decorator {
 
 export class DefaultDecorator implements Decorator {
     private drawing: GraphDrawing;
+    static readonly auxiliaryColors = ["#795548", "#FFEB3B",
+        "#C0CA33", "#43A047", "#009688", "#2196F3", "#673AB7", "#E91E63",
+        "#9C27B0", "#546E7A"];
 
     constructor(graphDrawing: GraphDrawing) {
         this.drawing = graphDrawing;
+    }
+
+    static getAuxiliaryColor(id: number) {
+        const arr = DefaultDecorator.auxiliaryColors;
+        return arr[id % arr.length];
     }
 
     getGraph(): Graph {
