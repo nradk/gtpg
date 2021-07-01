@@ -1,3 +1,5 @@
+import { EuclideanGraph } from "./euclidean_graph";
+
 type EmptyEdgeData = { };
 interface WeightedEdgeData extends EmptyEdgeData { weight: number };
 
@@ -20,6 +22,7 @@ export interface Graph {
     removeEdge(startVertexId: number, endVertexId: number): void;
     doesEdgeExist(startVertexId: number, endVertexId: number): boolean;
     isDirected(): boolean;
+    isWeighted(): boolean;
     toJSON(): object;
     clone(): Graph;
     populateLabelsFromIds(): void;
@@ -30,6 +33,9 @@ export function fromJsonString(jsonString: string): Graph {
 }
 
 export function fromJsonObject(jsonObject: any): Graph {
+    if ("isEuclidean" in jsonObject) {
+        return EuclideanGraph.fromJsonObject(jsonObject);
+    }
     const obj: {adjacencies: (UnweightedAdjacencies | WeightedAdjacencies);
             vertexLabels: {[vertexId: number]: string},
             directed: boolean, weighted: boolean} = jsonObject;
@@ -253,8 +259,8 @@ abstract class DefaultGraph<EdgeData> implements Graph {
         return {
             adjacencies: adjObject,
             vertexLabels: Object.fromEntries(this.vertexLabels),
-            directed: this.directed,
-            weighted: this instanceof WeightedGraph
+            directed: this.isDirected(),
+            weighted: this.isWeighted(),
         };
     }
 
@@ -267,6 +273,8 @@ abstract class DefaultGraph<EdgeData> implements Graph {
             this.vertexLabels.set(v, v.toString());
         }
     }
+
+    abstract isWeighted(): boolean;
 }
 
 export class UnweightedGraph extends DefaultGraph<EmptyEdgeData> {
@@ -285,6 +293,10 @@ export class UnweightedGraph extends DefaultGraph<EmptyEdgeData> {
             }
         }
         return new UnweightedGraph(false, adjs);
+    }
+
+    isWeighted() {
+        return false;
     }
 }
 
@@ -337,5 +349,9 @@ export class WeightedGraph extends DefaultGraph<WeightedEdgeData> {
             }
         }
         return new WeightedGraph(false, adjs);
+    }
+
+    isWeighted() {
+        return true;
     }
 }

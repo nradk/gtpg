@@ -6,7 +6,7 @@ import * as Graphs from "../graph_core/graph";
 import * as Layouts from "../drawing/layouts";
 import { getMouseEventXY } from "./util";
 import { getLetterFromInteger } from "../util";
-import { Vector2,  Util } from "../commontypes";
+import { Vector2, Util, Point } from "../commontypes";
 import { Decorator, DefaultDecorator } from "../decoration/decorator";
 import { Tools } from "../ui_handlers/tools";
 
@@ -78,7 +78,7 @@ export default class GraphDrawing {
             this.graph = graph;
         }
         this.vertexDrawings = {};
-        this.positions = {};
+        this.positions = new Map();
         this.verticesLayer = new Konva.Layer();
         this.edgesLayer = new Konva.Layer();
         this.vertexRadius = 15;
@@ -153,10 +153,10 @@ export default class GraphDrawing {
     // update the vertex and edge positions
     redrawGraph(layout: Layouts.Layout) {
         layout.updateVertexPositions(this.graph, this.positions);
-        for (const v of Object.keys(this.positions)) {
+        for (const v of this.positions.keys()) {
             const drawing: VertexDrawing = this.vertexDrawings[v];
-            drawing.x(this.positions[v].x);
-            drawing.y(this.positions[v].y);
+            drawing.x(this.positions.get(v).x);
+            drawing.y(this.positions.get(v).y);
             drawing.callMoveCallbacks()
         }
         this.verticesLayer.draw();
@@ -176,12 +176,12 @@ export default class GraphDrawing {
     populateVertexDrawings(layout: Layouts.Layout) {
         this.positions = layout.getVertexPositions(this.graph);
         this.vertexDrawings = {};
-        for (const v of Object.keys(this.positions)) {
-            const p = this.positions[v];
+        for (const v of this.positions.keys()) {
+            const p = this.positions.get(v);
             this.centroidCache.xSum += p.x;
             this.centroidCache.ySum += p.y;
             this.vertexDrawings[v] = new VertexDrawing(p.x, p.y,
-                this.vertexRadius, this, parseInt(v));
+                this.vertexRadius, this, v);
         }
     }
 
@@ -199,19 +199,23 @@ export default class GraphDrawing {
         const edges = this.graph.getEdgeList();
         this.edgeDrawings = {};
         for (const e of edges) {
-            const start = this.vertexDrawings[e[0]];
-            const end   = this.vertexDrawings[e[1]];
             if (!(e[0] in this.edgeDrawings)) {
                 this.edgeDrawings[e[0]] = {};
             }
-            this.edgeDrawings[e[0]][e[1]] = new EdgeDrawing(this, start, end,
+            this.edgeDrawings[e[0]][e[1]] = this.createEdgeDrawing(e[0], e[1]);
+        }
+    }
+
+    private createEdgeDrawing(startId: number, endId: number) {
+        const start = this.vertexDrawings[startId];
+        const end   = this.vertexDrawings[endId];
+        return  new EdgeDrawing(this, start, end,
                 this.graph.isDirected(),
                 this.edgesLayer.draw.bind(this.edgesLayer),
                 this.graph instanceof Graphs.WeightedGraph ?
-                    this.graph.getEdgeWeight(e[0], e[1]) : undefined,
+                    this.graph.getEdgeWeight(startId, endId) : undefined,
                 this.handleWeightUpdate.bind(this)
-            );
-        }
+        );
     }
 
     getWeightOffset(start: VertexDrawing, end: VertexDrawing): Vector2 {
@@ -253,7 +257,7 @@ export default class GraphDrawing {
         this.graph.setVertexLabel(newId, this.getNextUniqueLabel());
         const drawing = new VertexDrawing(x, y, this.vertexRadius, this, newId);
         this.vertexDrawings[newId] = drawing;
-        this.positions[newId] = {x: x, y: y};
+        this.positions.set(newId, {x: x, y: y});
         drawing.addClickCallback(this.vertexClickHandler.bind(this));
         this.verticesLayer.add(drawing);
         this.verticesLayer.draw();
@@ -265,13 +269,13 @@ export default class GraphDrawing {
 
     vertexMoveHandler(vertex: VertexDrawing) {
         const vid = vertex.getVertexId();
-        this.centroidCache.xSum -= this.positions[vid].x;
-        this.centroidCache.ySum -= this.positions[vid].y;
+        this.centroidCache.xSum -= this.positions.get(vid).x;
+        this.centroidCache.ySum -= this.positions.get(vid).y;
 
-        this.positions[vid] = {x: vertex.x(), y: vertex.y()};
+        this.positions.set(vid, {x: vertex.x(), y: vertex.y()});
 
-        this.centroidCache.xSum += this.positions[vid].x;
-        this.centroidCache.ySum += this.positions[vid].y;
+        this.centroidCache.xSum += this.positions.get(vid).x;
+        this.centroidCache.ySum += this.positions.get(vid).y;
 
         // Notify neighbors so they can update their label positions
         for (const n of this.graph.getVertexNeighborIds(vid, true)) {
@@ -295,6 +299,7 @@ export default class GraphDrawing {
                     this.selectedVertex = null;
                     return;
                 }
+
                 this.addEdge(this.selectedVertex, vertexDrawing);
                 this.selectedVertex = null;
             } else {
@@ -323,7 +328,7 @@ export default class GraphDrawing {
         this.graph.removeVertex(vertexId);
         vertexDrawing.destroy();
         delete this.vertexDrawings[vertexId];
-        delete this.positions[vertexId];
+        this.positions.delete(vertexId);
         this.verticesLayer.draw();
         this.edgesLayer.draw();
 
@@ -368,6 +373,7 @@ export default class GraphDrawing {
         this.edgesLayer.draw();
     }
 
+    // Don't call this for Euclidean Graphs
     removeEdge(start: VertexDrawing, end: VertexDrawing) {
         const startId = this.lookupVertexId(start);
         const endId = this.lookupVertexId(end);
@@ -387,9 +393,9 @@ export default class GraphDrawing {
     }
 
     toJsonString(): string {
-        const positions: Layouts.PositionMap = {};
+        const pobj: {[v: number]: Point} = {};
         for (const v of Object.keys(this.vertexDrawings)) {
-            positions[v] = {x: this.vertexDrawings[v].x(),
+            pobj[v] = {x: this.vertexDrawings[v].x(),
                 y: this.vertexDrawings[v].y()
             };
         }
@@ -404,7 +410,7 @@ export default class GraphDrawing {
         }
         return JSON.stringify({
             graph: this.graph,
-            vertexPositions: positions,
+            vertexPositions: pobj,
             curvePointPositions: curvePointPositions
         });
     }
@@ -415,8 +421,11 @@ export default class GraphDrawing {
             vertexPositions: Layouts.PositionMap,
             curvePointPositions: {[v1: number]: {[v2: number]: Vector2}}
         } = JSON.parse(jsonStr);
+        const entries = Object.entries(data.vertexPositions);
+        const positions: Layouts.PositionMap =
+            new Map(entries.map(([key, value]) => [parseInt(key), value]));
         const gd = new GraphDrawing(Graphs.fromJsonObject(data.graph));
-        const layout = new Layouts.FixedLayout(data.vertexPositions);
+        const layout = new Layouts.FixedLayout(positions);
         gd.layoutWithoutRender(layout);
         const edgeList = gd.graph.getEdgeList();
         for (const edge of edgeList) {

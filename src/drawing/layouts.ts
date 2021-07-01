@@ -3,9 +3,7 @@ import { Graph } from "../graph_core/graph";
 
 export type LayoutName = "circular" | "random" | "grid" | "forcebased";
 
-export interface PositionMap {
-    [id: number]: Point;
-};
+export type PositionMap = Map<number, Point>;
 
 export type RelayoutCallback = (map: PositionMap) => void;
 
@@ -18,7 +16,7 @@ export interface Layout {
 // Empty layout, does nothing
 export class EmptyLayout implements Layout {
     getVertexPositions(_: Graph): PositionMap {
-        return {};
+        return new Map();
     }
 
     updateVertexPositions(_: Graph, __: PositionMap) {
@@ -38,19 +36,19 @@ export class RandomLayout implements Layout {
     }
 
     getVertexPositions(graph: Graph): PositionMap {
-        const positions: PositionMap = {};
+        const positions: PositionMap = new Map();
         for (const v of graph.getVertexIds()) {
             const x = Math.random() * this.stageDims.width;
             const y = Math.random() * this.stageDims.height;
-            positions[v] = {x: x, y: y};
+            positions.set(v, {x: x, y: y});
         }
         return positions;
     }
 
     updateVertexPositions(graph: Graph, positions: PositionMap) {
         const p = this.getVertexPositions(graph);
-        for (const v of Object.keys(p)) {
-            positions[v] = p[v];
+        for (const v of p.keys()) {
+            positions.set(v, p.get(v));
         }
     }
 
@@ -68,7 +66,7 @@ export class CircularLayout implements Layout {
     }
 
     getVertexPositions(graph: Graph): PositionMap {
-        const positions: PositionMap = {};
+        const positions: PositionMap = new Map();
         const centerX = this.stageDims.width / 2;
         const centerY = this.stageDims.height / 2;
         const radius = Math.floor(0.8 * Math.min(this.stageDims.height,
@@ -79,7 +77,7 @@ export class CircularLayout implements Layout {
         for (const v of graph.getVertexIds()) {
             const x = centerX + Math.cos(r) * radius;
             const y = centerY + Math.sin(r) * radius;
-            positions[v] = {x: x, y: y};
+            positions.set(v, {x: x, y: y});
             r += step;
         }
         return positions;
@@ -87,8 +85,8 @@ export class CircularLayout implements Layout {
 
     updateVertexPositions(graph: Graph, positions: PositionMap) {
         const p = this.getVertexPositions(graph);
-        for (const v of Object.keys(p)) {
-            positions[v] = p[v];
+        for (const v of p.keys()) {
+            positions.set(v, p.get(v));
         }
     }
 
@@ -106,7 +104,7 @@ export class GridLayout implements Layout {
     }
 
     getVertexPositions(graph: Graph): PositionMap {
-        const positions: PositionMap = {};
+        const positions: PositionMap = new Map();
         const centerX = this.stageDims.width / 2;
         const centerY = this.stageDims.height / 2;
         const length = graph.getNumberOfVertices();
@@ -116,19 +114,21 @@ export class GridLayout implements Layout {
         const originX = centerX - d * (w - 1) / 2;
         const originY = centerY - d * (h - 1) / 2;
         const vertexIds = graph.getVertexIds();
-        for (let i = 0; i < vertexIds.size; i++) {
-            positions[vertexIds[i]] = {
+        let i = 0;
+        for (const vId of vertexIds) {
+            positions.set(vId, {
                 x : originX + (i % w) * d,
                 y : originY + Math.floor(i / w) * d
-            };
+            });
+            i += 1;
         }
         return positions;
     }
 
     updateVertexPositions(graph: Graph, positions: PositionMap) {
         const p = this.getVertexPositions(graph);
-        for (const v of Object.keys(p)) {
-            positions[v] = p[v];
+        for (const v of p.keys()) {
+            positions.set(v, p.get(v));
         }
     }
 
@@ -150,8 +150,8 @@ export class FixedLayout implements Layout {
 
     updateVertexPositions(graph: Graph, positions: PositionMap) {
         const p = this.getVertexPositions(graph);
-        for (const v of Object.keys(p)) {
-            positions[v] = p[v];
+        for (const v of p.keys()) {
+            positions.set(v, p.get(v));
         }
     }
 
@@ -186,12 +186,12 @@ export class ForceBasedLayout implements Layout {
             const start = vertexIds[i];
             for (let j = i + 1; j < vertexIds.length; j++) {
                 const end = vertexIds[j];
-                const startPoint = positions[start];
-                const endPoint = positions[end];
-                const dist = Util.getDistanceFromPoints(positions[start],
-                                                     positions[end]);
-                const d2 = Util.getDistanceSquaredFromPoints(positions[start],
-                                                     positions[end]);
+                const startPoint = positions.get(start);
+                const endPoint = positions.get(end);
+                const dist = Util.getDistanceFromPoints(positions.get(start),
+                                                     positions.get(end));
+                const d2 = Util.getDistanceSquaredFromPoints(positions.get(start),
+                                                     positions.get(end));
                 let forceMagnitude = 0;
                 if (!graph.areNeighbors(start, end) && !graph.areNeighbors(end, start)) {
                     forceMagnitude = this.C3 / d2;
@@ -213,10 +213,10 @@ export class ForceBasedLayout implements Layout {
     }
 
     private updatePositions() {
-        for (const v of Object.keys(this.positions)) {
+        for (const v of this.positions.keys()) {
             const force = Util.scalarVectorMultiply(this.C4, this.forces[v]);
-            this.positions[v] = Util.vectorToPoint(Util.vectorAdd(
-                Util.pointToVector(this.positions[v]), force));
+            this.positions.set(v, Util.vectorToPoint(Util.vectorAdd(
+                Util.pointToVector(this.positions.get(v)), force)));
         }
     }
 
