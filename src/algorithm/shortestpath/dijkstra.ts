@@ -4,6 +4,7 @@ import { Algorithm } from "../algorithm";
 import { VertexInput } from "../../commontypes";
 import { Decorator } from "../../decoration/decorator";
 import { WeightedGraph } from "../../graph_core/graph";
+import { DecorationState } from "../../decoration/decorator";
 
 type VertexAndDistance = [number, number];
 
@@ -35,13 +36,13 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
         for (const v of vertexIds) {
             if (v == startVertex.vertexId) {
                 // Select the initial vertex, and set its distance to 0
-                this.decorator.setVertexState(v, "selected");
+                this.decorator.setVertexState(v, DecorationState.SELECTED);
                 this.decorator.setVertexExternalLabel(v, "0");
                 this.distances[v] = 0;
             } else {
                 // Disable all other vertices and set their (initial) distance
                 // to Infinity
-                this.decorator.setVertexState(v, "disabled");
+                this.decorator.setVertexState(v, DecorationState.DISABLED);
                 this.decorator.setVertexExternalLabel(v, "∞");
                 this.distances[v] = Infinity;
             }
@@ -51,7 +52,7 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
 
         // Disable all edges
         for (const edge of graph.getEdgeList()) {
-            this.decorator.setEdgeState(edge[0], edge[1], "disabled");
+            this.decorator.setEdgeState(edge[0], edge[1], DecorationState.DISABLED);
         }
     }
 
@@ -67,15 +68,15 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
             if (this.parents[v] != undefined) {
                 this.shortestPathTree.addEdge(this.parents[v], v,
                     graph.getEdgeWeight(this.parents[v], v));
-                this.decorator.setEdgeState(this.parents[v], v, "selected");
+                this.decorator.setEdgeState(this.parents[v], v, DecorationState.SELECTED);
             }
-            this.decorator.setVertexState(v, "selected");
+            this.decorator.setVertexState(v, DecorationState.SELECTED);
             yield;
             for (const n of graph.getVertexNeighborIds(v)) {
                 const dist = vDist + graph.getEdgeWeight(v, n);
                 if (dist < this.distances[n]) {
-                    this.decorator.setEdgeState(v, n, "considering");
-                    this.decorator.setVertexState(n, "considering"); yield;
+                    this.decorator.setEdgeState(v, n, DecorationState.CONSIDERING);
+                    this.decorator.setVertexState(n, DecorationState.CONSIDERING); yield;
                     this.decorator.setVertexExternalLabel(n, "" + dist);
                     this.distances[n] = dist;
                     this.parents[n] = v;
@@ -84,8 +85,8 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
             }
         }
         for (const e of graph.getEdgeList()) {
-            if (this.decorator.getEdgeState(e[0], e[1]) == "considering") {
-                this.decorator.setEdgeState(e[0], e[1], "disabled");
+            if (this.decorator.getEdgeState(e[0], e[1]) == DecorationState.CONSIDERING) {
+                this.decorator.setEdgeState(e[0], e[1], DecorationState.DISABLED);
             }
         }
     }

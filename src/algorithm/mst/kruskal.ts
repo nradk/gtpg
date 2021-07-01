@@ -1,6 +1,7 @@
 import { Algorithm } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { WeightedGraph } from "../../graph_core/graph";
+import { DecorationState } from "../../decoration/decorator";
 
 export class KruskalMST implements Algorithm<void> {
 
@@ -30,7 +31,7 @@ export class KruskalMST implements Algorithm<void> {
         this.edges.sort((first, second) => second[2] - first[2]);
         // Disable all edges
         for (const e of this.edges) {
-            this.decorator.setEdgeState(e[0], e[1], "disabled");
+            this.decorator.setEdgeState(e[0], e[1], DecorationState.DISABLED);
         }
         this.forests = {};
         const vertices = [...graph.getVertexIds()];
@@ -62,7 +63,7 @@ export class KruskalMST implements Algorithm<void> {
     *run(): IterableIterator<void> {
         while (true) {
             const e = this.edges.pop();
-            this.decorator.setEdgeState(e[0], e[1], "considering");
+            this.decorator.setEdgeState(e[0], e[1], DecorationState.CONSIDERING);
             // Yield now to let the user see the 'considering' state
             yield;
             // Check if e connects two vertices in different this.forests
@@ -71,7 +72,7 @@ export class KruskalMST implements Algorithm<void> {
                 this.mst.addEdge(e[0], e[1], e[2]);
                 this.edgesAdded += 1;
                 // Select that edge
-                this.decorator.setEdgeState(e[0], e[1], "selected");
+                this.decorator.setEdgeState(e[0], e[1], DecorationState.SELECTED);
                 // Merge the this.forests
                 const fa = this.forests[e[0]];
                 const fb = this.forests[e[1]];
@@ -81,7 +82,7 @@ export class KruskalMST implements Algorithm<void> {
                     }
                 }
             } else {
-                this.decorator.setEdgeState(e[0], e[1], "disabled");
+                this.decorator.setEdgeState(e[0], e[1], DecorationState.DISABLED);
             }
             // |E| = |V| - 1 in a tree
             if (this.edgesAdded < this.decorator.getGraph().getVertexIds().size - 1) {

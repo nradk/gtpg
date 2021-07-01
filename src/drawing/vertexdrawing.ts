@@ -30,7 +30,7 @@ export default class VertexDrawing extends Konva.Group {
             strokeWidth: 2
         });
         this.add(this.circle);
-        this.decorationState = "default";
+        this.decorationState = DecorationState.DEFAULT;
         this.moveCallbacks = [];
         this.moveCallbacks = [];
         this.clickCallbacks = [];
@@ -70,36 +70,36 @@ export default class VertexDrawing extends Konva.Group {
     }
 
     select() {
-        this.setDecorationState("selected");
+        this.setDecorationState(DecorationState.SELECTED);
     }
 
     isSelected(): boolean {
-        return this.decorationState === "selected";
+        return this.decorationState === DecorationState.SELECTED;
     }
 
     unselect() {
-        this.setDecorationState("default");
+        this.setDecorationState(DecorationState.DEFAULT);
     }
 
     setDecorationState(state: DecorationState) {
         this.decorationState = state;
         switch (state)  {
-            case "default":
+            case DecorationState.DEFAULT:
                 this.circle.stroke('black');
                 this.circle.fill('white');
                 this.label.fill('black');
                 break;
-            case "selected":
+            case DecorationState.SELECTED:
                 this.circle.stroke('#158cba');
                 this.circle.fill('#158cba');
                 this.label.fill('white');
                 break;
-            case "disabled":
+            case DecorationState.DISABLED:
                 this.circle.stroke('#f0f0f0');
                 this.circle.fill('white');
                 this.label.fill('#f0f0f0');
                 break;
-            case "considering":
+            case DecorationState.CONSIDERING:
                 this.circle.stroke('#ff851b');
                 this.circle.fill('white');
                 this.label.fill('#ff851b');

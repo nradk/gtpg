@@ -31,10 +31,10 @@ export class BHKHamiltonPath implements Algorithm<void> {
         this.path = null;
 
         for (const v of graph.getVertexIds()) {
-            this.decorator.setVertexState(v, "disabled");
+            this.decorator.setVertexState(v, DecorationState.DISABLED);
         }
         for (const e of graph.getEdgeList()) {
-            this.decorator.setEdgeState(e[0], e[1], "disabled");
+            this.decorator.setEdgeState(e[0], e[1], DecorationState.DISABLED);
         }
     }
 
@@ -73,8 +73,8 @@ export class BHKHamiltonPath implements Algorithm<void> {
             const k_subsets = combinationBits(n, k);
             const nextSubsets = new Map<number, Map<number, number[]>>();
             for (const subset of k_subsets) {
-                this.setSelectionState(vertices, allVertices, "disabled");
-                this.setSelectionState(vertices, subset, "considering");
+                this.setSelectionState(vertices, allVertices, DecorationState.DISABLED);
+                this.setSelectionState(vertices, subset, DecorationState.CONSIDERING);
                 // Loop through the set bits in the subset bitstring, which
                 // correspond to the vertices in this vertex subset.
                 let s = subset;
@@ -82,7 +82,7 @@ export class BHKHamiltonPath implements Algorithm<void> {
                 while (s > 0) {
                     if ((s & 1) == 1) {
                         const v = vertices[i];
-                        this.decorator.setVertexState(v, "selected");
+                        this.decorator.setVertexState(v, DecorationState.SELECTED);
                         yield;
                         // For each neighbor w of v, see if there is a Hamilton
                         // path of vertices in subset - {v} that ends in w
@@ -92,9 +92,9 @@ export class BHKHamiltonPath implements Algorithm<void> {
                             if (!subsetMinusVVertices.has(n)) {
                                 continue;
                             }
-                            this.decorator.setEdgeState(v, n, "considering");
+                            this.decorator.setEdgeState(v, n, DecorationState.CONSIDERING);
                             yield;
-                            this.decorator.setEdgeState(v, n, "disabled");
+                            this.decorator.setEdgeState(v, n, DecorationState.DISABLED);
                             if (prevSubsets.has(subsetMinusV)) {
                                 if (prevSubsets.get(subsetMinusV).has(n)) {
                                     const path = prevSubsets.get(subsetMinusV).get(n);
@@ -103,14 +103,14 @@ export class BHKHamiltonPath implements Algorithm<void> {
                                         nextSubsets.set(subset, new Map<number, number[]>());
                                     }
                                     nextSubsets.get(subset).set(v, newPath);
-                                    this.setPathEdgesState(newPath, "selected");
+                                    this.setPathEdgesState(newPath, DecorationState.SELECTED);
                                     yield;
-                                    this.setPathEdgesState(newPath, "disabled");
+                                    this.setPathEdgesState(newPath, DecorationState.DISABLED);
                                     break;
                                 }
                             }
                         }
-                        this.decorator.setVertexState(v, "considering");
+                        this.decorator.setVertexState(v, DecorationState.CONSIDERING);
                     }
                     s = s >> 1;
                     i++;
@@ -127,7 +127,7 @@ export class BHKHamiltonPath implements Algorithm<void> {
                     // Then there is a hamilton circuit!
                     const circuit = path.concat(path[0]);
                     this.path = this.createOutputGraph(circuit);
-                    this.setPathEdgesState(circuit, "selected");
+                    this.setPathEdgesState(circuit, DecorationState.SELECTED);
                     return;
                 } else {
                     hamiltonPath = path;
@@ -136,7 +136,7 @@ export class BHKHamiltonPath implements Algorithm<void> {
         }
         if (hamiltonPath != null) {
             this.path = this.createOutputGraph(hamiltonPath);
-            this.setPathEdgesState(hamiltonPath, "selected");
+            this.setPathEdgesState(hamiltonPath, DecorationState.SELECTED);
         }
     }
 

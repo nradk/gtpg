@@ -2,6 +2,7 @@ import { Algorithm } from "../algorithm";
 import { VertexInput } from "../../commontypes";
 import { Decorator } from "../../decoration/decorator";
 import { WeightedGraph, UnweightedGraph } from "../../graph_core/graph";
+import { DecorationState } from "../../decoration/decorator";
 
 type VertexAndParent = [number, number];
 
@@ -30,16 +31,16 @@ export class DepthFirstSearch implements Algorithm<VertexInput> {
         for (const v of vertexIds) {
             if (v == startVertex.vertexId) {
                 // Select the initial vertex
-                this.decorator.setVertexState(v, "selected");
+                this.decorator.setVertexState(v, DecorationState.SELECTED);
             } else {
                 // Disable all other vertices
-                this.decorator.setVertexState(v, "disabled");
+                this.decorator.setVertexState(v, DecorationState.DISABLED);
             }
         }
 
         // Disable all edges
         for (const edge of graph.getEdgeList()) {
-            this.decorator.setEdgeState(edge[0], edge[1], "disabled");
+            this.decorator.setEdgeState(edge[0], edge[1], DecorationState.DISABLED);
         }
     }
 
@@ -52,8 +53,8 @@ export class DepthFirstSearch implements Algorithm<VertexInput> {
                     continue;
                 }
                 this.stack.push([n, v]);
-                this.decorator.setVertexState(n, "considering");
-                this.decorator.setEdgeState(v, n, "considering");
+                this.decorator.setVertexState(n, DecorationState.CONSIDERING);
+                this.decorator.setEdgeState(v, n, DecorationState.CONSIDERING);
             }
 
             if (!this.inTree.has(v)) {
@@ -67,13 +68,13 @@ export class DepthFirstSearch implements Algorithm<VertexInput> {
                     } else {
                         this.searchTree.addEdge(vparent, v);
                     }
-                    this.decorator.setEdgeState(vparent, v, "selected");
-                    this.decorator.setVertexState(v, "selected");
+                    this.decorator.setEdgeState(vparent, v, DecorationState.SELECTED);
+                    this.decorator.setVertexState(v, DecorationState.SELECTED);
                 }
             } else {
-                // this.decorator.setVertexState(v, "selected");
+                // this.decorator.setVertexState(v, DecorationState.SELECTED);
                 if (vparent != undefined) {
-                    this.decorator.setEdgeState(vparent, v, "disabled");
+                    this.decorator.setEdgeState(vparent, v, DecorationState.DISABLED);
                 }
             }
 

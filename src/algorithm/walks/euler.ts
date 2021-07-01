@@ -2,6 +2,7 @@ import { Algorithm } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { Graph, WeightedGraph } from "../../graph_core/graph";
 import { isSingleComponent } from "../../graph_core/graph_util";
+import { DecorationState } from "../../decoration/decorator";
 
 export class FleuryEulerTrail implements Algorithm<void> {
 
@@ -88,10 +89,10 @@ export class FleuryEulerTrail implements Algorithm<void> {
             this.graph.getVertexLabel(this.startVertex));
 
         for (const v of graph.getVertexIds()) {
-            this.decorator.setVertexState(v, "disabled");
+            this.decorator.setVertexState(v, DecorationState.DISABLED);
         }
         for (const e of graph.getEdgeList()) {
-            this.decorator.setEdgeState(e[0], e[1], "disabled");
+            this.decorator.setEdgeState(e[0], e[1], DecorationState.DISABLED);
         }
     }
 
@@ -116,17 +117,17 @@ export class FleuryEulerTrail implements Algorithm<void> {
         let stop = false;
         let edgeIndex = 1;
         while (!stop) {
-            this.decorator.setVertexState(currentVertex, "selected");
+            this.decorator.setVertexState(currentVertex, DecorationState.SELECTED);
             yield;
             stop = true;
             const neighbors = this.graph.getVertexNeighborIds(currentVertex);
             let i = 0;
             for (const n of neighbors) {
-                this.decorator.setEdgeState(currentVertex, n, "considering");
+                this.decorator.setEdgeState(currentVertex, n, DecorationState.CONSIDERING);
                 yield;
                 if (!this.isBridge(this.graph, [currentVertex, n]) || i == neighbors.size - 1) {
                     stop = false;
-                    this.decorator.setEdgeState(currentVertex, n, "selected");
+                    this.decorator.setEdgeState(currentVertex, n, DecorationState.SELECTED);
                     yield;
                     if (!this.trail.getVertexIds().has(n)) {
                         this.trail.addVertex(n, this.graph.getVertexLabel(n));
@@ -137,7 +138,7 @@ export class FleuryEulerTrail implements Algorithm<void> {
                     currentVertex = n;
                     break;
                 } else {
-                    this.decorator.setEdgeState(currentVertex, n, "disabled");
+                    this.decorator.setEdgeState(currentVertex, n, DecorationState.DISABLED);
                     yield;
                 }
                 i += 1;

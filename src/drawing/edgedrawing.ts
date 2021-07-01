@@ -41,7 +41,7 @@ export default class EdgeDrawing extends Konva.Group {
             pointerLength: directed? 10 : 0,
             pointerWidth: directed? 10 : 0
         });
-        this.decorationState = "default";
+        this.decorationState = DecorationState.DEFAULT;
         this.weight = weight;
         this.weightChangeCallback = weightChangeCallback;
         this.add(this.arrow);
@@ -101,7 +101,7 @@ export default class EdgeDrawing extends Konva.Group {
 
     handleClick(evt: Konva.KonvaEventObject<MouseEvent>) {
         const currentTool = this.graphDrawing.getTools().getCurrentTool();
-        if (currentTool == "default") {
+        if (currentTool == DecorationState.DEFAULT) {
             this.setCurvePointPosition(getMouseEventXY(evt));
             this.updateWeightPosition();
         } else if (currentTool == "delete") {
@@ -218,19 +218,19 @@ export default class EdgeDrawing extends Konva.Group {
     setDecorationState(state: DecorationState) {
         this.decorationState = state;
         switch (state)  {
-            case "default":
+            case DecorationState.DEFAULT:
                 this.arrow.stroke('black');
                 this.weightText && this.weightText.fill('black');
                 break;
-            case "selected":
+            case DecorationState.SELECTED:
                 this.arrow.stroke('#158cba');
                 this.weightText && this.weightText.fill('#158cba');
                 break;
-            case "disabled":
+            case DecorationState.DISABLED:
                 this.arrow.stroke('#f0f0f0');
                 this.weightText && this.weightText.fill('#f0f0f0');
                 break;
-            case "considering":
+            case DecorationState.CONSIDERING:
                 this.arrow.stroke('#ff851b');
                 this.weightText && this.weightText.fill('#ff851b');
                 break;

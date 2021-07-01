@@ -1,7 +1,12 @@
 import { Graph } from "../graph_core/graph";
 import GraphDrawing from "../drawing/graphdrawing";
 
-export type DecorationState = "selected" | "disabled" | "default" | "considering";
+export class DecorationState {
+    static readonly DEFAULT = new DecorationState();
+    static readonly SELECTED = new DecorationState();
+    static readonly DISABLED = new DecorationState();
+    static readonly CONSIDERING = new DecorationState();
+}
 
 export interface Decorator {
     getGraph(): Graph;
@@ -65,11 +70,11 @@ export class DefaultDecorator implements Decorator {
 
     clearAllDecoration() {
         for (const vertex of this.drawing.getGraph().getVertexIds()) {
-            this.setVertexState(vertex, "default");
+            this.setVertexState(vertex, DecorationState.DEFAULT);
             this.drawing.getVertexDrawings()[vertex].clearExternalLabel();
         }
         for (const edge of this.drawing.getGraph().getEdgeList()) {
-            this.setEdgeState(edge[0], edge[1], "default");
+            this.setEdgeState(edge[0], edge[1], DecorationState.DEFAULT);
         }
     }
 }
@@ -83,14 +88,14 @@ export class HeadlessDecorator implements Decorator {
     }
 
     getVertexState(_: number): DecorationState {
-        return "default";
+        return DecorationState.DEFAULT;
     }
 
     setVertexState(_: number, __: DecorationState): void {
     }
 
     getEdgeState(_: number, __: number): DecorationState {
-        return "default";
+        return DecorationState.DEFAULT;
     }
 
     setEdgeState(_: number, __: number, ___: DecorationState): void {

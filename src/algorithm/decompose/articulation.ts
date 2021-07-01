@@ -2,6 +2,7 @@ import { Algorithm } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { isSingleComponent } from "../../graph_core/graph_util";
+import { DecorationState } from "../../decoration/decorator";
 
 export class ArticulationPoints implements Algorithm<void> {
 
@@ -22,10 +23,10 @@ export class ArticulationPoints implements Algorithm<void> {
         }
         this.graph = graph.clone();
         for (const v of graph.getVertexIds()) {
-            this.decorator.setVertexState(v, "disabled");
+            this.decorator.setVertexState(v, DecorationState.DISABLED);
         }
         for (const edge of graph.getEdgeList()) {
-            this.decorator.setEdgeState(edge[0], edge[1], "disabled");
+            this.decorator.setEdgeState(edge[0], edge[1], DecorationState.DISABLED);
         }
     }
 
@@ -63,9 +64,9 @@ export class ArticulationPoints implements Algorithm<void> {
             L[u] = num;
             num += 1;
             if (v !== undefined) {
-                decorator.setEdgeState(v, u, "considering");
+                decorator.setEdgeState(v, u, DecorationState.CONSIDERING);
             }
-            decorator.setVertexState(u, "considering");
+            decorator.setVertexState(u, DecorationState.CONSIDERING);
             yield;
             let nChildren = 0;
             for (const w of that.graph.getVertexNeighborIds(u)) {
@@ -80,16 +81,16 @@ export class ArticulationPoints implements Algorithm<void> {
                         let edge: number[];
                         do {
                             edge = s.pop();
-                            decorator.setEdgeState(edge[0], edge[1], "default");
-                            if (decorator.getVertexState(edge[0]) != "selected") {
-                                decorator.setVertexState(edge[0], "default");
+                            decorator.setEdgeState(edge[0], edge[1], DecorationState.DEFAULT);
+                            if (decorator.getVertexState(edge[0]) !== DecorationState.SELECTED) {
+                                decorator.setVertexState(edge[0], DecorationState.DEFAULT);
                             }
-                            if (decorator.getVertexState(edge[1]) != "selected") {
-                                decorator.setVertexState(edge[1], "default");
+                            if (decorator.getVertexState(edge[1]) !== DecorationState.SELECTED) {
+                                decorator.setVertexState(edge[1], DecorationState.DEFAULT);
                             }
                         } while (!(edge[0] == u && edge[1] == w || edge[0] == w && edge[1] == u));
                         if (u !== firstVertex || nChildren > 1) {
-                            decorator.setVertexState(u, "selected");
+                            decorator.setVertexState(u, DecorationState.SELECTED);
                         }
                     }
                     L[u] = Math.min(L[u], L[w]);
