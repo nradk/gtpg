@@ -12,6 +12,7 @@ import { BHKHamiltonPath } from "../algorithm/walks/hamilton";
 import { BHK_TSP } from "../algorithm/tsp/bhk";
 import { TSPApproxNearestNeighbor } from "../algorithm/tsp/approx_nearest_neighbor";
 import { TSPApproxNearestInsert } from "../algorithm/tsp/approx_nearest_insert";
+import { TSPApproxCheapestInsert } from "../algorithm/tsp/approx_cheapest_insert";
 import { ArticulationPoints } from "../algorithm/decompose/articulation";
 
 export default class AlgorithmUI {
@@ -157,6 +158,19 @@ export default class AlgorithmUI {
                 return false;
             }
             const controls = new InputlessControls(TSPApproxNearestInsert,
+                graphTabs, graphDrawing);
+            graphTabs.setControlPanelForActiveTab(controls);
+        });
+
+        $("#btn-algo-ci-tsp").on('click', () => {
+            const graphDrawing = graphTabs.getActiveGraphDrawing();
+            if (graphDrawing == undefined) {
+                console.error("No graph present for Cheapest Insert TSP approximation algorithm.");
+                alert("Please create or open a graph first to apply Cheapest Insert TSP" +
+                    " Approximation Algorithm.");
+                return false;
+            }
+            const controls = new InputlessControls(TSPApproxCheapestInsert,
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });
