@@ -89,6 +89,9 @@ export default class VertexDrawing extends Konva.Group {
 
     setDecorationState(state: DecorationState) {
         this.decorationState = state;
+        const selected_color = '#158cba';
+        const considering_color = '#ff851b';
+        const disabled_color = '#d0d0d0';
         switch (state)  {
             case DecorationState.DEFAULT:
                 this.circle.stroke('black');
@@ -96,19 +99,19 @@ export default class VertexDrawing extends Konva.Group {
                 this.label.fill('black');
                 break;
             case DecorationState.SELECTED:
-                this.circle.stroke('#158cba');
-                this.circle.fill('#158cba');
+                this.circle.stroke(selected_color);
+                this.circle.fill(selected_color);
                 this.label.fill('white');
                 break;
             case DecorationState.DISABLED:
-                this.circle.stroke('#f0f0f0');
+                this.circle.stroke(disabled_color);
                 this.circle.fill('white');
-                this.label.fill('#f0f0f0');
+                this.label.fill(disabled_color);
                 break;
             case DecorationState.CONSIDERING:
-                this.circle.stroke('#ff851b');
+                this.circle.stroke(considering_color);
                 this.circle.fill('white');
-                this.label.fill('#ff851b');
+                this.label.fill(considering_color);
                 break;
             default:
                 const color = DefaultDecorator.getAuxiliaryColor(state.getAuxiliaryId());

@@ -219,22 +219,25 @@ export default class EdgeDrawing extends Konva.Group {
 
     setDecorationState(state: DecorationState) {
         this.decorationState = state;
+        const selected_color = '#158cba';
+        const considering_color = '#ff851b';
+        const disabled_color = '#d0d0d0';
         switch (state)  {
             case DecorationState.DEFAULT:
                 this.arrow.stroke('black');
                 this.weightText && this.weightText.fill('black');
                 break;
             case DecorationState.SELECTED:
-                this.arrow.stroke('#158cba');
-                this.weightText && this.weightText.fill('#158cba');
+                this.arrow.stroke(selected_color);
+                this.weightText && this.weightText.fill(selected_color);
                 break;
             case DecorationState.DISABLED:
-                this.arrow.stroke('#f0f0f0');
-                this.weightText && this.weightText.fill('#f0f0f0');
+                this.arrow.stroke(disabled_color);
+                this.weightText && this.weightText.fill(disabled_color);
                 break;
             case DecorationState.CONSIDERING:
-                this.arrow.stroke('#ff851b');
-                this.weightText && this.weightText.fill('#ff851b');
+                this.arrow.stroke(considering_color);
+                this.weightText && this.weightText.fill(considering_color);
                 break;
             default:
                 const color = DefaultDecorator.getAuxiliaryColor(state.getAuxiliaryId());
