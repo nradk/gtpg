@@ -144,6 +144,25 @@ export class EuclideanGraph implements Graph, Weighted {
         }
     }
 
+    getNearestNeighbor(vertexId: number, exclude?: Set<number>) {
+        if (this.getNumberOfVertices() < 2) {
+            throw new Error("Need at least 2 vertices for nearest neighbor!");
+        }
+        exclude = exclude ?? new Set<number>();
+        let [ nearest, bestDist ] = [null, Infinity];
+        for (const n of this.getVertexNeighborIds(vertexId)) {
+            if (exclude.has(n)) {
+                continue;
+            }
+            const dist = this.getEdgeWeight(vertexId, n);
+            if (dist < bestDist) {
+                bestDist = dist;
+                nearest = n;
+            }
+        }
+        return nearest;
+    }
+
     private static getRandomPosition(): Point {
         return { x: Math.random() * 100, y: Math.random() * 100 };
     }

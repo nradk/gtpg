@@ -10,6 +10,7 @@ import { DijkstrasShortestPath } from "../algorithm/shortestpath/dijkstra";
 import { FleuryEulerTrail } from "../algorithm/walks/euler";
 import { BHKHamiltonPath } from "../algorithm/walks/hamilton";
 import { BHK_TSP } from "../algorithm/tsp/bhk";
+import { TSPApproxNearestNeighbor } from "../algorithm/tsp/approx_nearest_neighbor";
 import { ArticulationPoints } from "../algorithm/decompose/articulation";
 
 export default class AlgorithmUI {
@@ -129,6 +130,19 @@ export default class AlgorithmUI {
                 return false;
             }
             const controls = new InputlessControls(BHK_TSP,
+                graphTabs, graphDrawing);
+            graphTabs.setControlPanelForActiveTab(controls);
+        });
+
+        $("#btn-algo-nn-tsp").on('click', () => {
+            const graphDrawing = graphTabs.getActiveGraphDrawing();
+            if (graphDrawing == undefined) {
+                console.error("No graph present for Nearest Neighbor TSP approximation algorithm.");
+                alert("Please create or open a graph first to apply Nearest Neighbor TSP" +
+                    " Approximation Algorithm.");
+                return false;
+            }
+            const controls = new InputlessControls(TSPApproxNearestNeighbor,
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });
