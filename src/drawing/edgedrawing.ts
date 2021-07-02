@@ -21,6 +21,8 @@ export default class EdgeDrawing extends Konva.Group {
     weightOffset?: Vector2;
     weightChangeCallback?: WeightUpdateCallback;
     decorationState: DecorationState;
+    private readonly startMoveCallbackId: number;
+    private readonly endMoveCallbackId: number;
 
     constructor(private readonly graphDrawing: GraphDrawing,
                 private readonly start: VertexDrawing,
@@ -60,8 +62,8 @@ export default class EdgeDrawing extends Konva.Group {
         this.arrow.on('click', this.handleClick.bind(this));
         this.directed = directed;
         this.redrawCallback = redrawCallback;
-        this.start.addMoveCallback(this.vertexMoveCallback.bind(this));
-        this.end.addMoveCallback(this.vertexMoveCallback.bind(this));
+        this.startMoveCallbackId = this.start.addMoveCallback(this.vertexMoveCallback.bind(this));
+        this.endMoveCallbackId = this.end.addMoveCallback(this.vertexMoveCallback.bind(this));
         this.start.registerEdgeDrawing(this);
         this.end.registerEdgeDrawing(this);
         this.setEdgePoints();
@@ -243,5 +245,12 @@ export default class EdgeDrawing extends Konva.Group {
 
     getDecorationState(): DecorationState {
         return this.decorationState;
+    }
+
+    destroy() {
+        super.destroy();
+        this.start.removeMoveCallback(this.startMoveCallbackId);
+        this.end.removeMoveCallback(this.endMoveCallbackId);
+        return this;
     }
 }

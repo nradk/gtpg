@@ -2,7 +2,6 @@ import $ from "jquery";
 import {  InputlessControls, VertexInputControls }
     from "../components/algorithm_controls";
 import GraphTabs from "./graphtabs";
-import { WeightedGraph } from "../graph_core/graph";
 import { KruskalMST } from "../algorithm/mst/kruskal";
 import { PrimMST } from "../algorithm/mst/prim";
 import { BreadthFirstSearch } from "../algorithm/search/bfs";
@@ -10,6 +9,7 @@ import { DepthFirstSearch } from "../algorithm/search/dfs";
 import { DijkstrasShortestPath } from "../algorithm/shortestpath/dijkstra";
 import { FleuryEulerTrail } from "../algorithm/walks/euler";
 import { BHKHamiltonPath } from "../algorithm/walks/hamilton";
+import { BHK_TSP } from "../algorithm/tsp/bhk";
 import { ArticulationPoints } from "../algorithm/decompose/articulation";
 
 export default class AlgorithmUI {
@@ -116,6 +116,19 @@ export default class AlgorithmUI {
                 return false;
             }
             const controls = new InputlessControls(BHKHamiltonPath,
+                graphTabs, graphDrawing);
+            graphTabs.setControlPanelForActiveTab(controls);
+        });
+
+        $("#btn-algo-bhk-tsp").on('click', () => {
+            const graphDrawing = graphTabs.getActiveGraphDrawing();
+            if (graphDrawing == undefined) {
+                console.error("No graph present for Bellman-Held-Karp TSP algorithm.");
+                alert("Please create or open a graph first to apply Bellman-Held-Karp TSP" +
+                    " Algorithm.");
+                return false;
+            }
+            const controls = new InputlessControls(BHK_TSP,
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });

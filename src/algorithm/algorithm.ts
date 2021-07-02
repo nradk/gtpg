@@ -70,8 +70,8 @@ export class AlgorithmRunner<I> {
 
     setSpeed(speed: number) {
         // speed can go from 0 to 100
-        // That corresponds to a delay from 2s to 10ms
-        this.delay = 10 + (2000 - 10) * (1 - speed / 100);
+        // That corresponds to a delay from 2s to 1ms
+        this.delay = 1 + (2000 - 1) * (1 - speed / 100);
     }
 
     getState(): AlgorithmState {

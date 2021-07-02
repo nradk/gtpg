@@ -145,8 +145,9 @@ export class EuclideanDecorator extends DefaultDecorator {
         }
         const edges: number[][] = this.drawing.getEdgeDrawingKeyList();
         for (const [f, t] of edges) {
-            this.setEdgeState(f, t, DecorationState.DISABLED);
+            this.drawing.removeEdgeDrawing(f, t, false);
         }
+        this.drawing.redrawGraph();
     }
 }
 

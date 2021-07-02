@@ -163,8 +163,8 @@ export class GraphDrawing {
 
     // This is a "shallow" render, just update positions from the layout and
     // update the vertex and edge positions
-    redrawGraph(layout: Layouts.Layout) {
-        layout.updateVertexPositions(this.graph, this.positions);
+    redrawGraph(layout?: Layouts.Layout) {
+        layout?.updateVertexPositions(this.graph, this.positions);
         for (const v of this.positions.keys()) {
             const drawing: VertexDrawing = this.vertexDrawings[v];
             drawing.x(this.positions.get(v).x);
@@ -256,7 +256,7 @@ export class GraphDrawing {
         return next;
     }
 
-    addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
+    addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>): VertexDrawing {
         // TODO:::::
         // WARNING: BAD HACK! We check to see if the stage has it's 'draggable'
         // property disabled, because EditableText disables stage dragging when
@@ -272,6 +272,7 @@ export class GraphDrawing {
         const newId = this.graph.addVertex();
         this.graph.setVertexLabel(newId, this.getNextUniqueLabel());
         const drawing = new VertexDrawing(x, y, this.vertexRadius, this, newId);
+        drawing.addMoveCallback(this.vertexMoveHandler.bind(this));
         this.vertexDrawings[newId] = drawing;
         this.positions.set(newId, {x: x, y: y});
         drawing.addClickCallback(this.vertexClickHandler.bind(this));
@@ -281,22 +282,32 @@ export class GraphDrawing {
         this.centroidCache.n += 1;
         this.centroidCache.xSum += x;
         this.centroidCache.ySum += y;
+        return drawing;
+    }
+
+    protected updateVertexPosition(vertex: VertexDrawing) {
+        const vid = vertex.getVertexId();
+        const oldPosition = this.positions.get(vid);
+        const newPosition = {x: vertex.x(), y: vertex.y()};
+        this.positions.set(vid, newPosition);
+        this.updateCentroidCache(oldPosition, newPosition);
     }
 
     vertexMoveHandler(vertex: VertexDrawing) {
         const vid = vertex.getVertexId();
-        this.centroidCache.xSum -= this.positions.get(vid).x;
-        this.centroidCache.ySum -= this.positions.get(vid).y;
-
-        this.positions.set(vid, {x: vertex.x(), y: vertex.y()});
-
-        this.centroidCache.xSum += this.positions.get(vid).x;
-        this.centroidCache.ySum += this.positions.get(vid).y;
-
+        this.updateVertexPosition(vertex);
         // Notify neighbors so they can update their label positions
         for (const n of this.graph.getVertexNeighborIds(vid, true)) {
             this.vertexDrawings[n].updateExternalLabelPosition();
         }
+    }
+
+    protected updateCentroidCache(oldPosition: Point, newPosition: Point) {
+        this.centroidCache.xSum -= oldPosition.x;
+        this.centroidCache.ySum -= oldPosition.y;
+
+        this.centroidCache.xSum += newPosition.x;
+        this.centroidCache.ySum += newPosition.y;
     }
 
     vertexClickHandler(vertexDrawing: VertexDrawing) {
@@ -394,21 +405,24 @@ export class GraphDrawing {
         this.graph.removeEdge(startId, endId);
     }
 
-    removeEdgeDrawing(startId: number, endId: number) {
+    removeEdgeDrawing(startId: number, endId: number, draw?: boolean) {
         const start = this.vertexDrawings[startId];
         const end = this.vertexDrawings[endId];
-        for (const edgeDrawing of start.getEdgeDrawings()) {
-            const endIndex = end.getEdgeDrawings().indexOf(edgeDrawing);
-            if (endIndex >= 0) {
-                start.unregisterEdgeDrawing(edgeDrawing);
-                end.unregisterEdgeDrawing(edgeDrawing);
-                edgeDrawing.destroy();
-                this.edgesLayer.draw();
-                delete this.edgeDrawings[startId][endId];
-                return;
-            }
+        draw = draw ?? true;
+        const orderedEdge = this.getEdgeDrawingOrder(startId, endId);
+        if (orderedEdge == null) {
+            throw new Error("No edge drawing exists between the given vertices!");
         }
-        throw new Error("No edge drawing exists between the given vertices!");
+        [startId, endId] = orderedEdge;
+        const edgeDrawing = this.edgeDrawings[startId][endId];
+        start.unregisterEdgeDrawing(edgeDrawing);
+        end.unregisterEdgeDrawing(edgeDrawing);
+        edgeDrawing.remove();
+        edgeDrawing.destroy();
+        if (draw) {
+            this.edgesLayer.draw();
+        }
+        delete this.edgeDrawings[startId][endId];
     }
 
     getEdgeDrawingKeyList() {
@@ -566,6 +580,23 @@ export class EuclideanGraphDrawing extends GraphDrawing {
     constructor(graph: EuclideanGraph) {
         super(graph);
         this.positions = graph.getPositions();
+    }
+
+    populateVertexDrawings(layout: Layouts.Layout) {
+        super.populateVertexDrawings(layout);
+        for (const v of Object.keys(this.vertexDrawings)) {
+            this.vertexDrawings[v].setExternalLabelPlacement("anti-centroid");
+        }
+    }
+
+    vertexMoveHandler(vertex: VertexDrawing) {
+        this.updateVertexPosition(vertex);
+    }
+
+    addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
+        const vd = super.addVertexToCurrentGraph(e);
+        vd.setExternalLabelPlacement("anti-centroid");
+        return vd;
     }
 
     populateEdgeDrawings() {

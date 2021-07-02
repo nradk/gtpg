@@ -9,16 +9,19 @@ import { EditableText } from "./editabletext";
 import { ToolName } from "../ui_handlers/tools";
 
 type VertexDrawingEventCallback = (v: VertexDrawing) => void;
+type ExternalLabelPlacement = "anti-centroid" | "best-gap";
 
 export default class VertexDrawing extends Konva.Group {
 
     private decorationState: DecorationState;
     private label: EditableText;
     private circle: Konva.Circle;
-    private moveCallbacks: VertexDrawingEventCallback[];
-    private clickCallbacks: VertexDrawingEventCallback[];
+    private moveCallbacks: Map<number, VertexDrawingEventCallback>;
+    private clickCallbacks: Map<number, VertexDrawingEventCallback>;
     private edgeDrawings: EdgeDrawing[];
     private externalLabel: Konva.Text;
+    private externalLabelPlacement: ExternalLabelPlacement = "best-gap";
+    private callbackId: number = 0;
 
     constructor(x: number, y: number, radius: number,
             private graphDrawing: GraphDrawing, private vertexId: number) {
@@ -31,9 +34,8 @@ export default class VertexDrawing extends Konva.Group {
         });
         this.add(this.circle);
         this.decorationState = DecorationState.DEFAULT;
-        this.moveCallbacks = [];
-        this.moveCallbacks = [];
-        this.clickCallbacks = [];
+        this.moveCallbacks = new Map();
+        this.clickCallbacks = new Map();
         this.edgeDrawings = [];
         const graph = this.graphDrawing.getGraph();
         const labelEditOn: Set<ToolName> = new Set(["text"]);
@@ -81,6 +83,10 @@ export default class VertexDrawing extends Konva.Group {
         this.setDecorationState(DecorationState.DEFAULT);
     }
 
+    setExternalLabelPlacement(placement: ExternalLabelPlacement) {
+        this.externalLabelPlacement = placement;
+    }
+
     setDecorationState(state: DecorationState) {
         this.decorationState = state;
         switch (state)  {
@@ -117,30 +123,37 @@ export default class VertexDrawing extends Konva.Group {
         return this.decorationState;
     }
 
-    addMoveCallback(callback: VertexDrawingEventCallback) {
-        this.moveCallbacks.push(callback);
+    addMoveCallback(callback: VertexDrawingEventCallback): number {
+        this.callbackId++;
+        this.moveCallbacks.set(this.callbackId, callback);
+        return this.callbackId;
     }
 
     callMoveCallbacks() {
         this.updateExternalLabelPosition();
+        console.log(`Vertex ${this.vertexId} moving, calling ${this.moveCallbacks.size} callbacks`);
         this.moveCallbacks.forEach(callback => callback(this));
     }
 
-    removeMoveCallback(callback: VertexDrawingEventCallback) {
-        const idx = this.moveCallbacks.indexOf(callback);
-        if (idx >= 0) {
-            this.moveCallbacks.splice(idx, 1);
+    removeMoveCallback(callbackId: number) {
+        if (this.moveCallbacks.has(callbackId)) {
+            this.moveCallbacks.delete(callbackId);
+        } else {
+            throw Error(`No callback with callbackId ${callbackId} present!`);
         }
     }
 
-    addClickCallback(callback: VertexDrawingEventCallback) {
-        this.clickCallbacks.push(callback);
+    addClickCallback(callback: VertexDrawingEventCallback): number {
+        this.callbackId++;
+        this.clickCallbacks.set(this.callbackId, callback);
+        return this.callbackId;
     }
 
-    removeClickCallback(callback: VertexDrawingEventCallback) {
-        const idx = this.clickCallbacks.indexOf(callback);
-        if (idx >= 0) {
-            this.clickCallbacks.splice(idx, 1);
+    removeClickCallback(callbackId: number) {
+        if (this.clickCallbacks.has(callbackId)) {
+            this.clickCallbacks.delete(callbackId);
+        } else {
+            throw Error(`No callback with callbackId ${callbackId} present!`);
         }
     }
 
@@ -184,21 +197,29 @@ export default class VertexDrawing extends Konva.Group {
         if (this.externalLabel == undefined) {
             return;
         }
-        const neighborDirections: Vector2[] = [];
-        const vVect = [this.x(), this.y()];
-        //console.log(`vVect for ${this.vertexId} is ${vVect}`);
-        for (const n of this.graphDrawing.getGraph().getVertexNeighborIds(
+        let labelPosition: Vector2;
+        const vVect: Vector2 = [this.x(), this.y()];
+        if (this.externalLabelPlacement == "best-gap") {
+            const neighborDirections: Vector2[] = [];
+            //console.log(`vVect for ${this.vertexId} is ${vVect}`);
+            for (const n of this.graphDrawing.getGraph().getVertexNeighborIds(
                 this.vertexId)) {
-            const nPt = this.graphDrawing.getVertexPositions()[n];
-            const nVect = [nPt.x, nPt.y];
-            //console.log(`Neighbor ${n}'s nVect is ${nVect}`);
-            neighborDirections.push([nVect[0] - vVect[0], nVect[1] - vVect[1]]);
+                const nPt = this.graphDrawing.getVertexPositions()[n];
+                const nVect = [nPt.x, nPt.y];
+                //console.log(`Neighbor ${n}'s nVect is ${nVect}`);
+                neighborDirections.push([nVect[0] - vVect[0], nVect[1] - vVect[1]]);
+            }
+            //console.log(`Neighbor directions for ${this.vertexId} are ${neighborDirections}`);
+            const gapVect = getBestGapVector(neighborDirections);
+            labelPosition = Util.scalarVectorMultiply(this.getRadius() * 2,
+                gapVect);
+            //console.log(`Label position for ${this.vertexId} is ${labelPosition}`);
+        } else {
+            const centroid = this.graphDrawing.getCentroid();
+            const toCentroid = Util.getDirectionVectorNormalized(vVect, centroid);
+            labelPosition = Util.scalarVectorMultiply(-this.getRadius() * 2,
+                toCentroid);
         }
-        //console.log(`Neighbor directions for ${this.vertexId} are ${neighborDirections}`);
-        const gapVect = getBestGapVector(neighborDirections);
-        const labelPosition = Util.scalarVectorMultiply(this.getRadius() * 2,
-            gapVect);
-        //console.log(`Label position for ${this.vertexId} is ${labelPosition}`);
         this.externalLabel.x(labelPosition[0]);
         this.externalLabel.y(labelPosition[1]);
         this.externalLabel.offsetX(this.externalLabel.width() / 2);
