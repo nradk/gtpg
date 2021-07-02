@@ -1,9 +1,9 @@
-import { Graph, fromJsonObject } from "./graph";
+import { Graph, fromJsonObject, Weighted } from "./graph";
 import { PositionMap } from "../drawing/layouts";
 import { Util, Point } from "../commontypes";
 
 
-export class EuclideanGraph implements Graph {
+export class EuclideanGraph implements Graph, Weighted {
     private readonly positions: PositionMap;
     private readonly labels: Map<number, string>;
 
@@ -37,6 +37,18 @@ export class EuclideanGraph implements Graph {
         return this.labels;
     }
 
+    getEdgeWeight(startVertex: number, endVertex: number): number {
+        return Util.getDistanceFromPoints(
+            this.positions.get(startVertex), this.positions.get(endVertex));
+    }
+
+    setEdgeWeight(_: number, __: number, ___: number) {
+        throw new Error("Edge weight cannot be set in an Euclidean Graph!");
+    }
+
+    addEdge(_: number, __: number, ___?: number) {
+        throw new Error("Edge cannot be added in an Euclidean Graph!");
+    }
 
     getEdgeList(): number[][] {
         const vertices = this.getVertexIds();
@@ -46,8 +58,7 @@ export class EuclideanGraph implements Graph {
                 if (t <= f) {
                     continue;
                 }
-                edges.push([f, t, Util.getDistanceFromPoints(
-                    this.positions.get(f), this.positions.get(t))]);
+                edges.push([f, t, this.getEdgeWeight(f, t)]);
             }
         }
         return edges;
@@ -91,12 +102,6 @@ export class EuclideanGraph implements Graph {
         }
     }
 
-
-    addEdge(_: number, __: number): void {
-        // throw new Error("Cannot add an edge to an Euclidean Graph!");
-    }
-
-
     removeEdge(_: number, __: number): void {
         throw new Error("Cannot remove an edge from an Euclidean Graph!");
     }
@@ -129,7 +134,14 @@ export class EuclideanGraph implements Graph {
         return true;
     }
 
-    populateLabelsFromIds(): void {
+    getPositions(): Map<number, Point> {
+        return this.positions;
+    }
+
+    populateLabelsFromIds() {
+        for (const v of this.getVertexIds()) {
+            this.labels.set(v, v.toString());
+        }
     }
 
     private static getRandomPosition(): Point {

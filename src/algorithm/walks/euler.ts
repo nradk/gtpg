@@ -60,7 +60,7 @@ export class FleuryEulerTrail implements Algorithm<void> {
 
     initialize() {
         const graph = this.decorator.getGraph();
-        if (graph.isDirected() || graph instanceof WeightedGraph) {
+        if (graph.isDirected() || graph.isWeighted()) {
             alert("Fleury's algorithm only supports undirected unweighted graphs!");
             throw new Error("Fluery: undirected unweighted graph required!");
         }

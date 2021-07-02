@@ -186,7 +186,11 @@ export class GraphDrawing {
     }
 
     populateVertexDrawings(layout: Layouts.Layout) {
-        this.positions = layout.getVertexPositions(this.graph);
+        // TODO find a more elegant way to do this
+        // Don't replace the positions object because in the special case of
+        // the Euclidean Graph, the positions object is shared with the graph
+        // itself.
+        layout.updateVertexPositions(this.graph, this.positions);
         this.vertexDrawings = {};
         for (const v of this.positions.keys()) {
             const p = this.positions.get(v);
@@ -561,6 +565,7 @@ export class EuclideanGraphDrawing extends GraphDrawing {
 
     constructor(graph: EuclideanGraph) {
         super(graph);
+        this.positions = graph.getPositions();
     }
 
     populateEdgeDrawings() {

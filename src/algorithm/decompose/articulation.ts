@@ -31,7 +31,7 @@ export class ArticulationPoints implements Algorithm<void> {
     }
 
     getOutputGraph() {
-        return this.graph;
+        return null;
     }
 
     getFullName() {

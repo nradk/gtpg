@@ -1,7 +1,7 @@
 import { Algorithm } from "../algorithm";
 import { VertexInput } from "../../commontypes";
 import { Decorator } from "../../decoration/decorator";
-import { WeightedGraph, UnweightedGraph } from "../../graph_core/graph";
+import { WeightedGraph, UnweightedGraph, Weighted, Graph } from "../../graph_core/graph";
 import { DecorationState } from "../../decoration/decorator";
 
 type VertexAndParent = [number, number];
@@ -17,7 +17,7 @@ export class DepthFirstSearch implements Algorithm<VertexInput> {
 
     initialize(startVertex: VertexInput) {
         const graph = this.decorator.getGraph();
-        if (graph instanceof WeightedGraph) {
+        if (graph.isWeighted()) {
             this.searchTree = new WeightedGraph(true);
         } else {
             this.searchTree = new UnweightedGraph(true);
@@ -61,8 +61,8 @@ export class DepthFirstSearch implements Algorithm<VertexInput> {
                 this.searchTree.addVertex(v);
                 this.inTree.add(v);
                 if (vparent != undefined) {
-                    if (this.searchTree instanceof WeightedGraph) {
-                        const g = graph as WeightedGraph;
+                    if (this.searchTree.isWeighted()) {
+                        const g = graph as Weighted & Graph;
                         this.searchTree.addEdge(vparent, v,
                             g.getEdgeWeight(vparent, v));
                     } else {

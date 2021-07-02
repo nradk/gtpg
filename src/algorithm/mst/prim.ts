@@ -2,7 +2,7 @@ import { Heap } from 'heap-js';
 
 import { Algorithm } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
-import { WeightedGraph } from "../../graph_core/graph";
+import { WeightedGraph, Weighted, Graph } from "../../graph_core/graph";
 import { DecorationState } from "../../decoration/decorator";
 
 export class PrimMST implements Algorithm<void> {
@@ -17,11 +17,11 @@ export class PrimMST implements Algorithm<void> {
 
     initialize() {
         const g = this.decorator.getGraph();
-        if (!(g instanceof WeightedGraph) || g.isDirected()) {
+        if (!g.isWeighted() || g.isDirected()) {
             alert("Prim's algorithm needs a weighted undirected graph!");
             throw new Error("Prim: weighted undirected graph required!");
         }
-        const graph = g as WeightedGraph;
+        const graph = g as Weighted & Graph;
         this.mst = new WeightedGraph(false)
         const vertexIds = [...graph.getVertexIds()];
         for (const v of vertexIds) {

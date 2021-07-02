@@ -7,14 +7,20 @@ export type PositionMap = Map<number, Point>;
 
 export type RelayoutCallback = (map: PositionMap) => void;
 
-export interface Layout {
-    getVertexPositions(graph: Graph): PositionMap;
-    updateVertexPositions(graph: Graph, positions: PositionMap): void;
-    isContinuous(): boolean;
+export abstract class Layout {
+    abstract getVertexPositions(graph: Graph): PositionMap;
+
+    updateVertexPositions(graph: Graph, positions: PositionMap) {
+        const p = this.getVertexPositions(graph);
+        for (const v of p.keys()) {
+            positions.set(v, p.get(v));
+        }
+    }
+    abstract isContinuous(): boolean;
 }
 
 // Empty layout, does nothing
-export class EmptyLayout implements Layout {
+export class EmptyLayout extends Layout {
     getVertexPositions(_: Graph): PositionMap {
         return new Map();
     }
@@ -27,11 +33,12 @@ export class EmptyLayout implements Layout {
     }
 }
 
-export class RandomLayout implements Layout {
+export class RandomLayout extends Layout {
 
     stageDims: Size;
 
     constructor(stageDims: Size) {
+        super();
         this.stageDims = stageDims;
     }
 
@@ -45,23 +52,17 @@ export class RandomLayout implements Layout {
         return positions;
     }
 
-    updateVertexPositions(graph: Graph, positions: PositionMap) {
-        const p = this.getVertexPositions(graph);
-        for (const v of p.keys()) {
-            positions.set(v, p.get(v));
-        }
-    }
-
     isContinuous() {
         return false;
     }
 }
 
-export class CircularLayout implements Layout {
+export class CircularLayout extends Layout {
 
     stageDims: Size;
 
     constructor(stageDims: Size) {
+        super();
         this.stageDims = stageDims;
     }
 
@@ -83,23 +84,17 @@ export class CircularLayout implements Layout {
         return positions;
     }
 
-    updateVertexPositions(graph: Graph, positions: PositionMap) {
-        const p = this.getVertexPositions(graph);
-        for (const v of p.keys()) {
-            positions.set(v, p.get(v));
-        }
-    }
-
     isContinuous() {
         return false;
     }
 }
 
-export class GridLayout implements Layout {
+export class GridLayout extends Layout {
 
     stageDims: Size;
 
     constructor(stageDims: Size) {
+        super();
         this.stageDims = stageDims;
     }
 
@@ -125,22 +120,16 @@ export class GridLayout implements Layout {
         return positions;
     }
 
-    updateVertexPositions(graph: Graph, positions: PositionMap) {
-        const p = this.getVertexPositions(graph);
-        for (const v of p.keys()) {
-            positions.set(v, p.get(v));
-        }
-    }
-
     isContinuous() {
         return false;
     }
 }
 
-export class FixedLayout implements Layout {
+export class FixedLayout extends Layout {
     positions: PositionMap;
 
     constructor(positions: PositionMap) {
+        super();
         this.positions = positions;
     }
 
@@ -148,19 +137,12 @@ export class FixedLayout implements Layout {
         return this.positions;
     }
 
-    updateVertexPositions(graph: Graph, positions: PositionMap) {
-        const p = this.getVertexPositions(graph);
-        for (const v of p.keys()) {
-            positions.set(v, p.get(v));
-        }
-    }
-
     isContinuous() {
         return false;
     }
 }
 
-export class ForceBasedLayout implements Layout {
+export class ForceBasedLayout extends Layout {
     stageDims: Size;
     forces: {[vertexId: number]: Vector2};          // Actually velocities
     positions: PositionMap;
@@ -171,6 +153,7 @@ export class ForceBasedLayout implements Layout {
     private readonly C4 = 0.2;      // Position update factor
 
     constructor(stageDims: Size) {
+        super();
         this.stageDims = stageDims;
         this.forces = {};
         this.positions = null;

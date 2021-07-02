@@ -3,7 +3,7 @@ import { Heap } from 'heap-js';
 import { Algorithm } from "../algorithm";
 import { VertexInput } from "../../commontypes";
 import { Decorator } from "../../decoration/decorator";
-import { WeightedGraph } from "../../graph_core/graph";
+import { WeightedGraph, Weighted, Graph } from "../../graph_core/graph";
 import { DecorationState } from "../../decoration/decorator";
 
 type VertexAndDistance = [number, number];
@@ -21,7 +21,7 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
 
     initialize(startVertex: VertexInput) {
         const graph = this.decorator.getGraph();
-        if (!(graph instanceof WeightedGraph)) {
+        if (!graph.isWeighted()) {
             alert("Dijkstra's algorithm needs a weighted graph!");
             throw new Error("Dijkstra: weighted graph required!");
         }
@@ -57,7 +57,7 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
     }
 
     *run() {
-        const graph = this.decorator.getGraph() as WeightedGraph;
+        const graph = this.decorator.getGraph() as Weighted & Graph;
         yield;
         while (this.queue.length > 0) {
             const [v, vDist] = this.queue.pop();

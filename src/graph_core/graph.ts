@@ -22,10 +22,17 @@ export interface Graph {
     removeEdge(startVertexId: number, endVertexId: number): void;
     doesEdgeExist(startVertexId: number, endVertexId: number): boolean;
     isDirected(): boolean;
-    isWeighted(): boolean;
+    isWeighted(): boolean;  // If isWeighted() == true for an implementation, it MUST
+                            // implement the Weighted interface.
     toJSON(): object;
     clone(): Graph;
     populateLabelsFromIds(): void;
+}
+
+export interface Weighted {
+    getEdgeWeight(startVertex: number, endVertex: number): number;
+    setEdgeWeight(startVertex: number, endVertex: number, weight: number): void;
+    addEdge(startVertex: number, endVertex: number, weight: number): void;
 }
 
 export function fromJsonString(jsonString: string): Graph {
@@ -300,7 +307,7 @@ export class UnweightedGraph extends DefaultGraph<EmptyEdgeData> {
     }
 }
 
-export class WeightedGraph extends DefaultGraph<WeightedEdgeData> {
+export class WeightedGraph extends DefaultGraph<WeightedEdgeData> implements Weighted {
     protected initialEdgeData(): WeightedEdgeData {
         return { weight: 1 };
     }
