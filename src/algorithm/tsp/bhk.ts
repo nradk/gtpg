@@ -1,8 +1,9 @@
 import { Algorithm } from "../algorithm";
 import { Decorator, DecorationState } from "../../decoration/decorator";
-import { Graph, UnweightedGraph } from "../../graph_core/graph";
+import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { combinationBits } from "../../util";
+import { createOutputGraph } from "../../graph_core/graph_util";
 
 export class BHK_TSP implements Algorithm<void> {
 
@@ -132,24 +133,8 @@ export class BHK_TSP implements Algorithm<void> {
                 bestCost = cost;
             }
         }
-        this.path = this.createOutputGraph(bestTour);
+        this.path = createOutputGraph(bestTour, graph);
         this.setPathEdgesState(bestTour, DecorationState.SELECTED);
-    }
-
-    private createOutputGraph(path: number[]): Graph {
-        const outGraph = new UnweightedGraph(true);
-        const graph = this.decorator.getGraph();
-        outGraph.addVertex(path[0], graph.getVertexLabel(path[0]));
-        for (let i = 1; i < path.length; i++) {
-            // The following 'if' guard is necessary for paths that are
-            // circuits, because the last vertex will be the same as the first
-            // vertex.
-            if (!outGraph.getVertexIds().has(path[i])) {
-                outGraph.addVertex(path[i], graph.getVertexLabel(path[i]));
-            }
-            outGraph.addEdge(path[i - 1], path[i]);
-        }
-        return outGraph;
     }
 
     private setSelectionState(vertices: number[], subset: number,

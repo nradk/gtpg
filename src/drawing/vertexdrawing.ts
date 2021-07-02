@@ -134,7 +134,6 @@ export default class VertexDrawing extends Konva.Group {
 
     callMoveCallbacks() {
         this.updateExternalLabelPosition();
-        console.log(`Vertex ${this.vertexId} moving, calling ${this.moveCallbacks.size} callbacks`);
         this.moveCallbacks.forEach(callback => callback(this));
     }
 

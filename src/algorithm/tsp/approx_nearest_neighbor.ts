@@ -1,7 +1,8 @@
 import { Algorithm } from "../algorithm";
 import { Decorator, DecorationState } from "../../decoration/decorator";
-import { Graph, UnweightedGraph } from "../../graph_core/graph";
+import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
+import { createOutputGraph } from "../../graph_core/graph_util";
 
 export class TSPApproxNearestNeighbor implements Algorithm<void> {
 
@@ -69,22 +70,6 @@ export class TSPApproxNearestNeighbor implements Algorithm<void> {
         }
         this.decorator.setVertexState(current, DecorationState.SELECTED);
         this.decorator.setEdgeState(tour[0], current, DecorationState.SELECTED);
-        this.path = this.createOutputGraph(tour.concat(tour[0]));
-    }
-
-    private createOutputGraph(path: number[]): Graph {
-        const outGraph = new UnweightedGraph(true);
-        const graph = this.decorator.getGraph();
-        outGraph.addVertex(path[0], graph.getVertexLabel(path[0]));
-        for (let i = 1; i < path.length; i++) {
-            // The following 'if' guard is necessary for paths that are
-            // circuits, because the last vertex will be the same as the first
-            // vertex.
-            if (!outGraph.getVertexIds().has(path[i])) {
-                outGraph.addVertex(path[i], graph.getVertexLabel(path[i]));
-            }
-            outGraph.addEdge(path[i - 1], path[i]);
-        }
-        return outGraph;
+        this.path = createOutputGraph(tour.concat(tour[0]), graph);
     }
 }

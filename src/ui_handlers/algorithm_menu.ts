@@ -11,6 +11,7 @@ import { FleuryEulerTrail } from "../algorithm/walks/euler";
 import { BHKHamiltonPath } from "../algorithm/walks/hamilton";
 import { BHK_TSP } from "../algorithm/tsp/bhk";
 import { TSPApproxNearestNeighbor } from "../algorithm/tsp/approx_nearest_neighbor";
+import { TSPApproxNearestInsert } from "../algorithm/tsp/approx_nearest_insert";
 import { ArticulationPoints } from "../algorithm/decompose/articulation";
 
 export default class AlgorithmUI {
@@ -143,6 +144,19 @@ export default class AlgorithmUI {
                 return false;
             }
             const controls = new InputlessControls(TSPApproxNearestNeighbor,
+                graphTabs, graphDrawing);
+            graphTabs.setControlPanelForActiveTab(controls);
+        });
+
+        $("#btn-algo-ni-tsp").on('click', () => {
+            const graphDrawing = graphTabs.getActiveGraphDrawing();
+            if (graphDrawing == undefined) {
+                console.error("No graph present for Nearest Insert TSP approximation algorithm.");
+                alert("Please create or open a graph first to apply Nearest Insert TSP" +
+                    " Approximation Algorithm.");
+                return false;
+            }
+            const controls = new InputlessControls(TSPApproxNearestInsert,
                 graphTabs, graphDrawing);
             graphTabs.setControlPanelForActiveTab(controls);
         });
