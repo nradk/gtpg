@@ -34,7 +34,7 @@ export class Tools {
         if (this.currentTool == "default") {
             this.stage.container().style.cursor = "default";
         } else if (this.currentTool == "delete") {
-            this.stage.container().style.cursor = "url(img/x-lg.svg) 25 25, auto";
+            this.stage.container().style.cursor = "url(img/x-lg.svg) 8 8, auto";
         } else if (this.currentTool == "text") {
             this.stage.container().style.cursor = "text";
         } else {

@@ -38,7 +38,7 @@ export default class EdgeDrawing extends Konva.Group {
                 this.end.x(), this.end.y()],
             stroke: 'black',
             strokeWidth: 2,
-            hitStrokeWidth: 7,
+            hitStrokeWidth: 12,
             lineCap: 'round',
             lineJoin: 'round',
             pointerLength: directed? 10 : 0,
