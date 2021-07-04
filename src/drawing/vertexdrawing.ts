@@ -203,19 +203,15 @@ export default class VertexDrawing extends Konva.Group {
         const vVect: Vector2 = [this.x(), this.y()];
         if (this.externalLabelPlacement == "best-gap") {
             const neighborDirections: Vector2[] = [];
-            //console.log(`vVect for ${this.vertexId} is ${vVect}`);
-            for (const n of this.graphDrawing.getGraph().getVertexNeighborIds(
-                this.vertexId)) {
-                const nPt = this.graphDrawing.getVertexPositions()[n];
+            const graph = this.graphDrawing.getGraph();
+            for (const n of graph.getVertexNeighborIds(this.vertexId)) {
+                const nPt = this.graphDrawing.getVertexPositions().get(n);
                 const nVect = [nPt.x, nPt.y];
-                //console.log(`Neighbor ${n}'s nVect is ${nVect}`);
                 neighborDirections.push([nVect[0] - vVect[0], nVect[1] - vVect[1]]);
             }
-            //console.log(`Neighbor directions for ${this.vertexId} are ${neighborDirections}`);
             const gapVect = getBestGapVector(neighborDirections);
             labelPosition = Util.scalarVectorMultiply(this.getRadius() * 2,
                 gapVect);
-            //console.log(`Label position for ${this.vertexId} is ${labelPosition}`);
         } else {
             const centroid = this.graphDrawing.getCentroid();
             const toCentroid = Util.getDirectionVectorNormalized(vVect, centroid);

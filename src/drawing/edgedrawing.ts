@@ -4,6 +4,7 @@ import VertexDrawing from "./vertexdrawing";
 import { GraphDrawing } from "./graphdrawing";
 import { RedrawCallback, Vector2 } from "../commontypes";
 import { getMouseEventXY } from "./util";
+import { getNumStringForLabels } from "../util";
 import { DecorationState, DefaultDecorator } from "../decoration/decorator";
 import { showWarning } from "../ui_handlers/notificationservice";
 import { EditableText } from "../drawing/editabletext";
@@ -71,7 +72,7 @@ export default class EdgeDrawing extends Konva.Group {
         if (this.weight != undefined) {
             this.weightText = new EditableText(this.graphDrawing, weightEditOn,
             {
-                text: weight + "",
+                text: getNumStringForLabels(weight),
                 fontSize: 14,
                 hitStrokeWidth: 5,
             });
@@ -89,7 +90,7 @@ export default class EdgeDrawing extends Konva.Group {
                 if (isNaN(weight)) {
                     console.warn("Cannot set a non-numeric weight!");
                     showWarning("Warning", "Weight must be numeric!");
-                    this.weightText.text(this.weight.toString());
+                    this.weightText.text(getNumStringForLabels(this.weight));
                     return;
                 }
                 this.weight =  weight;

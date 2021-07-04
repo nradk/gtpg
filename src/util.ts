@@ -64,3 +64,11 @@ export function getTwoLevelKeyList(obj: {[k1: number]: {[k2: number]: any}}): nu
     }
     return keys;
 }
+
+// Convert the given number to a shrot(ish) string for display on a label or
+// as weight. Integers are converted the way you'd expect (decimal, without
+// leading zeros). Floats are limited to up to two digits after the decimal
+// point).
+export function getNumStringForLabels(n: number) {
+    return Number.isInteger(n) ? n.toString() : n.toFixed(2);
+}

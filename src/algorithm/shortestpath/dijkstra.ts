@@ -5,6 +5,7 @@ import { VertexInput } from "../../commontypes";
 import { Decorator } from "../../decoration/decorator";
 import { WeightedGraph, Weighted, Graph } from "../../graph_core/graph";
 import { DecorationState } from "../../decoration/decorator";
+import { getNumStringForLabels } from "../../util";
 
 type VertexAndDistance = [number, number];
 
@@ -64,7 +65,7 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
             if (this.distances[v] < vDist) {
                 continue;
             }
-            this.shortestPathTree.addVertex(v);
+            this.shortestPathTree.addVertex(v, graph.getVertexLabel(v));
             if (this.parents[v] != undefined) {
                 this.shortestPathTree.addEdge(this.parents[v], v,
                     graph.getEdgeWeight(this.parents[v], v));
@@ -77,7 +78,7 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
                 if (dist < this.distances[n]) {
                     this.decorator.setEdgeState(v, n, DecorationState.CONSIDERING);
                     this.decorator.setVertexState(n, DecorationState.CONSIDERING); yield;
-                    this.decorator.setVertexExternalLabel(n, "" + dist);
+                    this.decorator.setVertexExternalLabel(n, getNumStringForLabels(dist));
                     this.distances[n] = dist;
                     this.parents[n] = v;
                     this.queue.push([n, dist]);
