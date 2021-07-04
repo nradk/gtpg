@@ -514,8 +514,8 @@ export class GraphDrawing {
         return new DefaultDecorator(this);
     }
 
-    getVertexPositions(): Layouts.PositionMap {
-        return this.positions;
+    getVertexPosition(vertexId: number): Point {
+        return this.positions.get(vertexId);
     }
 
     getVertexDrawings() {

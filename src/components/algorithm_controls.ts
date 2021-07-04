@@ -118,8 +118,11 @@ export abstract class GenericControls extends AlgorithmControls {
             graphDrawing = GraphDrawing.create(graph);
         } else {
             console.log("Graphdrawing defined, creating fixed layout");
-            layout = new Layout.FixedLayout(
-                this.graphDrawing.getVertexPositions());
+            const positions: Layout.PositionMap = new Map();
+            for (const v of graph.getVertexIds()) {
+                positions.set(v, this.graphDrawing.getVertexPosition(v));
+            }
+            layout = new Layout.FixedLayout(positions);
             graphDrawing = GraphDrawing.create(graph);
         }
         graphDrawing.layoutWithoutRender(layout);
@@ -199,8 +202,8 @@ export class InputlessControls extends GenericControls {
 
 export class VertexInputControls extends GenericControls {
 
-    runner: AlgorithmRunner<VertexInput>;
-    algorithm: Algorithm<VertexInput>;
+    private runner: AlgorithmRunner<VertexInput>;
+    private algorithm: Algorithm<VertexInput>;
 
     constructor(AlgorithmClass: new (decorator: Decorator) => Algorithm<VertexInput>,
             graphTabs: GraphTabs, graphDrawing: GraphDrawing) {

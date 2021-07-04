@@ -205,7 +205,7 @@ export default class VertexDrawing extends Konva.Group {
             const neighborDirections: Vector2[] = [];
             const graph = this.graphDrawing.getGraph();
             for (const n of graph.getVertexNeighborIds(this.vertexId)) {
-                const nPt = this.graphDrawing.getVertexPositions().get(n);
+                const nPt = this.graphDrawing.getVertexPosition(n);
                 const nVect = [nPt.x, nPt.y];
                 neighborDirections.push([nVect[0] - vVect[0], nVect[1] - vVect[1]]);
             }
