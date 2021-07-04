@@ -15,7 +15,7 @@ export class EditableText extends Konva.Text {
         this.on('dblclick dbltap', () => {
             // Handle events only on certain tools
             const currentTool = this.graphDrawing.getTools().getCurrentTool();
-            if (currentTool != "default" && currentTool != "text") {
+            if (!this.editOn.has(currentTool)) {
                 return;
             }
             // Find the absolute position of text node
