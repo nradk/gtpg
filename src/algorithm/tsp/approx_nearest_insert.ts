@@ -59,7 +59,9 @@ export class TSPApproxNearestInsert implements Algorithm<void> {
         const tour: number[] = [start];
 
         while (tour.length <= n) {
-            const nearest = this.getNearestToPath(tour, graph);
+            const out = { nearest: 0 };
+            yield* this.getNearestToPath(tour, graph, out);
+            const nearest = out.nearest;
             if (nearest == null) {
                 console.error("Nearest null before full tour found!");
                 return;
@@ -104,18 +106,23 @@ export class TSPApproxNearestInsert implements Algorithm<void> {
         this.path = createOutputGraph(tour, graph);
     }
 
-    private getNearestToPath(path: number[], graph: EuclideanGraph) {
+    private *getNearestToPath(path: number[], graph: EuclideanGraph,
+            output: { nearest: number }) {
         let nearest = null;
         let minDist = Infinity;
         for (const p of path) {
             const nn = graph.getNearestNeighbor(p, new Set(path));
+            this.decorator.setEdgeState(p, nn, DecorationState.CONSIDERING);
+            this.decorator.setVertexState(nn, DecorationState.CONSIDERING);
+            yield;
+            this.decorator.setEdgeState(p, nn, DecorationState.DISABLED);
+            this.decorator.setVertexState(nn, DecorationState.DISABLED);
             const dist = graph.getEdgeWeight(p, nn);
             if (dist < minDist) {
                 minDist = dist;
                 nearest = nn;
             }
         }
-        return nearest;
+        output.nearest = nearest;
     }
-
 }

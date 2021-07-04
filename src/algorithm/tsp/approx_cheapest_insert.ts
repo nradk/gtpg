@@ -26,9 +26,7 @@ export class TSPApproxCheapestInsert implements Algorithm<void> {
             throw new Error("TSP_APPROX_NN: At least 2 vertices required!");
         }
         this.path = null;
-        for (const v of graph.getVertexIds()) {
-            this.decorator.setVertexState(v, DecorationState.DISABLED);
-        }
+        this.decorator.clearAllDecoration();
     }
 
     getOutputGraph() {
@@ -61,19 +59,19 @@ export class TSPApproxCheapestInsert implements Algorithm<void> {
         let tour: Tour = { tour: [start], cost: 0 };
 
         while (tour.tour.length <= n) {
-            tour = this.insertCheapest(tour.tour, graph);
+            yield* this.insertCheapest(tour.tour, graph, tour);
             if (tour == null || tour.tour == null) {
                 console.error("Cheapest tour null before full tour found!");
                 return;
             }
             this.decorator.clearAllDecoration();
-            this.setPathEdgesState(tour.tour, DecorationState.SELECTED);
+            this.setPathState(tour.tour, DecorationState.SELECTED);
             yield;
         }
         this.path = createOutputGraph(tour.tour, graph);
     }
 
-    private setPathEdgesState(path: number[], state: DecorationState) {
+    private setPathState(path: number[], state: DecorationState) {
         this.decorator.setVertexState(path[0], state);
         for (let i = 1; i < path.length; i++) {
             this.decorator.setEdgeState(path[i - 1], path[i], state);
@@ -105,7 +103,7 @@ export class TSPApproxCheapestInsert implements Algorithm<void> {
         return { tour: tour, cost: bestCost };
     }
 
-    private insertCheapest(path: number[], graph: EuclideanGraph): Tour {
+    private *insertCheapest(path: number[], graph: EuclideanGraph, out: Tour) {
         let cheapest = null;
         let minCost = Infinity;
         const pathSet = new Set(path);
@@ -114,11 +112,14 @@ export class TSPApproxCheapestInsert implements Algorithm<void> {
                 continue;
             }
             const result: Tour = this.insert(path, n, graph);
+            this.decorator.clearAllDecoration();
+            this.setPathState(result.tour, DecorationState.CONSIDERING);
+            yield;
             if (result.cost < minCost) {
                 minCost = result.cost;
                 cheapest = result.tour;
             }
         }
-        return { tour: cheapest, cost: minCost };
+        out.tour = cheapest; out.cost = minCost;
     }
 }

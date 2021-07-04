@@ -59,7 +59,9 @@ export class TSPApproxNearestNeighbor implements Algorithm<void> {
         while (tour.length < n) {
             this.decorator.setVertexState(current, DecorationState.SELECTED);
             yield;
-            const nearest = graph.getNearestNeighbor(current, new Set(tour));
+            const exclude = new Set(tour);
+            yield* this.considerAllNeighbors(graph, current, exclude);
+            const nearest = graph.getNearestNeighbor(current, exclude);
             if (nearest == null) {
                 console.error("Nearest null before full tour found!");
                 return;
@@ -71,5 +73,20 @@ export class TSPApproxNearestNeighbor implements Algorithm<void> {
         this.decorator.setVertexState(current, DecorationState.SELECTED);
         this.decorator.setEdgeState(tour[0], current, DecorationState.SELECTED);
         this.path = createOutputGraph(tour.concat(tour[0]), graph);
+    }
+
+    *considerAllNeighbors(graph: EuclideanGraph, vertexId: number,
+            exclude?: Set<number>): IterableIterator<void> {
+        exclude = exclude ?? new Set<number>();
+        for (const n of graph.getVertexNeighborIds(vertexId)) {
+            if (exclude.has(n)) {
+                continue;
+            }
+            this.decorator.setEdgeState(vertexId, n, DecorationState.CONSIDERING);
+            this.decorator.setVertexState(n, DecorationState.CONSIDERING);
+            yield;
+            this.decorator.setEdgeState(vertexId, n, DecorationState.DISABLED);
+            this.decorator.setVertexState(n, DecorationState.DISABLED);
+        }
     }
 }
