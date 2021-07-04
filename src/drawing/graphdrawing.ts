@@ -347,8 +347,9 @@ export class GraphDrawing {
             // Unset the selected vertex if it is going to be deleted
             this.selectedVertex = null;
         }
-        for (const edge of vertexDrawing.getEdgeDrawings()) {
-            edge.destroy();
+        const id = vertexDrawing.getVertexId();
+        for (const n of this.graph.getVertexNeighborIds(id, true)) {
+            this.removeEdgeByIds(id, n, false);
         }
         // TODO remove edge drawing from this.edgeDrawings
         const vertexId = this.lookupVertexId(vertexDrawing)
@@ -398,16 +399,18 @@ export class GraphDrawing {
         this.edgesLayer.draw();
     }
 
-    removeEdge(start: VertexDrawing, end: VertexDrawing) {
+    removeEdge(start: VertexDrawing, end: VertexDrawing, draw?: boolean) {
         const startId = this.lookupVertexId(start);
         const endId = this.lookupVertexId(end);
-        this.removeEdgeDrawing(startId, endId);
+        this.removeEdgeByIds(startId, endId, draw);
+    }
+
+    removeEdgeByIds(startId: number, endId: number, draw?: boolean) {
+        this.removeEdgeDrawing(startId, endId, draw);
         this.graph.removeEdge(startId, endId);
     }
 
     removeEdgeDrawing(startId: number, endId: number, draw?: boolean) {
-        const start = this.vertexDrawings[startId];
-        const end = this.vertexDrawings[endId];
         draw = draw ?? true;
         const orderedEdge = this.getEdgeDrawingOrder(startId, endId);
         if (orderedEdge == null) {
@@ -415,8 +418,6 @@ export class GraphDrawing {
         }
         [startId, endId] = orderedEdge;
         const edgeDrawing = this.edgeDrawings[startId][endId];
-        start.unregisterEdgeDrawing(edgeDrawing);
-        end.unregisterEdgeDrawing(edgeDrawing);
         edgeDrawing.remove();
         edgeDrawing.destroy();
         if (draw) {

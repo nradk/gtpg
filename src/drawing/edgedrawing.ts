@@ -254,7 +254,9 @@ export default class EdgeDrawing extends Konva.Group {
     destroy() {
         super.destroy();
         this.start.removeMoveCallback(this.startMoveCallbackId);
+        this.start.unregisterEdgeDrawing(this);
         this.end.removeMoveCallback(this.endMoveCallbackId);
+        this.end.unregisterEdgeDrawing(this);
         return this;
     }
 }
