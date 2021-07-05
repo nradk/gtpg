@@ -1,5 +1,5 @@
 import $ from "jquery";
-import {  InputlessControls, VertexInputControls }
+import {  InputlessControls, VertexInputControls, SourceSinkInputControls }
     from "../components/algorithm_controls";
 import GraphTabs from "./graphtabs";
 import { KruskalMST } from "../algorithm/mst/kruskal";
@@ -14,6 +14,7 @@ import { TSPApproxNearestNeighbor } from "../algorithm/tsp/approx_nearest_neighb
 import { TSPApproxNearestInsert } from "../algorithm/tsp/approx_nearest_insert";
 import { TSPApproxCheapestInsert } from "../algorithm/tsp/approx_cheapest_insert";
 import { ArticulationPoints } from "../algorithm/decompose/articulation";
+import { EdmondsKarpAlgorithm } from "../algorithm/flow/edmonds_karp";
 
 export default class AlgorithmUI {
 
@@ -30,6 +31,7 @@ export default class AlgorithmUI {
         "#btn-algo-nn-tsp": [InputlessControls, TSPApproxNearestNeighbor],
         "#btn-algo-ni-tsp": [InputlessControls, TSPApproxNearestInsert],
         "#btn-algo-ci-tsp": [InputlessControls, TSPApproxCheapestInsert],
+        "#btn-algo-edmondskarp": [SourceSinkInputControls, EdmondsKarpAlgorithm],
     };
 
     constructor(graphTabs: GraphTabs) {

@@ -6,9 +6,8 @@ import ImportExport from "../ui_handlers/importexport";
 import * as Layout from "../drawing/layouts";
 import { GraphDrawing } from "../drawing/graphdrawing";
 import { Graph } from "../graph_core/graph";
-import { VertexInput, NoVertexClickedError } from "../commontypes";
+import { VertexInput, NoVertexClickedError, SourceSinkInput } from "../commontypes";
 import { Decorator } from "../decoration/decorator";
-import { showMessage, showWarning } from "../ui_handlers/notificationservice";
 
 export class AlgorithmControls extends HTMLElement {
 }
@@ -220,16 +219,17 @@ export class VertexInputControls extends GenericControls {
     }
 
     executeAlgorithm(): void {
-        showMessage("Select Vertex", "Please click on a vertex to start from");
-        this.graphDrawing.enterVertexSelectMode().then(selected => {
+        const title = "Select Vertex";
+        const body = "Please click on a vertex to start from";
+        this.graphDrawing.enterVertexSelectMode(title, body).then(selected => {
             this.getRunner().execute({ vertexId: selected });
         }).catch((e) => {
             if (e instanceof AlgorithmError) {
                 alert(e.message);
             } else if (e instanceof NoVertexClickedError) {
-                showWarning("No Vertex", "Did not detect a click on any vertex.");
             } else {
                 alert("There was an unexpected problem with the algorithm.");
+                console.error(e);
             }
         });
     }
@@ -239,6 +239,45 @@ export class VertexInputControls extends GenericControls {
     }
 }
 
+export class SourceSinkInputControls extends GenericControls {
+
+    private runner: AlgorithmRunner<SourceSinkInput>;
+    private algorithm: Algorithm<SourceSinkInput>;
+
+    constructor(AlgorithmClass: new (decorator: Decorator) => Algorithm<SourceSinkInput>,
+            graphTabs: GraphTabs, graphDrawing: GraphDrawing) {
+        super(graphTabs, graphDrawing);
+        this.algorithm = new AlgorithmClass(graphDrawing.getDecorator());
+        this.runner = new AlgorithmRunner(this.algorithm);
+        this.runner.setStateChangeCallback(this.algorithmStateChanged.bind(this));
+        $(this).find("#algo-name").text(this.getRunner().getAlgorithm().getFullName());
+    }
+
+    executeAlgorithm(): void {
+        const source = this.graphDrawing.enterVertexSelectMode("Select Source",
+                "Please click on the source vertex.");
+        const sink = source.then(_ => {
+             return this.graphDrawing.enterVertexSelectMode("Select Sink",
+                    "Please click on the sink vertex.");
+        });
+        Promise.all([source, sink]).then(([sourceId, sinkId]) => {
+            this.getRunner().execute({ sourceId: sourceId, sinkId: sinkId });
+        }).catch((e) => {
+            if (e instanceof AlgorithmError) {
+                alert(e.message);
+            } else if (e instanceof NoVertexClickedError) {
+            } else {
+                alert("There was an unexpected problem with the algorithm.");
+                console.error(e);
+            }
+        });
+    }
+
+    getRunner(): AlgorithmRunner<SourceSinkInput> {
+        return this.runner;
+    }
+}
 
 customElements.define('inputless-controls', InputlessControls);
 customElements.define('vertexinput-controls', VertexInputControls);
+customElements.define('sourcesinkinput-controls', SourceSinkInputControls);

@@ -10,7 +10,7 @@ import { getLetterFromInteger, getTwoLevelKeyList } from "../util";
 import { Vector2, Util, Point, NoVertexClickedError } from "../commontypes";
 import { Decorator, DefaultDecorator, EuclideanDecorator } from "../decoration/decorator";
 import { Tools } from "../ui_handlers/tools";
-import { showWarning } from "../ui_handlers/notificationservice";
+import { showMessage, showWarning } from "../ui_handlers/notificationservice";
 import { getNumStringForLabels } from "../util";
 
 type CentroidCache = { n: number; xSum: number; ySum: number };
@@ -555,13 +555,15 @@ export class GraphDrawing {
         return this.tools;
     }
 
-    enterVertexSelectMode(): Promise<number> {
-        this.vertexSelectMode = true;
-        this.stage.container().style.cursor = 'crosshair';
+    enterVertexSelectMode(messageTitle: string, messageBody: string): Promise<number> {
         return new Promise<number>((resolve, reject) => {
+            showMessage(messageTitle, messageBody);
+            this.vertexSelectMode = true;
+            const prevCursor = this.stage.container().style.cursor;
+            this.stage.container().style.cursor = 'crosshair';
             this.stage.on('click', e => {
                 this.vertexSelectMode = false;
-                this.stage.container().style.cursor = 'default';
+                this.stage.container().style.cursor = prevCursor;
                 let target: any = e.target;
                 while (target) {
                     if (target instanceof VertexDrawing) {
@@ -570,6 +572,7 @@ export class GraphDrawing {
                     }
                     target = target.parent;
                 }
+                showWarning("No Vertex", "Did not detect a click on any vertex.");
                 reject(new NoVertexClickedError());
             });
         });
