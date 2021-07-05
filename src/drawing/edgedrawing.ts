@@ -64,8 +64,8 @@ export default class EdgeDrawing extends Konva.Group {
         // the 'edit allow tool set' to an empty set.
         this.allowLabelEdit = labelEditCallback != undefined;
         if (labelText != undefined) {
-            const labelEditOn: Set<ToolName> = this.allowLabelEdit ? new Set() :
-                new Set(["default", "text"]);
+            const labelEditOn: Set<ToolName> = this.allowLabelEdit ?
+                new Set(["default", "text"]) : new Set();
             this.createLabel(labelText, labelEditOn);
         }
     }

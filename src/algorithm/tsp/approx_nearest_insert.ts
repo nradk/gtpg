@@ -3,6 +3,7 @@ import { Decorator, DecorationState } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { createOutputGraph } from "../../graph_core/graph_util";
+import { getNumStringForLabels } from "../../util";
 
 export class TSPApproxNearestInsert implements Algorithm<void> {
 
@@ -72,6 +73,9 @@ export class TSPApproxNearestInsert implements Algorithm<void> {
                 tour.push(tour[0]);
                 this.decorator.setEdgeState(tour[0], nearest,
                     DecorationState.SELECTED);
+                const w = graph.getEdgeWeight(tour[0], nearest);
+                this.decorator.setEdgeLabel(tour[0], nearest,
+                    getNumStringForLabels(w));
             } else {
                 let insertAt = 0;
                 let bestCost = Infinity;
@@ -92,13 +96,12 @@ export class TSPApproxNearestInsert implements Algorithm<void> {
                     DecorationState.SELECTED);
                 this.decorator.setEdgeState(nearest, tour[insertAt + 1],
                     DecorationState.SELECTED);
-                //if (tour.length == 4) {
-                    //console.log(tour);
-                    //// This is the first time that the tour actually becomes a
-                    //// cycle, so select that extra 'cyclic' edge
-                    //this.decorator.setEdgeState(tour[2], tour[3],
-                        //DecorationState.SELECTED);
-                //}
+                const w1 = graph.getEdgeWeight(tour[insertAt - 1], nearest);
+                const w2 = graph.getEdgeWeight(tour[insertAt + 1], nearest);
+                this.decorator.setEdgeLabel(tour[insertAt - 1], nearest,
+                    getNumStringForLabels(w1));
+                this.decorator.setEdgeLabel(tour[insertAt + 1], nearest,
+                    getNumStringForLabels(w2));
             }
             this.decorator.setVertexState(nearest, DecorationState.SELECTED);
             yield;

@@ -3,6 +3,7 @@ import { Decorator, DecorationState } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { createOutputGraph } from "../../graph_core/graph_util";
+import { getNumStringForLabels } from "../../util";
 
 type Tour = { tour: number[], cost: number };
 
@@ -73,9 +74,13 @@ export class TSPApproxCheapestInsert implements Algorithm<void> {
 
     private setPathState(path: number[], state: DecorationState) {
         this.decorator.setVertexState(path[0], state);
+        const graph = this.decorator.getGraph() as EuclideanGraph;
         for (let i = 1; i < path.length; i++) {
             this.decorator.setEdgeState(path[i - 1], path[i], state);
             this.decorator.setVertexState(path[i], state);
+            const w = graph.getEdgeWeight(path[i - 1], path[i]);
+            this.decorator.setEdgeLabel(path[i - 1], path[i],
+                getNumStringForLabels(w));
         }
     }
 

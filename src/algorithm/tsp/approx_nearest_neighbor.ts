@@ -3,6 +3,7 @@ import { Decorator, DecorationState } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { createOutputGraph } from "../../graph_core/graph_util";
+import { getNumStringForLabels } from "../../util";
 
 export class TSPApproxNearestNeighbor implements Algorithm<void> {
 
@@ -67,11 +68,16 @@ export class TSPApproxNearestNeighbor implements Algorithm<void> {
                 return;
             }
             this.decorator.setEdgeState(current, nearest, DecorationState.SELECTED);
+            const w = graph.getEdgeWeight(current, nearest);
+            this.decorator.setEdgeLabel(current, nearest, getNumStringForLabels(w));
+            yield;
             tour.push(nearest);
             current = nearest;
         }
         this.decorator.setVertexState(current, DecorationState.SELECTED);
         this.decorator.setEdgeState(tour[0], current, DecorationState.SELECTED);
+        const w = graph.getEdgeWeight(tour[0], current);
+        this.decorator.setEdgeLabel(tour[0], current, getNumStringForLabels(w));
         this.path = createOutputGraph(tour.concat(tour[0]), graph);
     }
 
@@ -84,7 +90,10 @@ export class TSPApproxNearestNeighbor implements Algorithm<void> {
             }
             this.decorator.setEdgeState(vertexId, n, DecorationState.CONSIDERING);
             this.decorator.setVertexState(n, DecorationState.CONSIDERING);
+            const w = graph.getEdgeWeight(vertexId, n);
+            this.decorator.setEdgeLabel(vertexId, n, getNumStringForLabels(w));
             yield;
+            this.decorator.clearEdgeLabel(vertexId, n);
             this.decorator.setEdgeState(vertexId, n, DecorationState.DISABLED);
             this.decorator.setVertexState(n, DecorationState.DISABLED);
         }
