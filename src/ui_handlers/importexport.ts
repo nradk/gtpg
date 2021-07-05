@@ -10,13 +10,26 @@ export default class ImportExport {
         $("#btn-export").on('click', this.exportCurrent.bind(this));
         $("#btn-import").on('click', this.importNew.bind(this));
         $("#new-import-graph-btn").on('click', this.importNew.bind(this));
+
+        $("#graphSaveForm").on("submit", e => {
+            const drawing = this.graphTabs.getActiveGraphDrawing();
+            $("#saveModal").modal("hide");
+            const fileName = $("input#saveFileName").val().toString() + ".json";
+            ImportExport.exportGraphDrawing(drawing, fileName.toString());
+            e.preventDefault();
+        });
+    }
+
+    static stripJsonExtension(filename: string) {
+        return filename.slice(-4).toLowerCase() == 'json' ? filename.slice(0, -5) : filename;
     }
 
     exportCurrent() {
-        const drawing = this.graphTabs.getActiveGraphDrawing();
         const tabname = this.graphTabs.tabBar.getActiveTabTitle();
-        const fileName = tabname.slice(-4) == 'json' ? tabname : tabname + ".json";
-        ImportExport.exportGraphDrawing(drawing, fileName);
+        const fileName = tabname.slice(-4).toLowerCase() == 'json' ?
+            tabname.slice(0, -5) : tabname;
+        $("#saveModal").modal("show");
+        $("input#saveFileName").val(fileName);
     }
 
     importNew() {
@@ -30,7 +43,8 @@ export default class ImportExport {
             }
             fileList[0].text().then(text => {
                 const drawing = GraphDrawing.fromJsonString(text);
-                this.createTab(drawing, fileList[0].name);
+                this.createTab(drawing,
+                    ImportExport.stripJsonExtension(fileList[0].name));
             }).catch(e => {
                 console.error(e);
                 alert("Error when reading file!");
@@ -82,4 +96,3 @@ export default class ImportExport {
         document.body.removeChild(element);
     }
 }
-

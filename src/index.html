@@ -13,13 +13,13 @@
         height: 100%;
       }
     </style>
-    <title>Graph Playground</title>
+    <title>Graph Theory Playground</title>
   </head>
 
   <body>
     <nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-primary">
       <div class="container-fluid">
-        <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Graph Playground</a>
+        <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Graph Theory Playground</a>
 
         <!--<input class="form-control form-control-dark w-100" type="text"
           placeholder="Search" aria-label="Search">-->
@@ -31,19 +31,18 @@
 
           <div class="collapse navbar-collapse" id="navbarColor01">
             <ul class="navbar-nav me-auto">
-              <li class="nav-item">
-                <a class="nav-link active" href="#">Home
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#"
+                  data-toggle="dropdown" href="#" role="button"
+                  aria-haspopup="true" aria-expanded="false">Graph</a>
                   <!--<span class="visually-hidden">(current)</span>-->
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" id="btn-export" href="#">Save</a>
+                  <a class="dropdown-item" id="btn-import" href="#">Open</a>
+                  <div class="dropdown-divider"></div>
+                  <a class="dropdown-item" href="#"> Bookmark </a>
+                </div>
                 </a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Placeholder</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">Placeholder</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#">About</a>
               </li>
               <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle"
@@ -93,32 +92,6 @@
       <div class="row flex-grow-1">
         <nav class="col-2 bg-light border-right sidebar">
           <div class="sidebar-sticky">
-
-            <div class="row border-bottom p-2">
-              Quick Actions
-            </div>
-
-            <div class="p-2" id="action-buttons-container">
-              <div class="row">
-                <button class="btn btn-secondary col m-2" id="btn-save">
-                  <i class="bi-save" style="font-size:13pt;"></i> &nbsp; Save
-                </button>
-                <button class="btn btn-secondary col m-2" id="btn-export">
-                  <i class="bi-file-earmark-arrow-down" style="font-size:13pt;">
-                  </i> &nbsp; Export
-                </button>
-              </div>
-
-              <div class="row">
-                <button class="btn btn-secondary col m-2" id="btn-open">
-                  <i class="bi-box-arrow-in-up" style="font-size:14pt;"></i> &nbsp; Open
-                </button>
-                <button class="btn btn-secondary col m-2" id="btn-import">
-                  <i class="bi-file-earmark-arrow-up" style="font-size:13pt;">
-                  </i> &nbsp; Import
-                </button>
-              </div>
-            </div>
 
             <div class="row border-bottom border-top p-2">
               Tools
@@ -181,9 +154,8 @@
                     Empty Euclidean
                   </a>
                 </li>
-                <li><a class="dropdown-item" href="#">Open Saved Graph</a></li>
                 <li><a class="dropdown-item" href="#" id="new-import-graph-btn">
-                    Import Graph</a></li>
+                    Open Graph</a></li>
                 <li><a class="dropdown-item" href="#" data-toggle="modal"
                        data-target="#generateModal">Generate Graph</a></li>
               </ul>
@@ -257,6 +229,40 @@
               </div>
             </div>
           </div>
+
+          <!-- Save Graph Modal -->
+          <div class="modal fade" id="saveModal" tabindex="-1"
+               aria-labelledby="saveModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="saveModalLabel">Save
+                    Graph</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <form id="graphSaveForm">
+                  <div class="modal-body">
+                    <fieldset>
+                      <div class="form-group">
+                        <div class="form-row">
+                        <label for="saveFileName" class="col">File name:</label>
+                        <input type="text" class="form-control col" id="saveFileName"> .json
+                        </div>
+                      </div>
+                    </fieldset>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                                          data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+
 
           <!-- Vertex Choice Modal -->
           <div class="modal fade" id="vertexChoiceModal" tabindex="-1"
