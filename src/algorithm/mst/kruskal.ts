@@ -1,4 +1,4 @@
-import { Algorithm } from "../algorithm";
+import { Algorithm, AlgorithmError } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { Graph, Weighted, WeightedGraph } from "../../graph_core/graph";
 import { DecorationState } from "../../decoration/decorator";
@@ -17,8 +17,7 @@ export class KruskalMST implements Algorithm<void> {
     initialize() {
         const g = this.decorator.getGraph();
         if (!g.isWeighted() || g.isDirected()) {
-            alert("Kruskal's algorithm needs a weighted undirected graph!");
-            throw new Error("Kruskal: weighted undirected graph required!");
+            throw new AlgorithmError("Kruskal's algorithm needs a weighted undirected graph!");
         }
         const graph = g as Graph & Weighted;
         this.mst = new WeightedGraph(false)

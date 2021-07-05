@@ -1,29 +1,21 @@
-import { Algorithm } from "../algorithm";
 import { Decorator, DecorationState } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { createOutputGraph } from "../../graph_core/graph_util";
 import { getNumStringForLabels } from "../../util";
+import { TSPApprox } from "./tsp_approx";
 
-export class TSPApproxNearestInsert implements Algorithm<void> {
+export class TSPApproxNearestInsert extends TSPApprox {
 
     private path: Graph;
 
-    constructor(private decorator: Decorator) {
+    constructor(decorator: Decorator) {
+        super(decorator);
     }
 
     initialize() {
+        super.initialize();
         const graph = this.decorator.getGraph();
-        if (!(graph instanceof EuclideanGraph)) {
-            alert("Nearest insert TSP approximation algorithm only supports"
-                + " Euclidean graphs!");
-            throw new Error("TSP_APPROX_NN: Euclidean graph required!");
-        }
-        if (graph.getNumberOfVertices() < 2) {
-            alert("Nearest insert TSP approximation algorithm requires at"
-                + " least 2 vertices!");
-            throw new Error("TSP_APPROX_NN: At least 2 vertices required!");
-        }
         this.path = null;
         for (const v of graph.getVertexIds()) {
             this.decorator.setVertexState(v, DecorationState.DISABLED);

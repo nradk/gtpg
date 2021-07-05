@@ -7,7 +7,7 @@ import { EuclideanGraph } from "../graph_core/euclidean_graph";
 import * as Layouts from "../drawing/layouts";
 import { getMouseEventXY } from "./util";
 import { getLetterFromInteger, getTwoLevelKeyList } from "../util";
-import { Vector2, Util, Point } from "../commontypes";
+import { Vector2, Util, Point, NoVertexClickedError } from "../commontypes";
 import { Decorator, DefaultDecorator, EuclideanDecorator } from "../decoration/decorator";
 import { Tools } from "../ui_handlers/tools";
 import { showWarning } from "../ui_handlers/notificationservice";
@@ -570,7 +570,7 @@ export class GraphDrawing {
                     }
                     target = target.parent;
                 }
-                reject();
+                reject(new NoVertexClickedError());
             });
         });
     }

@@ -1,4 +1,4 @@
-import { Algorithm } from "../algorithm";
+import { Algorithm, AlgorithmError } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { isSingleComponent } from "../../graph_core/graph_util";
@@ -14,12 +14,10 @@ export class ArticulationPoints implements Algorithm<void> {
     initialize() {
         const graph = this.decorator.getGraph();
         if (graph.isDirected()) {
-            alert("Articulation points algorithm only supports undirected graphs!");
-            throw new Error("Articulation: undirected graph required!");
+            throw new AlgorithmError("Articulation points algorithm only supports undirected graphs!");
         }
         if (!isSingleComponent(graph)) {
-            alert("Please provide a graph with a single connected component.");
-            throw new Error("Articulation: More than 1 component!");
+            throw new AlgorithmError("Please provide a graph with a single connected component.");
         }
         this.graph = graph.clone();
         for (const v of graph.getVertexIds()) {

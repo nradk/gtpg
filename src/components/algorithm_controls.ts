@@ -1,12 +1,12 @@
 import $ from "jquery";
-import { AlgorithmRunner, AlgorithmState, Algorithm } from "../algorithm/algorithm";
+import { AlgorithmRunner, AlgorithmState, Algorithm, AlgorithmError } from "../algorithm/algorithm";
 import GraphTabs from "../ui_handlers/graphtabs";
 import * as Util from "../util";
 import ImportExport from "../ui_handlers/importexport";
 import * as Layout from "../drawing/layouts";
 import { GraphDrawing } from "../drawing/graphdrawing";
 import { Graph } from "../graph_core/graph";
-import { VertexInput } from "../commontypes";
+import { VertexInput, NoVertexClickedError } from "../commontypes";
 import { Decorator } from "../decoration/decorator";
 import { showMessage, showWarning } from "../ui_handlers/notificationservice";
 
@@ -191,7 +191,12 @@ export class InputlessControls extends GenericControls {
         try {
             this.getRunner().execute();
         } catch (ex: any) {
-            console.error(ex);
+            if (ex instanceof AlgorithmError) {
+                alert(ex.message);
+            } else {
+                alert("There was an unexpected problem with the algorithm.");
+                console.error(ex);
+            }
         }
     }
 
@@ -218,8 +223,14 @@ export class VertexInputControls extends GenericControls {
         showMessage("Select Vertex", "Please click on a vertex to start from");
         this.graphDrawing.enterVertexSelectMode().then(selected => {
             this.getRunner().execute({ vertexId: selected });
-        }).catch(() => {
-            showWarning("No Vertex", "Did not detect a click on any vertex.");
+        }).catch((e) => {
+            if (e instanceof AlgorithmError) {
+                alert(e.message);
+            } else if (e instanceof NoVertexClickedError) {
+                showWarning("No Vertex", "Did not detect a click on any vertex.");
+            } else {
+                alert("There was an unexpected problem with the algorithm.");
+            }
         });
     }
 

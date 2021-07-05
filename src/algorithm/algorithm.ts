@@ -3,6 +3,9 @@ import { Decorator } from "../decoration/decorator";
 
 export type AlgorithmState = "init" | "running" | "paused" | "done";
 
+export class AlgorithmError extends Error {
+}
+
 export interface Algorithm<I> {
     initialize(input: I): void;
     run(): IterableIterator<void>;

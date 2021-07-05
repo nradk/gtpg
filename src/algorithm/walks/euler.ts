@@ -1,4 +1,4 @@
-import { Algorithm } from "../algorithm";
+import { Algorithm, AlgorithmError } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { Graph, WeightedGraph } from "../../graph_core/graph";
 import { isSingleComponent } from "../../graph_core/graph_util";
@@ -61,21 +61,18 @@ export class FleuryEulerTrail implements Algorithm<void> {
     initialize() {
         const graph = this.decorator.getGraph();
         if (graph.isDirected() || graph.isWeighted()) {
-            alert("Fleury's algorithm only supports undirected unweighted graphs!");
-            throw new Error("Fluery: undirected unweighted graph required!");
+            throw new AlgorithmError("Fleury's algorithm only supports undirected unweighted graphs!");
         }
         if (!isSingleComponent(graph)) {
-            alert("The graph contains more than one component so it doesn't" +
-                " have an Euler trail or an Euler cycle!");
-            throw new Error("Fluery: More than 1 component!");
+            throw new AlgorithmError("The graph contains more than one"
+                + " component so it doesn't have an Euler trail or an Euler cycle!");
         }
         this.graph = graph.clone();
 
         const [_, odd, oddVertex] = this.getEvenAndOddDegreeCount(graph);
         if (odd > 2) {
-            alert(`The graph contains ${odd} odd-degree vertices so it` +
-                " doesn't have an Euler trail or an Euler cycle.");
-            throw new Error("Fleury: More than 2 odd-degree vertices.");
+            throw new AlgorithmError(`The graph contains ${odd} odd-degree ` +
+                "vertices so it doesn't have an Euler trail or an Euler cycle.");
         }
         if (odd == 2) {
             this.startVertex = oddVertex;

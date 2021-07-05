@@ -1,6 +1,6 @@
 import { Heap } from 'heap-js';
 
-import { Algorithm } from "../algorithm";
+import { Algorithm, AlgorithmError } from "../algorithm";
 import { VertexInput } from "../../commontypes";
 import { Decorator } from "../../decoration/decorator";
 import { WeightedGraph, Weighted, Graph } from "../../graph_core/graph";
@@ -23,8 +23,7 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
     initialize(startVertex: VertexInput) {
         const graph = this.decorator.getGraph();
         if (!graph.isWeighted()) {
-            alert("Dijkstra's algorithm needs a weighted graph!");
-            throw new Error("Dijkstra: weighted graph required!");
+            throw new AlgorithmError("Dijkstra's algorithm needs a weighted graph!");
         }
         const vertexIds = graph.getVertexIds();
         const distanceComparator = (a: VertexAndDistance,

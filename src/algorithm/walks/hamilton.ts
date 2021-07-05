@@ -1,4 +1,4 @@
-import { Algorithm } from "../algorithm";
+import { Algorithm, AlgorithmError } from "../algorithm";
 import { Decorator, DecorationState } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { isSingleComponent } from "../../graph_core/graph_util";
@@ -15,18 +15,15 @@ export class BHKHamiltonPath implements Algorithm<void> {
     initialize() {
         const graph = this.decorator.getGraph();
         if (graph.isDirected()) {
-            alert("Bellman-Held-Karp algorithm only supports undirected graphs!");
-            throw new Error("BHK: undirected graph required!");
+            throw new AlgorithmError("Bellman-Held-Karp algorithm only supports undirected graphs!");
         }
         if (!isSingleComponent(graph)) {
-            alert("The graph contains more than one component so it doesn't" +
-                " have a Hamilton path or a Hamilton circuit!");
-            throw new Error("BHK: More than 1 component!");
+            throw new AlgorithmError("The graph contains more than one" +
+                " component so it doesn't have a Hamilton path or a Hamilton circuit!");
         }
         if (graph.getNumberOfVertices() > 50) {
-            alert("Graphs with more than 50 vertices are not supported, in "
-                + "part because the algorithm has complexity O(n^2 * 2^n)");
-            throw new Error("BHK: Graph too large!");
+            throw new AlgorithmError("Graphs with more than 50 vertices are" +
+                " not supported, in part because the algorithm has complexity O(n^2 * 2^n)");
         }
 
         this.path = null;

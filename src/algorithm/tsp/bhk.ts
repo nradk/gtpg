@@ -1,4 +1,4 @@
-import { Algorithm } from "../algorithm";
+import { Algorithm, AlgorithmError } from "../algorithm";
 import { Decorator, DecorationState } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
@@ -15,13 +15,11 @@ export class BHK_TSP implements Algorithm<void> {
     initialize() {
         const graph = this.decorator.getGraph();
         if (!(graph instanceof EuclideanGraph)) {
-            alert("Bellman-Held-Karp TSP algorithm only Euclidean graphs!");
-            throw new Error("BHK_TSP: Euclidean graph required!");
+            throw new AlgorithmError("Bellman-Held-Karp TSP algorithm only Euclidean graphs!");
         }
         if (graph.getNumberOfVertices() > 50) {
-            alert("Graphs with more than 50 vertices are not supported, in "
-                + "part because the algorithm has complexity O(n^2 * 2^n)");
-            throw new Error("BHK_TSP: Graph too large!");
+            throw new AlgorithmError("Graphs with more than 50 vertices are " +
+                "not supported, in part because the algorithm has complexity O(n^2 * 2^n)");
         }
 
         this.path = null;

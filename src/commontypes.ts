@@ -20,6 +20,9 @@ export type MouseEventCallback = ((e: Konva.KonvaEventObject<MouseEvent>)
 export type NullaryCallback = () => void;
 export type RedrawCallback = () => void;
 
+export class NoVertexClickedError extends Error {
+}
+
 export class Util {
     static pointToVector(point: Point): Vector2 {
         return [point.x, point.y];
