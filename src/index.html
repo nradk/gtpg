@@ -40,7 +40,7 @@
                   <a class="dropdown-item" id="btn-export" href="#">Save</a>
                   <a class="dropdown-item" id="btn-import" href="#">Open</a>
                   <div class="dropdown-divider"></div>
-                  <a class="dropdown-item" href="#"> Bookmark </a>
+                  <a class="dropdown-item" href="#" id="btn-bookmark"> Bookmark </a>
                 </div>
                 </a>
               </li>
@@ -116,6 +116,12 @@
                 </button>
                 <label for="btn-tool-default">Text</label>
               </div>
+            </div>
+
+            <div class="row border-bottom border-top p-2">
+              Bookmarked Graphs
+            </div>
+            <div class="row" id="bookmarkedContainer">
             </div>
 
 
@@ -381,6 +387,30 @@
           <i style='margin-left: 3pt'class="bi-x-square"></i>
         </a>
       </li>
+    </template>
+
+    <template id="bookmarks-list-template">
+      <div style="height: 300pt; width: 100%; overflow-y: auto">
+      <table class="table table-hover">
+        <tbody>
+        </tbody>
+      </table>
+      </div>
+    </template>
+
+    <template id="no-bookmarks-template">
+    <p class="text-center col-lg p-2 text-muted">No bookmarked graphs</p>
+    </template>
+
+    <template id="bookmarks-item-template">
+      <tr class="table-secondary">
+          <td><span name="bookmark-name">Untitled</span></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td><button class="btn-sm btn-danger">DELETE</button></td>
+        </tr>
     </template>
 
     <template id="algo-control-template">

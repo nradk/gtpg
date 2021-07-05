@@ -46,7 +46,6 @@ export default class AlgorithmUI {
                 const Algorithm = AlgorithmUI.algorithms[id][1];
                 const controls = new Controls(Algorithm, graphTabs, graphDrawing);
                 graphTabs.setControlPanelForActiveTab(controls);
-
             });
         }
     }

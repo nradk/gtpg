@@ -13,6 +13,7 @@ import ImportExport from "./ui_handlers/importexport";
 import GraphGenerate from './ui_handlers/graphgenerate';
 import DisplayCustomizer from './ui_handlers/display_customizer';
 import AlgorithmUI from './ui_handlers/algorithm_menu';
+import BookmarkedGraphs from './ui_handlers/bookmarked';
 
 // Double-imports seemingly necessary
 import './components/tabbar';   // Executes the module, to register custom element
@@ -55,3 +56,4 @@ new AutoLabelOptions(graphTabs);
 new ImportExport(graphTabs);
 new DisplayCustomizer(graphTabs);
 new AlgorithmUI(graphTabs);
+new BookmarkedGraphs(graphTabs);
