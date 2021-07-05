@@ -1,5 +1,6 @@
-import { Graph } from "../graph_core/graph";
+import { Graph, Weighted } from "../graph_core/graph";
 import { GraphDrawing, EuclideanGraphDrawing } from "../drawing/graphdrawing";
+import { getNumStringForLabels } from "../util";
 
 export class DecorationState {
     static readonly DEFAULT = new DecorationState();
@@ -27,6 +28,8 @@ export interface Decorator {
     setEdgeState(startVertexId: number, endVertexId: number, state: DecorationState): void;
     setVertexExternalLabel(vertexId: number, text: string): void;
     clearVertexExternalLabel(vertexId: number): void;
+    setEdgeLabel(startVertexId: number, endVertexId: number, label: string): void;
+    clearEdgeLabel(startVertexId: number, endVertexId: number): void;
     clearAllDecoration(): void;
 }
 
@@ -38,6 +41,14 @@ export class DefaultDecorator implements Decorator {
 
     constructor(graphDrawing: GraphDrawing) {
         this.drawing = graphDrawing;
+    }
+
+    private getEdgeDrawing(startVertexId: number, endVertexId: number) {
+        if (!this.drawing.getGraph().isDirected()) {
+            [startVertexId, endVertexId] = this.drawing.getEdgeDrawingOrder(
+                startVertexId, endVertexId);
+        }
+        return this.drawing.getEdgeDrawings()[startVertexId][endVertexId];
     }
 
     static getAuxiliaryColor(id: number) {
@@ -60,21 +71,12 @@ export class DefaultDecorator implements Decorator {
     }
 
     getEdgeState(startVertexId: number, endVertexId: number): DecorationState {
-        if (!this.drawing.getGraph().isDirected()) {
-            [startVertexId, endVertexId] = this.drawing.getEdgeDrawingOrder(
-                startVertexId, endVertexId);
-        }
-        return this.drawing.getEdgeDrawings()[startVertexId][endVertexId]
-            .getDecorationState();
+        return this.getEdgeDrawing(startVertexId, endVertexId).getDecorationState();
     }
 
     setEdgeState(startVertexId: number, endVertexId: number,
         state: DecorationState) {
-        if (!this.drawing.getGraph().isDirected()) {
-            [startVertexId, endVertexId] = this.drawing.getEdgeDrawingOrder(
-                startVertexId, endVertexId);
-        }
-        const edge = this.drawing.getEdgeDrawings()[startVertexId][endVertexId];
+        const edge = this.getEdgeDrawing(startVertexId, endVertexId);
         edge.setDecorationState(state);
         this.drawing.getStage().draw();
     }
@@ -87,6 +89,19 @@ export class DefaultDecorator implements Decorator {
         this.drawing.getVertexDrawings()[vertexId].clearExternalLabel();
     }
 
+    setEdgeLabel(startVertexId: number, endVertexId: number, label: string) {
+        this.getEdgeDrawing(startVertexId, endVertexId).setEdgeLabel(label,
+            _ => false);
+    }
+
+    clearEdgeLabel(startVertexId: number, endVertexId: number) {
+        if (this.drawing.getGraph().isWeighted()) {
+            this.drawing.setWeightAsEdgeLabel(startVertexId, endVertexId);
+        } else {
+            this.getEdgeDrawing(startVertexId, endVertexId).clearEdgeLabel();
+        }
+    }
+
     clearAllDecoration() {
         for (const vertex of this.drawing.getGraph().getVertexIds()) {
             this.setVertexState(vertex, DecorationState.DEFAULT);
@@ -94,6 +109,7 @@ export class DefaultDecorator implements Decorator {
         }
         for (const edge of this.drawing.getGraph().getEdgeList()) {
             this.setEdgeState(edge[0], edge[1], DecorationState.DEFAULT);
+            this.clearEdgeLabel(edge[0], edge[1]);
         }
     }
 }
@@ -180,5 +196,11 @@ export class HeadlessDecorator implements Decorator {
     }
 
     clearAllDecoration(): void {
+    }
+
+    setEdgeLabel(_: number, __: number, ___: string) {
+    }
+
+    clearEdgeLabel(_: number, __: number) {
     }
 }

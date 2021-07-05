@@ -4,34 +4,29 @@ import VertexDrawing from "./vertexdrawing";
 import { GraphDrawing } from "./graphdrawing";
 import { RedrawCallback, Vector2 } from "../commontypes";
 import { getMouseEventXY } from "./util";
-import { getNumStringForLabels } from "../util";
 import { DecorationState, DefaultDecorator } from "../decoration/decorator";
-import { showWarning } from "../ui_handlers/notificationservice";
 import { EditableText } from "../drawing/editabletext";
 import { ToolName } from "../ui_handlers/tools";
 
-type WeightUpdateCallback = (s: VertexDrawing, e: VertexDrawing, w: number) => void;
+type LabelEditCallback = (edgeDrawing: EdgeDrawing, label: string) => boolean;
 
 export default class EdgeDrawing extends Konva.Group {
-    directed: boolean;
-    redrawCallback: RedrawCallback;
     arrow: Konva.Arrow;
     curvePoint: Konva.Circle;
-    weight?: number;
-    weightText?: EditableText;
-    weightOffset?: Vector2;
-    weightChangeCallback?: WeightUpdateCallback;
+    label?: EditableText;
+    labelOffset?: Vector2;
     decorationState: DecorationState;
+    private allowLabelEdit: boolean;
     private readonly startMoveCallbackId: number;
     private readonly endMoveCallbackId: number;
 
     constructor(private readonly graphDrawing: GraphDrawing,
-                private readonly start: VertexDrawing,
-                private readonly end: VertexDrawing,
-                directed: boolean,
-                redrawCallback: RedrawCallback,
-                weight?: number,
-                weightChangeCallback?: WeightUpdateCallback) {
+                readonly start: VertexDrawing,
+                readonly end: VertexDrawing,
+                private readonly directed: boolean,
+                private redrawCallback: RedrawCallback,
+                private labelText?: string,
+                private labelEditCallback?: LabelEditCallback) {
         super();
         this.arrow = new Konva.Arrow({
             points: [this.start.x(), this.start.y(),
@@ -45,8 +40,6 @@ export default class EdgeDrawing extends Konva.Group {
             pointerWidth: directed? 10 : 0
         });
         this.decorationState = DecorationState.DEFAULT;
-        this.weight = weight;
-        this.weightChangeCallback = weightChangeCallback;
         this.add(this.arrow);
         this.arrow.on('mouseover', () => {
             if (this.curvePoint != undefined) {
@@ -61,52 +54,60 @@ export default class EdgeDrawing extends Konva.Group {
             }
         });
         this.arrow.on('click', this.handleClick.bind(this));
-        this.directed = directed;
-        this.redrawCallback = redrawCallback;
         this.startMoveCallbackId = this.start.addMoveCallback(this.vertexMoveCallback.bind(this));
         this.endMoveCallbackId = this.end.addMoveCallback(this.vertexMoveCallback.bind(this));
         this.start.registerEdgeDrawing(this);
         this.end.registerEdgeDrawing(this);
         this.setEdgePoints();
-        const weightEditOn: Set<ToolName> = new Set(["default", "text"]);
-        if (this.weight != undefined) {
-            this.weightText = new EditableText(this.graphDrawing, weightEditOn,
+        // If a label edit callback has been provided, we allow label edits.
+        // Otherwise, we don't. Not allowing edits is accomplished by setting
+        // the 'edit allow tool set' to an empty set.
+        this.allowLabelEdit = labelEditCallback != undefined;
+        if (labelText != undefined) {
+            const labelEditOn: Set<ToolName> = this.allowLabelEdit ? new Set() :
+                new Set(["default", "text"]);
+            this.createLabel(labelText, labelEditOn);
+        }
+    }
+
+    private createLabel(labelText: string, editableOn: Set<ToolName>) {
+        this.label = new EditableText(this.graphDrawing, editableOn,
             {
-                text: getNumStringForLabels(weight),
-                fontSize: 14,
+                text: labelText,
+                fontSize: 10,
                 hitStrokeWidth: 5,
             });
-            this.weightText.on('click', event => {
-                const tool = this.graphDrawing.getTools().getCurrentTool();
-                event.cancelBubble = true;
-                if (tool == "delete") {
-                    event.cancelBubble = false;
-                    this.handleClick(event);
-                }
-            });
-            this.weightText.updateOffsets();
-            this.weightText.setTextChangeCallback((text: string) => {
-                const weight = Number(text);
-                if (isNaN(weight)) {
-                    console.warn("Cannot set a non-numeric weight!");
-                    showWarning("Warning", "Weight must be numeric!");
-                    this.weightText.text(getNumStringForLabels(this.weight));
-                    return;
-                }
-                this.weight =  weight;
-                this.weightChangeCallback?.(this.start, this.end, weight);
-            });
-            this.add(this.weightText);
-            this.weightOffset = graphDrawing.getWeightOffset(this.start, this.end);
-            this.updateWeightPosition();
-        }
+        this.label.on('click', event => {
+            const tool = this.graphDrawing.getTools().getCurrentTool();
+            event.cancelBubble = true;
+            if (tool == "delete") {
+                event.cancelBubble = false;
+                this.handleClick(event);
+            }
+        });
+        this.label.updateOffsets();
+        this.label.setTextChangeCallback((text: string) => {
+            if (this.labelEditCallback == undefined) {
+                console.error("Edge label edited when label edit callback"
+                    + " was null!");
+            }
+            const accepted = this.labelEditCallback(this, text);
+            if (accepted) {
+                this.labelText = this.label.text();
+            } else {
+                this.label.text(this.labelText);
+            }
+        });
+        this.add(this.label);
+        this.labelOffset = this.graphDrawing.getEdgeLabelOffset(this.start, this.end);
+        this.updateLabelPosition();
     }
 
     handleClick(evt: Konva.KonvaEventObject<MouseEvent>) {
         const currentTool = this.graphDrawing.getTools().getCurrentTool();
         if (currentTool == "default") {
             this.setCurvePointPosition(getMouseEventXY(evt));
-            this.updateWeightPosition();
+            this.updateLabelPosition();
         } else if (currentTool == "delete") {
             this.graphDrawing.removeEdge(this.start, this.end);
         }
@@ -144,14 +145,14 @@ export default class EdgeDrawing extends Konva.Group {
         });
         this.curvePoint.on("dragmove", () => {
             this.adjustArrowByCurvePoint();
-            this.updateWeightPosition();
+            this.updateLabelPosition();
         });
         this.curvePoint.on("click", e => {
             e.cancelBubble = true;
         });
         this.add(this.curvePoint);
         this.adjustArrowByCurvePoint();
-        this.updateWeightPosition();
+        this.updateLabelPosition();
     }
 
     adjustArrowByCurvePoint() {
@@ -189,7 +190,7 @@ export default class EdgeDrawing extends Konva.Group {
 
     vertexMoveCallback(_: VertexDrawing) {
         this.setEdgePoints();
-        this.updateWeightPosition();
+        this.updateLabelPosition();
         this.redrawCallback();
     }
 
@@ -200,22 +201,22 @@ export default class EdgeDrawing extends Konva.Group {
         return undefined;
     }
 
-    updateWeightPosition() {
-        if (this.weightText == undefined) {
+    updateLabelPosition() {
+        if (this.label == undefined) {
             return;
         }
-        this.weightOffset = this.graphDrawing.getWeightOffset(this.start,
+        this.labelOffset = this.graphDrawing.getEdgeLabelOffset(this.start,
             this.end);
-        var weightAnchor: number[];
+        var labelAnchor: number[];
         if (this.curvePoint != undefined) {
-            weightAnchor = [this.curvePoint.x(), this.curvePoint.y()];
+            labelAnchor = [this.curvePoint.x(), this.curvePoint.y()];
         } else {
-            weightAnchor = [0, 0];
-            weightAnchor[0] = (this.start.x() + this.end.x()) / 2;
-            weightAnchor[1] = (this.start.y() + this.end.y()) / 2;
+            labelAnchor = [0, 0];
+            labelAnchor[0] = (this.start.x() + this.end.x()) / 2;
+            labelAnchor[1] = (this.start.y() + this.end.y()) / 2;
         }
-        this.weightText.x(weightAnchor[0] + this.weightOffset[0]);
-        this.weightText.y(weightAnchor[1] + this.weightOffset[1]);
+        this.label.x(labelAnchor[0] + this.labelOffset[0]);
+        this.label.y(labelAnchor[1] + this.labelOffset[1]);
     }
 
     setDecorationState(state: DecorationState) {
@@ -226,25 +227,44 @@ export default class EdgeDrawing extends Konva.Group {
         switch (state)  {
             case DecorationState.DEFAULT:
                 this.arrow.stroke('black');
-                this.weightText && this.weightText.fill('black');
+                this.label && this.label.fill('black');
                 break;
             case DecorationState.SELECTED:
                 this.arrow.stroke(selected_color);
-                this.weightText && this.weightText.fill(selected_color);
+                this.label && this.label.fill(selected_color);
                 break;
             case DecorationState.DISABLED:
                 this.arrow.stroke(disabled_color);
-                this.weightText && this.weightText.fill(disabled_color);
+                this.label && this.label.fill(disabled_color);
                 break;
             case DecorationState.CONSIDERING:
                 this.arrow.stroke(considering_color);
-                this.weightText && this.weightText.fill(considering_color);
+                this.label && this.label.fill(considering_color);
                 break;
             default:
                 const color = DefaultDecorator.getAuxiliaryColor(state.getAuxiliaryId());
                 this.arrow.stroke(color);
-                this.weightText && this.weightText.fill(color);
+                this.label && this.label.fill(color);
         }
+    }
+
+    setEdgeLabel(label: string, editCallback?: LabelEditCallback) {
+        if (this.label != undefined) {
+            this.clearEdgeLabel();
+        }
+        this.labelText = label;
+        this.labelEditCallback = editCallback;
+        this.createLabel(label, new Set());
+        this.draw();
+    }
+
+    clearEdgeLabel() {
+        if (this.label == undefined) {
+            return;
+        }
+        this.label.remove();
+        this.label.destroy();
+        this.draw();
     }
 
     getDecorationState(): DecorationState {

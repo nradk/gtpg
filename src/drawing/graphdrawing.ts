@@ -10,6 +10,8 @@ import { getLetterFromInteger, getTwoLevelKeyList } from "../util";
 import { Vector2, Util, Point } from "../commontypes";
 import { Decorator, DefaultDecorator, EuclideanDecorator } from "../decoration/decorator";
 import { Tools } from "../ui_handlers/tools";
+import { showWarning } from "../ui_handlers/notificationservice";
+import { getNumStringForLabels } from "../util";
 
 type CentroidCache = { n: number; xSum: number; ySum: number };
 
@@ -226,15 +228,29 @@ export class GraphDrawing {
         const start = this.vertexDrawings[startId];
         const end   = this.vertexDrawings[endId];
         return  new EdgeDrawing(this, start, end,
-                this.graph.isDirected(),
-                this.edgesLayer.draw.bind(this.edgesLayer),
-                this.graph instanceof Graphs.WeightedGraph ?
-                    this.graph.getEdgeWeight(startId, endId) : undefined,
-                this.handleWeightUpdate.bind(this)
+            this.graph.isDirected(),
+            this.edgesLayer.draw.bind(this.edgesLayer),
+            this.graph instanceof Graphs.WeightedGraph ?
+            getNumStringForLabels(this.graph.getEdgeWeight(startId,
+                endId)) : undefined,
+            this.graph instanceof Graphs.WeightedGraph ?
+            this.handleWeightUpdate.bind(this) : undefined
         );
     }
 
-    getWeightOffset(start: VertexDrawing, end: VertexDrawing): Vector2 {
+    setWeightAsEdgeLabel(startId: number, endId: number) {
+        if (!this.getGraph().isWeighted()) {
+            return;
+        }
+        const graph = this.getGraph() as Graphs.Graph & Graphs.Weighted;
+        const weight = graph.getEdgeWeight(startId, endId);
+        const weightStr = getNumStringForLabels(weight);
+        const order = this.getEdgeDrawingOrder(startId, endId);
+        this.getEdgeDrawing(order[0], order[1]).setEdgeLabel(weightStr,
+            this.handleWeightUpdate.bind(this));
+    }
+
+    getEdgeLabelOffset(start: VertexDrawing, end: VertexDrawing): Vector2 {
         const centroidPt = Util.vectorToPoint(this.getCentroid());
         const startV: Vector2 = [start.x(), start.y()];
         const endV: Vector2 = [end.x(), end.y()];
@@ -493,17 +509,22 @@ export class GraphDrawing {
         return [this.centroidCache.xSum / n, this.centroidCache.ySum / n];;
     }
 
-    handleWeightUpdate(start: VertexDrawing, end: VertexDrawing, weight: number) {
-        let startId = this.lookupVertexId(start);
-        let endId = this.lookupVertexId(end);
-        //if (!this.graph.isDirected() && startId > endId) {
-            //let t = endId;
-            //endId = startId;
-            //startId = t;
-        //}
-        if (this.graph instanceof Graphs.WeightedGraph) {
-            this.graph.setEdgeWeight(startId, endId, weight);
+    handleWeightUpdate(edgeDrawing: EdgeDrawing, weightStr: string) {
+        let startId = this.lookupVertexId(edgeDrawing.start);
+        let endId = this.lookupVertexId(edgeDrawing.end);
+        const weight = Number(weightStr);
+        if (!this.graph.isWeighted()) {
+            console.error("Attempt to edit weight in a non-weighted graph!");
+            return false;
         }
+        if (isNaN(weight)) {
+            console.warn("Cannot set a non-numeric weight!");
+            showWarning("Warning", "Weight must be numeric!");
+            return false;
+        }
+        (this.graph as Graphs.Graph & Graphs.Weighted).setEdgeWeight(startId,
+            endId, weight);
+        return true;
     }
 
     getGraph(): Graphs.Graph {
