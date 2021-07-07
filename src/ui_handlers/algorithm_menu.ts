@@ -20,7 +20,7 @@ export default class AlgorithmUI {
 
     static readonly algorithms = {
         "#btn-algo-kruskal": [InputlessControls, KruskalMST],
-        "#btn-algo-prim": [InputlessControls, PrimMST],
+        "#btn-algo-prim": [VertexInputControls, PrimMST],
         "#btn-algo-bfs": [VertexInputControls, BreadthFirstSearch],
         "#btn-algo-dfs": [VertexInputControls, DepthFirstSearch],
         "#btn-algo-dijkstra": [VertexInputControls, DijkstrasShortestPath],

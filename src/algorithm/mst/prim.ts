@@ -4,8 +4,9 @@ import { Algorithm, AlgorithmError } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { WeightedGraph, Weighted, Graph } from "../../graph_core/graph";
 import { DecorationState } from "../../decoration/decorator";
+import { VertexInput } from "../../commontypes";
 
-export class PrimMST implements Algorithm<void> {
+export class PrimMST implements Algorithm<VertexInput> {
 
     mst: WeightedGraph;
     edgeQ: Heap<number[]>;
@@ -15,7 +16,7 @@ export class PrimMST implements Algorithm<void> {
     constructor(private decorator: Decorator) {
     }
 
-    initialize() {
+    initialize(input: VertexInput) {
         const g = this.decorator.getGraph();
         if (!g.isWeighted() || g.isDirected()) {
             throw new AlgorithmError("Prim's algorithm needs a weighted undirected graph!");
@@ -30,8 +31,7 @@ export class PrimMST implements Algorithm<void> {
         const edgeComparator = (a: number[], b: number[]) => a[2] - b[2];
         this.edgeQ = new Heap(edgeComparator);
 
-        const firstVertex = vertexIds[Math.floor(
-            Math.random() * vertexIds.length)];
+        const firstVertex = input.vertexId;
 
         this.inTree = new Set();
         this.inTree.add(firstVertex);
