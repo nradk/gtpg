@@ -16,6 +16,7 @@ are a lot of things missing and things that do not work.
 - Weighted graphs
 - Editable vertex labels
 - Tool-based design with tools to delete objects, add/edit and move objects
+- Bookmarking of graphs to save graphs in the browswer
 - Algorithm visualizations:
   - Minimum Spanning Tree Algorithms:
     - Kruskal'ls Algorithm
@@ -26,14 +27,15 @@ are a lot of things missing and things that do not work.
   - Shortest Path Algorithms:
     - Dijkstra's Algorithm
   - Walk-Finding Algorithms:
-    - Fleury's Algorithm for Euler trails/cycles
+    - Fleury's Algorithm for Euler Trails and Cycles
+    - Bellman-Held-Karp Algorithm for Hamilton Paths and Circuits
   - Decomposition Algorithms:
     - Hopcroft and Tarjan's Algorithm for Biconnected Components and
       Articulation Points
-
-### Planned Features
-- Save and open graph from browser
-- Text annotations on graphs
-- Multigraphs
-- Better customization of display sizes and colors
-- More algorithm visualizations
+  - Traveling Salesman Problem:
+    - Exact Algorithms:
+      - Bellman-Held-Karp Algorithm
+    - Approximate Algorithms:
+      - Nearest Neighbor Heuristic
+      - Nearest Insert Heuristic
+      - Cheapest Insert Heuristic
