@@ -246,6 +246,23 @@ export default class EdgeDrawing extends Konva.Group {
                 this.arrow.stroke(color);
                 this.label && this.label.fill(color);
         }
+        // Thicker width for selected state
+        switch (state) {
+            case DecorationState.SELECTED:
+                this.arrow.strokeWidth(4);
+                break;
+            default:
+                this.arrow.strokeWidth(2);
+        }
+        switch (state) {
+            case DecorationState.CONSIDERING:
+                this.arrow.dashEnabled(true);
+                this.arrow.dash([5, 5]);
+                break;
+            default:
+                this.arrow.dashEnabled(false);
+                this.arrow.dash();
+        }
     }
 
     setEdgeLabel(label: string, editCallback?: LabelEditCallback) {
