@@ -10,18 +10,22 @@ export default class ImportExport {
         $("#btn-export").on('click', this.exportCurrent.bind(this));
         $("#btn-import").on('click', this.importNew.bind(this));
         $("#new-import-graph-btn").on('click', this.importNew.bind(this));
+    }
 
+    static stripJsonExtension(filename: string) {
+        return filename.slice(-4).toLowerCase() == 'json' ? filename.slice(0, -5) : filename;
+    }
+
+    static openDialogToExport(drawing: GraphDrawing, defaultName: string) {
+        $("#saveModal").modal("show");
+        $("input#saveFileName").val(defaultName);
+        $("#graphSaveForm").off("submit");
         $("#graphSaveForm").on("submit", e => {
-            const drawing = this.graphTabs.getActiveGraphDrawing();
             $("#saveModal").modal("hide");
             const fileName = $("input#saveFileName").val().toString() + ".json";
             ImportExport.exportGraphDrawing(drawing, fileName.toString());
             e.preventDefault();
         });
-    }
-
-    static stripJsonExtension(filename: string) {
-        return filename.slice(-4).toLowerCase() == 'json' ? filename.slice(0, -5) : filename;
     }
 
     exportCurrent() {
@@ -30,6 +34,14 @@ export default class ImportExport {
             tabname.slice(0, -5) : tabname;
         $("#saveModal").modal("show");
         $("input#saveFileName").val(fileName);
+        $("#graphSaveForm").off("submit");
+        $("#graphSaveForm").on("submit", e => {
+            const drawing = this.graphTabs.getActiveGraphDrawing();
+            $("#saveModal").modal("hide");
+            const fileName = $("input#saveFileName").val().toString() + ".json";
+            ImportExport.exportGraphDrawing(drawing, fileName.toString());
+            e.preventDefault();
+        });
     }
 
     importNew() {

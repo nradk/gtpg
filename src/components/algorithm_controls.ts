@@ -68,10 +68,9 @@ export abstract class GenericControls extends AlgorithmControls {
                 Util.createTabWithGraphDrawing(this.graphTabs, graphDrawing,
                     runner.getAlgorithm().getShortName());
             } else {
-                ImportExport.exportGraphDrawing(graphDrawing,
-                    runner.getAlgorithm().getShortName() + ".json");
+                ImportExport.openDialogToExport(graphDrawing,
+                    runner.getAlgorithm().getShortName());
             }
-
         };
         this.output_tab_btn.on('click', () => exportOutput('tab'));
         this.output_export_btn.on('click', () => exportOutput('file'));
