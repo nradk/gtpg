@@ -55,12 +55,16 @@ export default class GraphTabs {
             this.tabSwitchCallbacks.forEach(cb => cb());
         });
         this.tabBar.setTabDeactivatedCallback((id: number) => {
+            console.log(`Tab ${id} deactivated`);
             this.tabDrawings[id].detachStage();
             this.stage.removeChildren();
             this.stage.clear();
         });
         this.tabBar.setTabClosedCallback((id: number) => {
+            console.log(`Tab ${id} closed`);
             delete this.tabDrawings[id];
+            $(this.controlPanels[id]).remove();
+            delete this.controlPanels[id];
         });
     }
 
