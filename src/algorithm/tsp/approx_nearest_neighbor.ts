@@ -3,6 +3,7 @@ import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { createOutputGraph } from "../../graph_core/graph_util";
 import { getNumStringForLabels } from "../../util";
+import { VertexInput } from "../../commontypes";
 import { TSPApprox } from "./tsp_approx";
 
 export class TSPApproxNearestNeighbor extends TSPApprox {
@@ -13,8 +14,8 @@ export class TSPApproxNearestNeighbor extends TSPApprox {
         super(decorator);
     }
 
-    initialize() {
-        super.initialize();
+    initialize(input: VertexInput) {
+        super.initialize(input);
         const graph = this.decorator.getGraph();
         this.path = null;
         for (const v of graph.getVertexIds()) {
@@ -45,8 +46,7 @@ export class TSPApproxNearestNeighbor extends TSPApprox {
         const vertexIndices = new Map<number, number>();
         vertices.forEach((v, i) => vertexIndices.set(v, i));
 
-        // Pick a random starting vertex
-        let current = vertices[Math.floor(Math.random() * vertices.length)];
+        let current = this.startVertex;
         const tour: number[] = [current];
 
         while (tour.length < n) {

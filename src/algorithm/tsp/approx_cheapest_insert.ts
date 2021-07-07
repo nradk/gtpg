@@ -3,6 +3,7 @@ import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { createOutputGraph } from "../../graph_core/graph_util";
 import { getNumStringForLabels } from "../../util";
+import { VertexInput } from "../../commontypes";
 import { TSPApprox } from "./tsp_approx";
 
 type Tour = { tour: number[], cost: number };
@@ -15,8 +16,8 @@ export class TSPApproxCheapestInsert extends TSPApprox {
         super(decorator);
     }
 
-    initialize() {
-        super.initialize();
+    initialize(input: VertexInput) {
+        super.initialize(input);
         this.path = null;
         this.decorator.clearAllDecoration();
     }
@@ -44,8 +45,7 @@ export class TSPApproxCheapestInsert extends TSPApprox {
         const vertexIndices = new Map<number, number>();
         vertices.forEach((v, i) => vertexIndices.set(v, i));
 
-        // Pick a random starting vertex
-        let start = vertices[Math.floor(Math.random() * vertices.length)];
+        let start = this.startVertex;
         this.decorator.setVertexState(start, DecorationState.SELECTED);
         yield;
         let tour: Tour = { tour: [start], cost: 0 };

@@ -28,9 +28,9 @@ export default class AlgorithmUI {
         "#btn-algo-articulation": [InputlessControls, ArticulationPoints],
         "#btn-algo-bhk": [InputlessControls, BHKHamiltonPath],
         "#btn-algo-bhk-tsp": [InputlessControls, BHK_TSP],
-        "#btn-algo-nn-tsp": [InputlessControls, TSPApproxNearestNeighbor],
-        "#btn-algo-ni-tsp": [InputlessControls, TSPApproxNearestInsert],
-        "#btn-algo-ci-tsp": [InputlessControls, TSPApproxCheapestInsert],
+        "#btn-algo-nn-tsp": [VertexInputControls, TSPApproxNearestNeighbor],
+        "#btn-algo-ni-tsp": [VertexInputControls, TSPApproxNearestInsert],
+        "#btn-algo-ci-tsp": [VertexInputControls, TSPApproxCheapestInsert],
         "#btn-algo-edmondskarp": [SourceSinkInputControls, EdmondsKarpAlgorithm],
     };
 
