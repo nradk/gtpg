@@ -24,6 +24,7 @@ export class EdmondsKarpAlgorithm implements Algorithm<SourceSinkInput> {
     }
 
     *run() {
+        return null;
     }
 
     getOutputGraph() {

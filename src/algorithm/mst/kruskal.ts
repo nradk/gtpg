@@ -1,4 +1,4 @@
-import { Algorithm, AlgorithmError } from "../algorithm";
+import { Algorithm, AlgorithmError, AlgorithmOutput } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { Graph, Weighted, WeightedGraph } from "../../graph_core/graph";
 import { DecorationState } from "../../decoration/decorator";
@@ -43,10 +43,6 @@ export class KruskalMST implements Algorithm<void> {
 
     }
 
-    getOutputGraph() {
-        return this.mst;
-    }
-
     getFullName() {
         return "Kruskal's Minimum Spanning Tree Algorithm";
     }
@@ -59,7 +55,7 @@ export class KruskalMST implements Algorithm<void> {
         return this.decorator;
     }
 
-    *run(): IterableIterator<void> {
+    *run(): Generator<void, AlgorithmOutput, void> {
         while (true) {
             const e = this.edges.pop();
             this.decorator.setEdgeState(e[0], e[1], DecorationState.CONSIDERING);
@@ -89,6 +85,11 @@ export class KruskalMST implements Algorithm<void> {
             } else {
                 break;
             }
+        }
+        return {
+            graph: this.mst,
+            name: "MST",
+            message: null,
         }
     }
 }

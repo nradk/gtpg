@@ -10,8 +10,8 @@ export function isSingleComponent(graph: Graph): boolean {
     }
     const start = graph.getVertexIds().values().next().value;
     const bfs = new BreadthFirstSearch(new HeadlessDecorator(graph));
-    const tree = (new HeadlessRunner(bfs)).run({ vertexId: start });
-    return tree.getVertexIds().size == graph.getVertexIds().size;
+    const output = (new HeadlessRunner(bfs)).run({ vertexId: start });
+    return output.graph.getVertexIds().size == graph.getVertexIds().size;
 }
 
 export function createOutputGraph(path: number[], labelsFrom: Graph): Graph {

@@ -1,6 +1,6 @@
 import { Heap } from 'heap-js';
 
-import { Algorithm, AlgorithmError } from "../algorithm";
+import { Algorithm, AlgorithmError, AlgorithmOutput } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { WeightedGraph, Weighted, Graph } from "../../graph_core/graph";
 import { DecorationState } from "../../decoration/decorator";
@@ -61,7 +61,7 @@ export class PrimMST implements Algorithm<VertexInput> {
         }
     }
 
-    *run() {
+    *run(): Generator<void, AlgorithmOutput, void> {
         while (this.notInTree.size > 0) {
             const edge = this.edgeQ.pop();
             this.decorator.setEdgeState(edge[0], edge[1], DecorationState.CONSIDERING);
@@ -87,10 +87,11 @@ export class PrimMST implements Algorithm<VertexInput> {
             }
             yield;
         }
-    }
-
-    getOutputGraph() {
-        return this.mst;
+        return {
+            graph: this.mst,
+            name: "MST",
+            message: null
+        };
     }
 
     getFullName() {

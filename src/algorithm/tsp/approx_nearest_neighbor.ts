@@ -5,6 +5,7 @@ import { createOutputGraph } from "../../graph_core/graph_util";
 import { getNumStringForLabels } from "../../util";
 import { VertexInput } from "../../commontypes";
 import { TSPApprox } from "./tsp_approx";
+import { AlgorithmOutput} from "../algorithm";
 
 export class TSPApproxNearestNeighbor extends TSPApprox {
 
@@ -23,10 +24,6 @@ export class TSPApproxNearestNeighbor extends TSPApprox {
         }
     }
 
-    getOutputGraph() {
-        return this.path;
-    }
-
     getFullName() {
         return "Nearest-Neighbor TSP Approximation Algorithm";
     }
@@ -39,7 +36,7 @@ export class TSPApproxNearestNeighbor extends TSPApprox {
         return this.decorator;
     }
 
-    *run(): IterableIterator<void> {
+    *run(): Generator<void, AlgorithmOutput, void> {
         const graph = this.decorator.getGraph() as EuclideanGraph;
         const n = graph.getNumberOfVertices();
         const vertices = [...graph.getVertexIds()];
@@ -71,10 +68,15 @@ export class TSPApproxNearestNeighbor extends TSPApprox {
         const w = graph.getEdgeWeight(tour[0], current);
         this.decorator.setEdgeLabel(tour[0], current, getNumStringForLabels(w));
         this.path = createOutputGraph(tour.concat(tour[0]), graph);
+        return {
+            graph: this.path,
+            name: "Approximate TSP Tour",
+            message: null,
+        };
     }
 
     *considerAllNeighbors(graph: EuclideanGraph, vertexId: number,
-            exclude?: Set<number>): IterableIterator<void> {
+            exclude?: Set<number>) {
         exclude = exclude ?? new Set<number>();
         for (const n of graph.getVertexNeighborIds(vertexId)) {
             if (exclude.has(n)) {

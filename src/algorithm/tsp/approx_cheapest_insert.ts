@@ -38,7 +38,7 @@ export class TSPApproxCheapestInsert extends TSPApprox {
         return this.decorator;
     }
 
-    *run(): IterableIterator<void> {
+    *run() {
         const graph = this.decorator.getGraph() as EuclideanGraph;
         const n = graph.getNumberOfVertices();
         const vertices = [...graph.getVertexIds()];
@@ -60,7 +60,11 @@ export class TSPApproxCheapestInsert extends TSPApprox {
             this.setPathState(tour.tour, DecorationState.SELECTED);
             yield;
         }
-        this.path = createOutputGraph(tour.tour, graph);
+        return {
+            graph: createOutputGraph(tour.tour, graph),
+            name:  "Approximate TSP Tour",
+            message: null,
+        }
     }
 
     private setPathState(path: number[], state: DecorationState) {

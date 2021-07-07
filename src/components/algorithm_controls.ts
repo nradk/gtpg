@@ -1,5 +1,5 @@
 import $ from "jquery";
-import { AlgorithmRunner, AlgorithmState, Algorithm, AlgorithmError } from "../algorithm/algorithm";
+import { AlgorithmRunner, AlgorithmState, Algorithm, AlgorithmError, AlgorithmOutput } from "../algorithm/algorithm";
 import GraphTabs from "../ui_handlers/graphtabs";
 import * as Util from "../util";
 import ImportExport from "../ui_handlers/importexport";
@@ -8,6 +8,7 @@ import { GraphDrawing } from "../drawing/graphdrawing";
 import { Graph } from "../graph_core/graph";
 import { VertexInput, NoVertexClickedError, SourceSinkInput } from "../commontypes";
 import { Decorator } from "../decoration/decorator";
+import { showMessage } from "../ui_handlers/notificationservice";
 
 export class AlgorithmControls extends HTMLElement {
 }
@@ -24,6 +25,7 @@ export abstract class GenericControls extends AlgorithmControls {
     protected readonly output_drop_btn: JQuery<HTMLElement>;
     protected readonly graphTabs: GraphTabs;
     protected readonly graphDrawing: GraphDrawing;
+    protected output: AlgorithmOutput;
 
     constructor(graphTabs: GraphTabs, graphDrawing: GraphDrawing) {
         super();
@@ -57,8 +59,7 @@ export abstract class GenericControls extends AlgorithmControls {
         });
         type ExportType = "file" | "tab"
         const exportOutput = (how: ExportType) => {
-            const runner = this.getRunner();
-            const graph = runner.getAlgorithm().getOutputGraph();
+            const graph = this.output.graph;
             if (graph == null) {
                 alert("The algorithm did not generate any output!");
                 return;
@@ -66,10 +67,9 @@ export abstract class GenericControls extends AlgorithmControls {
             const graphDrawing = this.getGraphDrawingForOutput(graph);
             if (how == "tab") {
                 Util.createTabWithGraphDrawing(this.graphTabs, graphDrawing,
-                    runner.getAlgorithm().getShortName());
+                    this.output.name);
             } else {
-                ImportExport.openDialogToExport(graphDrawing,
-                    runner.getAlgorithm().getShortName());
+                ImportExport.openDialogToExport(graphDrawing, this.output.name);
             }
         };
         this.output_tab_btn.on('click', () => exportOutput('tab'));
@@ -77,7 +77,7 @@ export abstract class GenericControls extends AlgorithmControls {
         this.algorithmStateChanged("init"); // TODO this is bad
     }
 
-    protected abstract executeAlgorithm(): void;
+    protected abstract executeAlgorithm(): Promise<AlgorithmOutput>;
     protected abstract getRunner(): AlgorithmRunner<any>;
 
     protected onPlay() {
@@ -89,7 +89,21 @@ export abstract class GenericControls extends AlgorithmControls {
         if (runner.getState() == "init" ||
             runner.getState() == "done") {
             this.algorithmStateChanged("init"); // TODO this is bad
-            this.executeAlgorithm();
+            this.executeAlgorithm().then(output => {
+                if (output.message) {
+                    showMessage(output.message);
+                }
+                this.output = output;
+                this.changeButtonState(this.output_drop_btn, output.graph != null);
+            }).catch(e => {
+                if (e instanceof AlgorithmError) {
+                    alert(e.message);
+                } else if (e instanceof NoVertexClickedError) {
+                } else {
+                    alert("There was an unexpected problem with the algorithm.");
+                    console.error(e);
+                }
+            });
         } else {
             runner.resume();
         }
@@ -185,17 +199,8 @@ export class InputlessControls extends GenericControls {
         $(this).find("#algo-name").text(this.getRunner().getAlgorithm().getFullName());
     }
 
-    executeAlgorithm(): void {
-        try {
-            this.getRunner().execute();
-        } catch (ex: any) {
-            if (ex instanceof AlgorithmError) {
-                alert(ex.message);
-            } else {
-                alert("There was an unexpected problem with the algorithm.");
-                console.error(ex);
-            }
-        }
+    async executeAlgorithm(): Promise<AlgorithmOutput> {
+        return this.getRunner().execute();
     }
 
     getRunner(): AlgorithmRunner<void> {
@@ -217,20 +222,12 @@ export class VertexInputControls extends GenericControls {
         $(this).find("#algo-name").text(this.getRunner().getAlgorithm().getFullName());
     }
 
-    executeAlgorithm(): void {
+    async executeAlgorithm(): Promise<AlgorithmOutput> {
         const title = "Select Vertex";
         const body = "Please click on a vertex to start from";
-        this.graphDrawing.enterVertexSelectMode(title, body).then(selected => {
-            this.getRunner().execute({ vertexId: selected });
-        }).catch((e) => {
-            if (e instanceof AlgorithmError) {
-                alert(e.message);
-            } else if (e instanceof NoVertexClickedError) {
-            } else {
-                alert("There was an unexpected problem with the algorithm.");
-                console.error(e);
-            }
-        });
+        return this.graphDrawing.enterVertexSelectMode(title, body).then(s =>
+            this.getRunner().execute({ vertexId: s })
+        );
     }
 
     getRunner(): AlgorithmRunner<VertexInput> {
@@ -252,24 +249,16 @@ export class SourceSinkInputControls extends GenericControls {
         $(this).find("#algo-name").text(this.getRunner().getAlgorithm().getFullName());
     }
 
-    executeAlgorithm(): void {
+    async executeAlgorithm(): Promise<AlgorithmOutput> {
         const source = this.graphDrawing.enterVertexSelectMode("Select Source",
                 "Please click on the source vertex.");
         const sink = source.then(_ => {
              return this.graphDrawing.enterVertexSelectMode("Select Sink",
                     "Please click on the sink vertex.");
         });
-        Promise.all([source, sink]).then(([sourceId, sinkId]) => {
-            this.getRunner().execute({ sourceId: sourceId, sinkId: sinkId });
-        }).catch((e) => {
-            if (e instanceof AlgorithmError) {
-                alert(e.message);
-            } else if (e instanceof NoVertexClickedError) {
-            } else {
-                alert("There was an unexpected problem with the algorithm.");
-                console.error(e);
-            }
-        });
+        return Promise.all([source, sink]).then(([sourceId, sinkId]) => (
+            this.getRunner().execute({ sourceId: sourceId, sinkId: sinkId })
+        ));
     }
 
     getRunner(): AlgorithmRunner<SourceSinkInput> {

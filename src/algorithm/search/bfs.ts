@@ -81,10 +81,11 @@ export class BreadthFirstSearch implements Algorithm<VertexInput> {
 
             yield;
         }
-    }
-
-    getOutputGraph() {
-        return this.searchTree;
+        return {
+            graph: this.searchTree,
+            name: "BFS Tree",
+            message: null
+        }
     }
 
     getFullName() {

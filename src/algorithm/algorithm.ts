@@ -1,15 +1,21 @@
 import { Graph } from "../graph_core/graph";
 import { Decorator } from "../decoration/decorator";
+import { Message } from "../ui_handlers/notificationservice";
 
 export type AlgorithmState = "init" | "running" | "paused" | "done";
 
 export class AlgorithmError extends Error {
 }
 
+export interface AlgorithmOutput {
+    graph: Graph;
+    name: string;
+    message: Message;
+}
+
 export interface Algorithm<I> {
     initialize(input: I): void;
-    run(): IterableIterator<void>;
-    getOutputGraph(): Graph;
+    run(): Generator<void, AlgorithmOutput, void>;
     getFullName(): string;
     getShortName(): string;
     getDecorator(): Decorator;
@@ -23,26 +29,28 @@ export class AlgorithmRunner<I> {
     private runnerStep: () => void;
 
     constructor(protected algorithm: Algorithm<I>) {
-        console.log("Algorithm created, of type" + (typeof this));
         this.delay = 400;
         this.state = "init";
     }
 
-    execute(input: I): void {
+    execute(input: I): Promise<AlgorithmOutput> {
         this.algorithm.initialize(input);
         const iterator = this.algorithm.run();
-        const runnerStep = () => {
-            const it = iterator.next();
-            if (!it.done) {
-                if (this.state == "running") {
-                    this.timer = setTimeout(runnerStep, this.delay);
+        return new Promise((resolve, _) => {
+            const runnerStep = () => {
+                const it = iterator.next();
+                if (!it.done) {
+                    if (this.state == "running") {
+                        this.timer = setTimeout(runnerStep, this.delay);
+                    }
+                } else {
+                    this.setState("done");
+                    resolve(it.value);
                 }
-            } else {
-                this.setState("done");
-            }
-        };
-        this.setState("running");
-        runnerStep();
+            };
+            this.setState("running");
+            runnerStep();
+        });
     }
 
     private setState(state: AlgorithmState) {
@@ -90,10 +98,11 @@ export class HeadlessRunner<I> {
     constructor(private algorithm: Algorithm<I>) {
     }
 
-    run(input: I): Graph {
+    run(input: I): AlgorithmOutput {
         this.algorithm.initialize(input);
         const it = this.algorithm.run();
-        while (!it.next().done);
-        return this.algorithm.getOutputGraph();
+        let itRes: IteratorResult<void, AlgorithmOutput>;
+        while (!(itRes = it.next()).done);
+        return itRes.value;
     }
 }

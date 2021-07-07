@@ -10,7 +10,7 @@ import { getLetterFromInteger, getTwoLevelKeyList } from "../util";
 import { Vector2, Util, Point, NoVertexClickedError } from "../commontypes";
 import { Decorator, DefaultDecorator, EuclideanDecorator } from "../decoration/decorator";
 import { Tools } from "../ui_handlers/tools";
-import { showMessage, showWarning } from "../ui_handlers/notificationservice";
+import { showInfo, showWarning } from "../ui_handlers/notificationservice";
 import { getNumStringForLabels } from "../util";
 
 type CentroidCache = { n: number; xSum: number; ySum: number };
@@ -557,7 +557,7 @@ export class GraphDrawing {
 
     enterVertexSelectMode(messageTitle: string, messageBody: string): Promise<number> {
         return new Promise<number>((resolve, reject) => {
-            showMessage(messageTitle, messageBody);
+            showInfo(messageTitle, messageBody);
             this.vertexSelectMode = true;
             const prevCursor = this.stage.container().style.cursor;
             this.stage.container().style.cursor = 'crosshair';

@@ -1,4 +1,4 @@
-import { Algorithm, AlgorithmError } from "../algorithm";
+import { Algorithm, AlgorithmError, AlgorithmOutput } from "../algorithm";
 import { Decorator, DecorationState } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { isSingleComponent } from "../../graph_core/graph_util";
@@ -36,10 +36,6 @@ export class BHKHamiltonPath implements Algorithm<void> {
         }
     }
 
-    getOutputGraph() {
-        return this.path;
-    }
-
     getFullName() {
         return "Bellman-Held-Karp Hamilton Path Algorithm";
     }
@@ -52,7 +48,7 @@ export class BHKHamiltonPath implements Algorithm<void> {
         return this.decorator;
     }
 
-    *run(): IterableIterator<void> {
+    *run(): Generator<void, AlgorithmOutput, void> {
         const graph = this.decorator.getGraph();
         const n = graph.getNumberOfVertices();
         const vertices = [...graph.getVertexIds()];
@@ -125,8 +121,9 @@ export class BHKHamiltonPath implements Algorithm<void> {
                     // Then there is a hamilton circuit!
                     const circuit = path.concat(path[0]);
                     this.path = createOutputGraph(circuit, graph);
+                    this.setSelectionState(vertices, allVertices, DecorationState.SELECTED);
                     this.setPathEdgesState(circuit, DecorationState.SELECTED);
-                    return;
+                    return this.getOutput(true);
                 } else {
                     hamiltonPath = path;
                 }
@@ -134,8 +131,35 @@ export class BHKHamiltonPath implements Algorithm<void> {
         }
         if (hamiltonPath != null) {
             this.path = createOutputGraph(hamiltonPath, graph);
+            this.setSelectionState(vertices, allVertices, DecorationState.SELECTED);
             this.setPathEdgesState(hamiltonPath, DecorationState.SELECTED);
+            return this.getOutput(false);
+        } else {
+            return this.getOutput();
         }
+    }
+
+    private getOutput(isCircuit?: boolean) {
+        const output: AlgorithmOutput = {
+            graph: this.path,
+            name: "Hamilton ",
+            message: null
+        };
+        if (this.path != null) {
+            output.name = output.name + (isCircuit ? "Circuit" : "Path");
+            output.message = {
+                level: "success",
+                title: "Bellman-Held-Karp Algorithm",
+                text: output.name + " Found!",
+            };
+        } else {
+            output.message = {
+                level: "failure",
+                title: "Bellman-Held-Karp Algorithm",
+                text: "No Hamilton Path or Circuit Found!",
+            };
+        }
+        return output;
     }
 
     private setSelectionState(vertices: number[], subset: number,

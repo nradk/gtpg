@@ -80,10 +80,11 @@ export class DepthFirstSearch implements Algorithm<VertexInput> {
 
             yield;
         }
-    }
-
-    getOutputGraph() {
-        return this.searchTree;
+        return {
+            graph: this.searchTree,
+            name: "DFS Tree",
+            message: null
+        }
     }
 
     getFullName() {

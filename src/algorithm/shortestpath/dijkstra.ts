@@ -89,10 +89,11 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
                 this.decorator.setEdgeState(e[0], e[1], DecorationState.DISABLED);
             }
         }
-    }
-
-    getOutputGraph() {
-        return this.shortestPathTree;
+        return {
+            graph: this.shortestPathTree,
+            name: "Shortest Path Tree",
+            message: null
+        }
     }
 
     getFullName() {

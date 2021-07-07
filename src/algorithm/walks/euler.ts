@@ -1,4 +1,4 @@
-import { Algorithm, AlgorithmError } from "../algorithm";
+import { Algorithm, AlgorithmError, AlgorithmOutput } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { Graph, WeightedGraph } from "../../graph_core/graph";
 import { isSingleComponent } from "../../graph_core/graph_util";
@@ -9,6 +9,7 @@ export class FleuryEulerTrail implements Algorithm<void> {
     private trail: WeightedGraph;
     private graph: Graph;
     private startVertex: number;
+    private hasCycle: boolean;
 
     constructor(private decorator: Decorator) {
     }
@@ -76,8 +77,10 @@ export class FleuryEulerTrail implements Algorithm<void> {
         }
         if (odd == 2) {
             this.startVertex = oddVertex;
+            this.hasCycle = false;
         } else {
             this.startVertex = graph.getVertexIds().values().next().value;
+            this.hasCycle = true;
         }
 
         this.trail = new WeightedGraph(true);
@@ -93,10 +96,6 @@ export class FleuryEulerTrail implements Algorithm<void> {
         }
     }
 
-    getOutputGraph() {
-        return this.trail;
-    }
-
     getFullName() {
         return "Fleury's Euler Trail/Cycle Algorithm";
     }
@@ -109,7 +108,7 @@ export class FleuryEulerTrail implements Algorithm<void> {
         return this.decorator;
     }
 
-    *run(): IterableIterator<void> {
+    *run() {
         let currentVertex = this.startVertex;
         let stop = false;
         let edgeIndex = 1;
@@ -141,5 +140,15 @@ export class FleuryEulerTrail implements Algorithm<void> {
                 i += 1;
             }
         }
+        const name = "Euler " + (this.hasCycle ? "Cycle" : "Trail");
+        return {
+            graph: this.trail,
+            name: name,
+            message: {
+                level: "success",
+                title: "Fleury's Algorithm",
+                text: name + " Found!"
+            }
+        } as AlgorithmOutput;
     }
 }

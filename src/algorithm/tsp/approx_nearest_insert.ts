@@ -1,5 +1,4 @@
 import { Decorator, DecorationState } from "../../decoration/decorator";
-import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { createOutputGraph } from "../../graph_core/graph_util";
 import { getNumStringForLabels } from "../../util";
@@ -8,8 +7,6 @@ import { TSPApprox } from "./tsp_approx";
 
 export class TSPApproxNearestInsert extends TSPApprox {
 
-    private path: Graph;
-
     constructor(decorator: Decorator) {
         super(decorator);
     }
@@ -17,14 +14,9 @@ export class TSPApproxNearestInsert extends TSPApprox {
     initialize(input: VertexInput) {
         super.initialize(input);
         const graph = this.decorator.getGraph();
-        this.path = null;
         for (const v of graph.getVertexIds()) {
             this.decorator.setVertexState(v, DecorationState.DISABLED);
         }
-    }
-
-    getOutputGraph() {
-        return this.path;
     }
 
     getFullName() {
@@ -39,7 +31,7 @@ export class TSPApproxNearestInsert extends TSPApprox {
         return this.decorator;
     }
 
-    *run(): IterableIterator<void> {
+    *run() {
         const graph = this.decorator.getGraph() as EuclideanGraph;
         const n = graph.getNumberOfVertices();
         const vertices = [...graph.getVertexIds()];
@@ -98,7 +90,12 @@ export class TSPApproxNearestInsert extends TSPApprox {
             this.decorator.setVertexState(nearest, DecorationState.SELECTED);
             yield;
         }
-        this.path = createOutputGraph(tour, graph);
+        return {
+            graph: createOutputGraph(tour, graph),
+            name: "Approximate TSP Tour",
+            message: null,
+        };
+
     }
 
     private *getNearestToPath(path: number[], graph: EuclideanGraph,

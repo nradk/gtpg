@@ -45,7 +45,7 @@ export class BHK_TSP implements Algorithm<void> {
         return this.decorator;
     }
 
-    *run(): IterableIterator<void> {
+    *run() {
         type Path = { steps: number[], cost: number };
         const graph = this.decorator.getGraph() as EuclideanGraph;
         const n = graph.getNumberOfVertices();
@@ -133,6 +133,11 @@ export class BHK_TSP implements Algorithm<void> {
         this.path = createOutputGraph(bestTour, graph);
         this.setSelectionState(vertices, allVertices, DecorationState.SELECTED);
         this.setPathEdgesState(bestTour, DecorationState.SELECTED);
+        return {
+            graph: this.path,
+            name: "TSP Tour",
+            message: null,
+        }
     }
 
     private setSelectionState(vertices: number[], subset: number,

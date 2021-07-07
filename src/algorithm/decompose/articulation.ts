@@ -1,8 +1,9 @@
-import { Algorithm, AlgorithmError } from "../algorithm";
+import { Algorithm, AlgorithmError, AlgorithmOutput } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { isSingleComponent } from "../../graph_core/graph_util";
 import { DecorationState } from "../../decoration/decorator";
+import { Message } from "../../ui_handlers/notificationservice";
 
 export class ArticulationPoints implements Algorithm<void> {
 
@@ -28,10 +29,6 @@ export class ArticulationPoints implements Algorithm<void> {
         }
     }
 
-    getOutputGraph() {
-        return null;
-    }
-
     getFullName() {
         return "Hopcroft-Tarjan Algorithm for Articulation Points & Biconnected Components";
     }
@@ -44,7 +41,7 @@ export class ArticulationPoints implements Algorithm<void> {
         return this.decorator;
     }
 
-    *run(): IterableIterator<void> {
+    *run(): Generator<void, AlgorithmOutput, void> {
         const dfn: {[v: number]: number} = {};
         const L: {[v: number]: number} = {};
         const vertices = this.graph.getVertexIds();
@@ -58,6 +55,7 @@ export class ArticulationPoints implements Algorithm<void> {
         const s: number[][] = [];
         const firstVertex = this.graph.getVertexIds().values().next().value;
         let componentIndex = 0;
+        let articulationPoints = new Set<number>();
         function *art(u: number, v: number) {
             dfn[u] = num;
             L[u] = num;
@@ -92,6 +90,7 @@ export class ArticulationPoints implements Algorithm<void> {
                         } while (!(edge[0] == u && edge[1] == w || edge[0] == w && edge[1] == u));
                         if (u !== firstVertex || nChildren > 1) {
                             decorator.setVertexState(u, DecorationState.SELECTED);
+                            articulationPoints.add(u);
                         }
                     }
                     L[u] = Math.min(L[u], L[w]);
@@ -103,5 +102,16 @@ export class ArticulationPoints implements Algorithm<void> {
             yield;
         };
         yield* art(firstVertex, undefined);
+        const message: Message = {
+            level: "success",
+            title: "Articulation Points",
+            text: `${articulationPoints.size} articulation points and `
+                + `${componentIndex} biconnected components found.`
+        };
+        if (articulationPoints.size == 0) {
+            message.level = "warning";
+            message.text = "No articulation points found."
+        }
+        return { graph: null, name: null, message: message };
     }
 }

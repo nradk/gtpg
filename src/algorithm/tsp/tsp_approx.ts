@@ -1,5 +1,4 @@
-import { Algorithm, AlgorithmError } from "../algorithm";
-import { Graph } from "../../graph_core/graph";
+import { Algorithm, AlgorithmError, AlgorithmOutput } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { VertexInput } from  "../../commontypes";
@@ -21,8 +20,7 @@ export abstract class TSPApprox implements Algorithm<VertexInput> {
         this.startVertex = input.vertexId;
     }
 
-    abstract run(): IterableIterator<void>;
-    abstract getOutputGraph(): Graph;
+    abstract run(): Generator<void, AlgorithmOutput, void>;
     abstract getFullName(): string;
     abstract getShortName(): string;
     abstract getDecorator(): Decorator;
