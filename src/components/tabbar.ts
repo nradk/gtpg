@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import Sortable from "sortablejs";
 
 export type TabType = "empty-directed" | "empty-undirected" | "generated" |
     "loaded" | "empty-directed-weighted" | "empty-undirected-weighted" |
@@ -20,6 +21,7 @@ export class TabBar extends HTMLElement {
         const template: HTMLTemplateElement = document.querySelector("#tabbar-template");
         const templateFrag = document.importNode(template.content, true);
         this.appendChild(templateFrag);
+        Sortable.create(this.querySelector("ul"));
         this.nextId = 0;
     }
 
