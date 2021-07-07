@@ -117,8 +117,10 @@ export class TabBar extends HTMLElement {
             this.tabDeactivatedCallback?.(prevActive);
         }
         $("#tabbar").children().children("a").removeClass("active");
+        $("#tabbar").children().children("a").addClass("bg-secondary");
         const a = $("#tabbar").children(`li[data-id=${id}]`).children("a");
         a.addClass("active");
+        a.removeClass("bg-secondary");
         this.makeTitleEditable(id);
         this.tabActivatedCallback?.(id);
     }
