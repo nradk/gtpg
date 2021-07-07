@@ -60,7 +60,6 @@ export class BHK_TSP implements Algorithm<void> {
             prevSubsets.get(i).set(endVertex, { steps: [endVertex], cost: 0 });
         }
         const allVertices = (1 << n) - 1;
-        console.log(prevSubsets);
         for (let k = 2; k <= n; k++) {
             const k_subsets = combinationBits(n, k);
             const nextSubsets = new Map<number, Map<number, Path>>();
@@ -69,55 +68,55 @@ export class BHK_TSP implements Algorithm<void> {
                 this.setSelectionState(vertices, subset, DecorationState.CONSIDERING);
                 // Loop through the set bits in the subset bitstring, which
                 // correspond to the vertices in this vertex subset.
-                let s = subset;
-                let i = 0;
+                let s = subset << 1;
+                let i = -1;
                 while (s > 0) {
-                    if ((s & 1) == 1) {
-                        const v = vertices[i];
-                        this.decorator.setVertexState(v, DecorationState.SELECTED);
+                    i++;
+                    s = s >> 1;
+                    if ((s & 1) == 0) {
+                        continue;
+                    }
+                    const v = vertices[i];
+                    this.decorator.setVertexState(v, DecorationState.SELECTED);
+                    yield;
+                    // For each neighbor w of v, see if there is a Hamilton
+                    // path of vertices in subset - {v} that ends in w
+                    const subsetMinusV = subset & ~(1 << i);
+                    const subsetMinusVVertices = this.getSubsetFromMask(vertices, subsetMinusV);
+                    for (const n of graph.getVertexNeighborIds(v)) {
+                        if (!subsetMinusVVertices.has(n)) {
+                            continue;
+                        }
+                        this.decorator.setEdgeState(v, n, DecorationState.CONSIDERING);
                         yield;
-                        // For each neighbor w of v, see if there is a Hamilton
-                        // path of vertices in subset - {v} that ends in w
-                        const subsetMinusV = subset & ~(1 << i);
-                        for (const n of graph.getVertexNeighborIds(v)) {
-                            const subsetMinusVVertices = this.getSubsetFromMask(vertices, subsetMinusV);
-                            if (!subsetMinusVVertices.has(n)) {
-                                continue;
-                            }
-                            this.decorator.setEdgeState(v, n, DecorationState.CONSIDERING);
-                            yield;
-                            this.decorator.setEdgeState(v, n, DecorationState.DISABLED);
-                            if (prevSubsets.has(subsetMinusV)) {
-                                if (prevSubsets.get(subsetMinusV).has(n)) {
-                                    const path = prevSubsets.get(subsetMinusV).get(n);
-                                    const newPathSteps = path.steps.concat([v]);
-                                    const newCost = path.cost + graph.getEdgeWeight(n, v);
-                                    if (!nextSubsets.has(subset)) {
-                                        nextSubsets.set(subset, new Map<number, Path>());
-                                        nextSubsets.get(subset).set(v, { steps: newPathSteps, cost: newCost });
-                                    } else {
-                                        if (nextSubsets.get(subset).has(v)) {
-                                            const oldPath = nextSubsets.get(subset).get(v);
-                                            if (oldPath.cost < newCost) {
-                                                nextSubsets.get(subset).set(v, { steps: newPathSteps, cost: newCost });
-                                            }
-                                        } else {
+                        this.decorator.setEdgeState(v, n, DecorationState.DISABLED);
+                        if (prevSubsets.has(subsetMinusV)) {
+                            if (prevSubsets.get(subsetMinusV).has(n)) {
+                                const path = prevSubsets.get(subsetMinusV).get(n);
+                                const newPathSteps = path.steps.concat([v]);
+                                const newCost = path.cost + graph.getEdgeWeight(n, v);
+                                if (!nextSubsets.has(subset)) {
+                                    nextSubsets.set(subset, new Map<number, Path>());
+                                    nextSubsets.get(subset).set(v, { steps: newPathSteps, cost: newCost });
+                                } else {
+                                    if (nextSubsets.get(subset).has(v)) {
+                                        const oldPath = nextSubsets.get(subset).get(v);
+                                        if (newCost < oldPath.cost) {
                                             nextSubsets.get(subset).set(v, { steps: newPathSteps, cost: newCost });
                                         }
+                                    } else {
+                                        nextSubsets.get(subset).set(v, { steps: newPathSteps, cost: newCost });
                                     }
-                                    this.setPathEdgesState(newPathSteps, DecorationState.SELECTED);
-                                    yield;
-                                    this.setPathEdgesState(newPathSteps, DecorationState.DISABLED);
                                 }
+                                this.setPathEdgesState(newPathSteps, DecorationState.SELECTED);
+                                yield;
+                                this.setPathEdgesState(newPathSteps, DecorationState.DISABLED);
                             }
                         }
-                        this.decorator.setVertexState(v, DecorationState.CONSIDERING);
                     }
-                    s = s >> 1;
-                    i++;
+                    this.decorator.setVertexState(v, DecorationState.CONSIDERING);
                 }
             }
-            console.log(nextSubsets);
             prevSubsets = nextSubsets;
         }
         let bestTour: number[] = null;
@@ -132,11 +131,12 @@ export class BHK_TSP implements Algorithm<void> {
             }
         }
         this.path = createOutputGraph(bestTour, graph);
+        this.setSelectionState(vertices, allVertices, DecorationState.SELECTED);
         this.setPathEdgesState(bestTour, DecorationState.SELECTED);
     }
 
     private setSelectionState(vertices: number[], subset: number,
-            state: DecorationState) {
+        state: DecorationState) {
         for (const v of this.getSubsetFromMask(vertices, subset)) {
             this.decorator.setVertexState(v, state);
         }
