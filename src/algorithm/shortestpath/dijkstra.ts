@@ -33,6 +33,8 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
         this.parents = {};
         this.distances = {};
 
+        const v = startVertex.vertexId;
+        this.shortestPathTree.addVertex(v, graph.getVertexLabel(v));
         for (const v of vertexIds) {
             if (v == startVertex.vertexId) {
                 // Select the initial vertex, and set its distance to 0
@@ -64,14 +66,14 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
             if (this.distances[v] < vDist) {
                 continue;
             }
-            this.shortestPathTree.addVertex(v, graph.getVertexLabel(v));
             if (this.parents[v] != undefined) {
+                this.shortestPathTree.addVertex(v, graph.getVertexLabel(v));
                 this.shortestPathTree.addEdge(this.parents[v], v,
                     graph.getEdgeWeight(this.parents[v], v));
                 this.decorator.setEdgeState(this.parents[v], v, DecorationState.SELECTED);
+                this.decorator.setVertexState(v, DecorationState.SELECTED);
+                yield;
             }
-            this.decorator.setVertexState(v, DecorationState.SELECTED);
-            yield;
             for (const n of graph.getVertexNeighborIds(v)) {
                 const dist = vDist + graph.getEdgeWeight(v, n);
                 if (dist < this.distances[n]) {
