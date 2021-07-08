@@ -17,6 +17,7 @@ export abstract class GenericControls extends AlgorithmControls {
 
     protected readonly play_btn: JQuery<HTMLElement>;
     protected readonly pause_btn: JQuery<HTMLElement>;
+    protected readonly next_btn: JQuery<HTMLElement>;
     protected readonly stop_btn: JQuery<HTMLElement>;
     protected readonly clear_btn: JQuery<HTMLElement>;
     protected readonly speed_slider: JQuery<HTMLElement>;
@@ -42,6 +43,7 @@ export abstract class GenericControls extends AlgorithmControls {
 
         this.speed_slider = $(this).find("#algorithm-speed");
         this.pause_btn = $(this).find("#btn-algo-pause");
+        this.next_btn = $(this).find("#btn-algo-next");
         this.play_btn = $(this).find("#btn-algo-play");
         this.stop_btn = $(this).find("#btn-algo-stop");
         this.clear_btn = $(this).find("#btn-algo-clear");
@@ -50,6 +52,7 @@ export abstract class GenericControls extends AlgorithmControls {
         this.output_drop_btn = $(this).find("#btndrop-algo-output");
 
         this.pause_btn.on('click', this.onPause.bind(this));
+        this.next_btn.on('click', this.onNext.bind(this));
         this.play_btn.on('click', this.onPlay.bind(this));
         this.stop_btn.on('click', this.onStop.bind(this));
         this.clear_btn.on('click', this.onClear.bind(this));
@@ -113,6 +116,10 @@ export abstract class GenericControls extends AlgorithmControls {
         this.getRunner().pause();
     }
 
+    protected onNext() {
+        this.getRunner().next();
+    }
+
     protected onStop() {
         this.getRunner().stop();
     }
@@ -146,6 +153,7 @@ export abstract class GenericControls extends AlgorithmControls {
             case "init":
                 this.changeButtonState(this.play_btn, true);
                 this.changeButtonState(this.pause_btn, false);
+                this.changeButtonState(this.next_btn, false);
                 this.changeButtonState(this.stop_btn, false);
                 this.changeButtonState(this.clear_btn, true);
                 this.changeButtonState(this.output_drop_btn, false);
@@ -153,6 +161,7 @@ export abstract class GenericControls extends AlgorithmControls {
             case "paused":
                 this.changeButtonState(this.play_btn, true);
                 this.changeButtonState(this.pause_btn, false);
+                this.changeButtonState(this.next_btn, true);
                 this.changeButtonState(this.stop_btn, true);
                 this.changeButtonState(this.clear_btn, false);
                 this.changeButtonState(this.output_drop_btn, false);
@@ -160,6 +169,7 @@ export abstract class GenericControls extends AlgorithmControls {
             case "running":
                 this.changeButtonState(this.play_btn, false);
                 this.changeButtonState(this.pause_btn, true);
+                this.changeButtonState(this.next_btn, false);
                 this.changeButtonState(this.stop_btn, true);
                 this.changeButtonState(this.clear_btn, false);
                 this.changeButtonState(this.output_drop_btn, false);
@@ -167,6 +177,7 @@ export abstract class GenericControls extends AlgorithmControls {
             case "done":
                 this.changeButtonState(this.play_btn, true);
                 this.changeButtonState(this.pause_btn, false);
+                this.changeButtonState(this.next_btn, false);
                 this.changeButtonState(this.stop_btn, false);
                 this.changeButtonState(this.clear_btn, true);
                 this.changeButtonState(this.output_drop_btn, true);

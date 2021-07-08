@@ -37,11 +37,11 @@ export class AlgorithmRunner<I> {
         this.algorithm.initialize(input);
         const iterator = this.algorithm.run();
         return new Promise((resolve, _) => {
-            const runnerStep = () => {
+            this.runnerStep = () => {
                 const it = iterator.next();
                 if (!it.done) {
                     if (this.state == "running") {
-                        this.timer = setTimeout(runnerStep, this.delay);
+                        this.timer = setTimeout(this.runnerStep, this.delay);
                     }
                 } else {
                     this.setState("done");
@@ -49,7 +49,7 @@ export class AlgorithmRunner<I> {
                 }
             };
             this.setState("running");
-            runnerStep();
+            this.runnerStep();
         });
     }
 
@@ -77,6 +77,13 @@ export class AlgorithmRunner<I> {
 
     stop() {
         this.setState("init");
+    }
+
+    next() {
+        if (this.state != "paused") {
+            throw new Error("Algorithm next'd when it wasn't in a paused state.");
+        }
+        this.timer = setTimeout(this.runnerStep, 0);
     }
 
     setSpeed(speed: number) {

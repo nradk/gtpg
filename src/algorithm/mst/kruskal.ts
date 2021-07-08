@@ -28,6 +28,7 @@ export class KruskalMST implements Algorithm<void> {
         this.mst = new WeightedGraph(false)
         for (const v of graph.getVertexIds()) {
             this.mst.addVertex(v);
+            this.decorator.setVertexState(v, DecorationState.DISABLED);
         }
         this.edges = graph.getEdgeList();
         this.edges.sort((first, second) => second[2] - first[2]);
