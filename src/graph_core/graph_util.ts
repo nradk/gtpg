@@ -1,7 +1,7 @@
 import { HeadlessRunner } from "../algorithm/algorithm";
 import { HeadlessDecorator } from "../decoration/decorator";
 import { BreadthFirstSearch } from "../algorithm/search/bfs";
-import { Graph, UnweightedGraph } from "./graph";
+import { Graph, UnweightedGraph, WeightedGraph } from "./graph";
 import { EuclideanGraph } from "./euclidean_graph";
 
 export function isSingleComponent(graph: Graph): boolean {
@@ -30,3 +30,35 @@ export function createOutputGraph(path: number[], labelsFrom: Graph): Graph {
     return outGraph;
 }
 
+export function completeGraph(numVertices: number, weighted: boolean): Graph {
+    if (numVertices <= 0) {
+        throw new Error("Need at least one vertex!");
+    }
+    const graph = weighted ? new WeightedGraph(false) : new UnweightedGraph(false);
+    for (let i = 1; i <= numVertices; i++) {
+        graph.addVertex(i, i.toString());
+    }
+    for (let i = 1; i <= numVertices; i++) {
+        for (let j = i + 1; j <= numVertices; j++) {
+            graph.addEdge(i, j);
+        }
+    }
+    return graph;
+}
+
+export function completeBipartiteGraph(leftVertices: number, rightVertices: number,
+        weighted: boolean, directed: boolean): Graph {
+    if (leftVertices <= 0 || rightVertices <= 0) {
+        throw new Error("Need at least one vertex on each side!");
+    }
+    const graph = weighted ? new WeightedGraph(directed) : new UnweightedGraph(directed);
+    for (let i = 1; i <= leftVertices + rightVertices; i++) {
+        graph.addVertex(i, i.toString());
+    }
+    for (let i = 1; i <= leftVertices; i++) {
+        for (let j = 1; j <= rightVertices; j++) {
+            graph.addEdge(i, leftVertices + j);
+        }
+    }
+    return graph;
+}

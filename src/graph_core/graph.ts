@@ -289,19 +289,6 @@ export class UnweightedGraph extends DefaultGraph<EmptyEdgeData> {
         return {};
     }
 
-    static completeGraph(numVertices: number): Graph {
-        const adjs: UnweightedAdjacencies = new Map();
-        for (let i = 1; i <= numVertices; i++) {
-            adjs[i] = [];
-            for (let j = 1; j <= numVertices; j++) {
-                if (i != j) {
-                    adjs[i][j] = {};
-                }
-            }
-        }
-        return new UnweightedGraph(false, adjs);
-    }
-
     isWeighted() {
         return false;
     }
@@ -343,19 +330,6 @@ export class WeightedGraph extends DefaultGraph<WeightedEdgeData> implements Wei
 
     getEdgeList(): number[][] {
         return super.getEdgeList().map(e => [...e, this.getEdgeWeight(e[0], e[1])]);
-    }
-
-    static completeGraph(numVertices: number): Graph {
-        const adjs: WeightedAdjacencies = new Map();
-        for (let i = 1; i <= numVertices; i++) {
-            adjs[i] = {};
-            for (let j = 1; j <= numVertices; j++) {
-                if (i != j) {
-                    adjs[i][j] = {weight:1};
-                }
-            }
-        }
-        return new WeightedGraph(false, adjs);
     }
 
     isWeighted() {

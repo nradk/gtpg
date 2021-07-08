@@ -125,6 +125,60 @@ export class GridLayout extends Layout {
     }
 }
 
+export class BipartiteLayout extends Layout {
+    constructor(private stageDims: Size) {
+        super();
+    }
+
+    getVertexPositions(graph: Graph): PositionMap {
+        const positions: PositionMap = new Map();
+        const [w, h] = [this.stageDims.width, this.stageDims.height];
+        const center = [ w / 2, h / 2];
+        const left = new Set<number>();
+        const right = new  Set<number>();
+        for (const v of graph.getVertexIds()) {
+            if (left.has(v) || right.has(v)) {
+                continue;
+            }
+            const q: number[] = [v];
+            left.add(v);
+            let toRight = true;
+            while (q.length > 0) {
+                const vertex = q.shift();
+                for (const n of graph.getVertexNeighborIds(vertex)) {
+                    if (left.has(n) || right.has(n)) {
+                        continue;
+                    }
+                    (toRight ? right : left).add(n);
+                    q.push(n);
+                }
+                toRight = !toRight;
+            }
+        }
+        const hGap = w / 2;
+        const vGap = 0.8 * h / Math.max(left.size, right.size);
+        let i = 0;
+        const lYStart = center[1] - ((left.size - 1) * vGap) / 2;
+        const lX = center[0] - hGap / 2;
+        for (const v of left) {
+            positions.set(v, { x: lX, y: lYStart + i * vGap });
+            i++;
+        }
+        i = 0;
+        const rYStart = center[1] - ((right.size - 1) * vGap) / 2;
+        const rX = center[0] + hGap / 2;
+        for (const v of right) {
+            positions.set(v, { x: rX, y: rYStart + i * vGap });
+            i++;
+        }
+        return positions;
+    }
+
+    isContinuous() {
+        return false;
+    }
+}
+
 export class FixedLayout extends Layout {
     positions: PositionMap;
 
