@@ -1,7 +1,7 @@
 import { Point, Size, Vector2, Util } from "../commontypes";
 import { Graph } from "../graph_core/graph";
 
-export type LayoutName = "circular" | "random" | "grid" | "forcebased";
+export type LayoutName = "circular" | "bipartite" | "grid" | "forcebased";
 
 export type PositionMap = Map<number, Point>;
 
@@ -26,30 +26,6 @@ export class EmptyLayout extends Layout {
     }
 
     updateVertexPositions(_: Graph, __: PositionMap) {
-    }
-
-    isContinuous() {
-        return false;
-    }
-}
-
-export class RandomLayout extends Layout {
-
-    stageDims: Size;
-
-    constructor(stageDims: Size) {
-        super();
-        this.stageDims = stageDims;
-    }
-
-    getVertexPositions(graph: Graph): PositionMap {
-        const positions: PositionMap = new Map();
-        for (const v of graph.getVertexIds()) {
-            const x = Math.random() * this.stageDims.width;
-            const y = Math.random() * this.stageDims.height;
-            positions.set(v, {x: x, y: y});
-        }
-        return positions;
     }
 
     isContinuous() {
@@ -292,8 +268,8 @@ export function getLayoutForStageDims(name: LayoutName, stageDims: Size)
         : Layout {
     if (name === "circular") {
         return new CircularLayout(stageDims);
-    } else if (name == "random") {
-        return new RandomLayout(stageDims);
+    } else if (name == "bipartite") {
+        return new BipartiteLayout(stageDims);
     } else if (name == "grid") {
         return new GridLayout(stageDims);
     } else if (name == "forcebased") {
