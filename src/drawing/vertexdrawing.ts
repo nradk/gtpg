@@ -201,9 +201,10 @@ export default class VertexDrawing extends Konva.Group {
         }
         let labelPosition: Vector2;
         const vVect: Vector2 = [this.x(), this.y()];
-        if (this.externalLabelPlacement == "best-gap") {
+        const graph = this.graphDrawing.getGraph();
+        const hasNeighbors = graph.getVertexNeighborIds(this.vertexId).size > 0;
+        if (this.externalLabelPlacement == "best-gap" && hasNeighbors) {
             const neighborDirections: Vector2[] = [];
-            const graph = this.graphDrawing.getGraph();
             for (const n of graph.getVertexNeighborIds(this.vertexId)) {
                 const nPt = this.graphDrawing.getVertexPosition(n);
                 const nVect = [nPt.x, nPt.y];
@@ -214,7 +215,13 @@ export default class VertexDrawing extends Konva.Group {
                 gapVect);
         } else {
             const centroid = this.graphDrawing.getCentroid();
-            const toCentroid = Util.getDirectionVectorNormalized(vVect, centroid);
+            let toCentroid = Util.getDirectionVectorNormalized(vVect, centroid);
+            // If there is only one vertex, the direction vector is [0, 0] and
+            // the normalized direction vector is [0/0, 0/0] == [NaN, NaN].
+            if (isNaN(toCentroid[0]) || isNaN(toCentroid[1])) {
+                toCentroid = [-1, 0]; // Towards the left, this will be negated
+                // in the next line to place the label to the right
+            }
             labelPosition = Util.scalarVectorMultiply(-this.getRadius() * 2,
                 toCentroid);
         }
