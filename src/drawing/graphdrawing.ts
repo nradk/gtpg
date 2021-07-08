@@ -561,8 +561,9 @@ export class GraphDrawing {
             this.vertexSelectMode = true;
             const prevCursor = this.stage.container().style.cursor;
             this.stage.container().style.cursor = 'crosshair';
-            this.stage.on('click', e => {
+            this.stage.on('click.vertexSelect', e => {
                 this.vertexSelectMode = false;
+                this.stage.off('click.vertexSelect');
                 this.stage.container().style.cursor = prevCursor;
                 let target: any = e.target;
                 while (target) {
