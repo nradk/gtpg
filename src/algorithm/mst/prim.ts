@@ -5,6 +5,7 @@ import { Decorator } from "../../decoration/decorator";
 import { WeightedGraph, Weighted, Graph } from "../../graph_core/graph";
 import { DecorationState } from "../../decoration/decorator";
 import { VertexInput } from "../../commontypes";
+import { isSingleComponent } from "../../graph_core/graph_util";
 
 export class PrimMST implements Algorithm<VertexInput> {
 
@@ -21,11 +22,15 @@ export class PrimMST implements Algorithm<VertexInput> {
         if (!g.isWeighted() || g.isDirected()) {
             throw new AlgorithmError("Prim's algorithm needs a weighted undirected graph!");
         }
+        if (!isSingleComponent(g)) {
+            throw new AlgorithmError("The graph doesn't have a spanning tree" +
+                " because it has more than one component.");
+        }
         const graph = g as Weighted & Graph;
         this.mst = new WeightedGraph(false)
         const vertexIds = [...graph.getVertexIds()];
         for (const v of vertexIds) {
-            this.mst.addVertex(v);
+            this.mst.addVertex(v, graph.getVertexLabel(v));
         }
 
         const edgeComparator = (a: number[], b: number[]) => a[2] - b[2];

@@ -2,6 +2,7 @@ import { Algorithm, AlgorithmError, AlgorithmOutput } from "../algorithm";
 import { Decorator } from "../../decoration/decorator";
 import { Graph, Weighted, WeightedGraph } from "../../graph_core/graph";
 import { DecorationState } from "../../decoration/decorator";
+import { isSingleComponent } from "../../graph_core/graph_util";
 
 export class KruskalMST implements Algorithm<void> {
 
@@ -19,14 +20,16 @@ export class KruskalMST implements Algorithm<void> {
         if (!g.isWeighted() || g.isDirected()) {
             throw new AlgorithmError("Kruskal's algorithm needs a weighted undirected graph!");
         }
+        if (!isSingleComponent(g)) {
+            throw new AlgorithmError("The graph doesn't have a spanning tree" +
+                " because it has more than one component.");
+        }
         const graph = g as Graph & Weighted;
         this.mst = new WeightedGraph(false)
         for (const v of graph.getVertexIds()) {
             this.mst.addVertex(v);
         }
         this.edges = graph.getEdgeList();
-        console.log('Edges:', this.edges);
-        console.log("Number of edges is", this.edges.length);
         this.edges.sort((first, second) => second[2] - first[2]);
         // Disable all edges
         for (const e of this.edges) {
@@ -56,7 +59,7 @@ export class KruskalMST implements Algorithm<void> {
     }
 
     *run(): Generator<void, AlgorithmOutput, void> {
-        while (true) {
+        while (this.edges.length > 0) {
             const e = this.edges.pop();
             this.decorator.setEdgeState(e[0], e[1], DecorationState.CONSIDERING);
             // Yield now to let the user see the 'considering' state
@@ -68,6 +71,8 @@ export class KruskalMST implements Algorithm<void> {
                 this.edgesAdded += 1;
                 // Select that edge
                 this.decorator.setEdgeState(e[0], e[1], DecorationState.SELECTED);
+                this.decorator.setVertexState(e[0], DecorationState.SELECTED);
+                this.decorator.setVertexState(e[1], DecorationState.SELECTED);
                 // Merge the this.forests
                 const fa = this.forests[e[0]];
                 const fb = this.forests[e[1]];
