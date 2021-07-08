@@ -62,6 +62,7 @@ export class GraphDrawing {
     protected continuousLayoutTimer: number;
     protected positions: Layouts.PositionMap;
     protected vertexRadius: number;
+    protected weightFontSize: number;
     protected vertexSelectMode: boolean = false;
     protected tools: Tools;
 
@@ -85,6 +86,7 @@ export class GraphDrawing {
         this.verticesLayer = new Konva.Layer();
         this.edgesLayer = new Konva.Layer();
         this.vertexRadius = 15;
+        this.weightFontSize = 10;
 
         this.centroidCache = {
             n: this.graph.getNumberOfVertices(),
@@ -187,6 +189,20 @@ export class GraphDrawing {
         return this.vertexRadius;
     }
 
+    setWeightFontSize(size: number) {
+        this.weightFontSize = size;
+        const edgeKeys = this.getEdgeDrawingKeyList();
+        for (const key of edgeKeys) {
+            const edgeDrawing = this.getEdgeDrawings()[key[0]][key[1]];
+            edgeDrawing.label?.fontSize(size);
+        }
+        this.edgesLayer.draw();
+    }
+
+    getWeightFontSize(): number {
+        return this.weightFontSize;
+    }
+
     populateVertexDrawings(layout: Layouts.Layout) {
         // TODO find a more elegant way to do this
         // Don't replace the positions object because in the special case of
@@ -227,7 +243,7 @@ export class GraphDrawing {
     createEdgeDrawing(startId: number, endId: number) {
         const start = this.vertexDrawings[startId];
         const end   = this.vertexDrawings[endId];
-        return  new EdgeDrawing(this, start, end,
+        const edgeDrawing = new EdgeDrawing(this, start, end,
             this.graph.isDirected(),
             this.edgesLayer.draw.bind(this.edgesLayer),
             this.graph instanceof Graphs.WeightedGraph ?
@@ -236,6 +252,8 @@ export class GraphDrawing {
             this.graph instanceof Graphs.WeightedGraph ?
             this.handleWeightUpdate.bind(this) : undefined
         );
+        edgeDrawing.label?.fontSize(this.weightFontSize);
+        return edgeDrawing;
     }
 
     setWeightAsEdgeLabel(startId: number, endId: number) {

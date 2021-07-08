@@ -10,7 +10,8 @@ export default class DisplayCustomizer {
         this.graphTabs.registerTabSwitchCallback(() => {
             const graphDrawing = this.graphTabs.getActiveGraphDrawing();
             if (graphDrawing != null) {
-                this.setSliderPosition(graphDrawing.getVertexRadius());
+                this.setVertexSizeSliderPosition(graphDrawing.getVertexRadius());
+                this.setWeightFontSizeSelectValue(graphDrawing.getWeightFontSize());
             }
         });
         $("#vertex-size").on("change", (e) => {
@@ -18,9 +19,19 @@ export default class DisplayCustomizer {
             this.setVertexSize(parseInt(target.value));
         });
         $("#vertex-size").on("input", () => $("#vertex-size").trigger('change'));
+        $("#weight-size").on("change", (e) => {
+            const target = e.target as HTMLInputElement;
+            const value = parseInt(target.value);
+            if (isNaN(value)) {
+                console.error(`Could not interpret ${target.value} as a number`);
+                return;
+            }
+            this.setWeightFontSize(value);
+        });
+
     }
 
-    setVertexSize(vertexSize: number) {
+    private setVertexSize(vertexSize: number) {
         const drawing = this.graphTabs.getActiveGraphDrawing();
         if (drawing == undefined) {
             return;
@@ -28,7 +39,19 @@ export default class DisplayCustomizer {
         drawing.setVertexRadius(2 + vertexSize);
     }
 
-    private setSliderPosition(vertexSize: number) {
+    private setVertexSizeSliderPosition(vertexSize: number) {
          $("#vertex-size").prop("value", vertexSize - 2);
+    }
+
+    private setWeightFontSize(fontSize: number) {
+        const drawing = this.graphTabs.getActiveGraphDrawing();
+        if (drawing == undefined) {
+            return;
+        }
+        drawing.setWeightFontSize(fontSize);
+    }
+
+    private setWeightFontSizeSelectValue(fontSize: number) {
+         $("#weight-size").prop("value", fontSize);
     }
 }
