@@ -7,12 +7,12 @@ import * as GraphUtil from "../graph_core/graph_util";
 
 export default class GraphGenerate {
     constructor(private graphTabs: GraphTabs) {
-        $("div.conditional-show[data-showon=complete-bipartite]").hide();
+        $(".conditional-show[data-showon=complete-bipartite]").hide();
         $("#selectGraphType").val('complete');
         $("#selectGraphType").on('change', e => {
             const val = (e.target as HTMLInputElement).value;
-            $("div.conditional-show").hide();
-            $(`div.conditional-show[data-showon=${val}`).show();
+            $(".conditional-show").hide();
+            $(`.conditional-show[data-showon=${val}`).show();
         });
         $("#graphGenerateForm").on("submit", e => {
             const kind = $("#selectGraphType").val();
@@ -32,7 +32,8 @@ export default class GraphGenerate {
         const newId = tabbar.addTabElement(`Complete Graph (K_${n})`, "generated");
         tabbar.setActiveById(newId);
         const layout = new Layout.CircularLayout(this.graphTabs.getStageDims());
-        const graphDrawing = GraphDrawing.create(GraphUtil.completeGraph(n, false));
+        const weighted = $("#genWeightedCheck").is(":checked");
+        const graphDrawing = GraphDrawing.create(GraphUtil.completeGraph(n, weighted));
         graphDrawing.layoutWithoutRender(layout);
         this.graphTabs.updateGraphDrawing(newId, graphDrawing);
 
@@ -45,7 +46,9 @@ export default class GraphGenerate {
         const newId = tabbar.addTabElement(`K_${m},${n}`, "generated");
         tabbar.setActiveById(newId);
         const layout = new Layout.BipartiteLayout(this.graphTabs.getStageDims());
-        const graphDrawing = GraphDrawing.create(GraphUtil.completeBipartiteGraph(m, n, false, false));
+        const weighted = $("#genWeightedCheck").is(":checked");
+        const directed = $("#genDirectedCheck").is(":checked");
+        const graphDrawing = GraphDrawing.create(GraphUtil.completeBipartiteGraph(m, n, weighted, directed));
         graphDrawing.layoutWithoutRender(layout);
         this.graphTabs.updateGraphDrawing(newId, graphDrawing);
     }

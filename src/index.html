@@ -243,11 +243,27 @@
                       </div>
                       </div>
 
+                      <div class="form-group row p-3">
+                        <div class="form-check col">
+                          <input class="form-check-input" type="checkbox" value="" id="genWeightedCheck">
+                          <label class="form-check-label" for="genWeightedCheck">
+                            Weighted
+                          </label>
+                        </div>
+                        <div class="form-check conditional-show col"
+                                    data-showon="complete-bipartite">
+                          <input class="form-check-input" type="checkbox" value="" id="genDirectedCheck">
+                          <label class="form-check-label" for="genDirectedCheck">
+                            Directed
+                          </label>
+                        </div>
+                      </div>
+
                     </fieldset>
                   </div>
                   <div class="modal-footer">
                     <button type="button" class="btn btn-secondary"
-                            data-dismiss="modal">Cancel</button>
+                                          data-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Generate</button>
                   </div>
                 </form>
@@ -257,7 +273,7 @@
 
           <!-- Save Graph Modal -->
           <div class="modal fade" id="saveModal" tabindex="-1"
-               aria-labelledby="saveModalLabel" aria-hidden="true">
+                                                 aria-labelledby="saveModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
               <div class="modal-content">
                 <div class="modal-header">
@@ -272,8 +288,8 @@
                     <fieldset>
                       <div class="form-group">
                         <div class="form-row">
-                        <label for="saveFileName" class="col">File name:</label>
-                        <input type="text" class="form-control col" id="saveFileName"> .json
+                          <label for="saveFileName" class="col">File name:</label>
+                          <input type="text" class="form-control col" id="saveFileName"> .json
                         </div>
                       </div>
                     </fieldset>
@@ -355,21 +371,21 @@
                 <div class="form-check">
                   <label class="form-check-label">
                     <input type="radio" class="form-check-input" name="vertexLabelRadios"
-                           value="123" checked="true">
+                                                                 value="123" checked="true">
                     1, 2, 3...
                   </label>
                 </div>
                 <div class="form-check">
                   <label class="form-check-label">
                     <input type="radio" class="form-check-input" name="vertexLabelRadios"
-                           value="abc">
+                                                                 value="abc">
                     a, b, c...
                   </label>
                 </div>
                 <div class="form-check">
                   <label class="form-check-label">
                     <input type="radio" class="form-check-input" name="vertexLabelRadios"
-                           value="ABC">
+                                                                 value="ABC">
                     A, B, C...
                   </label>
                 </div>
@@ -399,75 +415,75 @@
 
     <template id="bookmarks-list-template">
       <div style="height: 300pt; width: 100%; overflow-y: auto">
-      <table class="table table-hover">
-        <tbody>
-        </tbody>
-      </table>
+        <table class="table table-hover">
+          <tbody>
+          </tbody>
+        </table>
       </div>
     </template>
 
     <template id="no-bookmarks-template">
-    <p class="text-center col-lg p-2 text-muted">No bookmarked graphs</p>
+      <p class="text-center col-lg p-2 text-muted">No bookmarked graphs</p>
     </template>
 
     <template id="bookmarks-item-template">
       <tr class="table-secondary">
-          <td><span name="bookmark-name">Untitled</span></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td><button class="btn-sm btn-danger">DELETE</button></td>
-        </tr>
+        <td><span name="bookmark-name">Untitled</span></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><button class="btn-sm btn-danger">DELETE</button></td>
+      </tr>
     </template>
 
     <template id="algo-control-template">
-        <div class="row pb-2">
-          <b id="algo-name">Algorithm</b>
-        </div>
+      <div class="row pb-2">
+        <b id="algo-name">Algorithm</b>
+      </div>
 
-        <div class="row p-2 justify-content-center">
-            <button id="btn-algo-play" type="button"
-                                          class="btn btn-outline-success m-1">
-              <i class="bi-play-fill" style="font-size:14pt;"></i> Play
-            </button>
-            <button id="btn-algo-pause" type="button"
-                                           class="btn btn-outline-warning m-1">
-              <i class="bi-pause-fill" style="font-size:14pt;"></i> Pause
-            </button>
-            <button id="btn-algo-stop" type="button"
-                                          class="btn btn-outline-danger m-1">
-              <i class="bi-stop-fill" style="font-size:14pt;"></i> Stop
-            </button>
-            <button id="btn-algo-clear" type="button"
-                                           class="btn btn-outline-dark m-1">
-              <i class="bi-eraser-fill" style="font-size:14pt;"></i> Clear
-            </button>
+      <div class="row p-2 justify-content-center">
+        <button id="btn-algo-play" type="button"
+                                   class="btn btn-outline-success m-1">
+          <i class="bi-play-fill" style="font-size:14pt;"></i> Play
+        </button>
+        <button id="btn-algo-pause" type="button"
+                                    class="btn btn-outline-warning m-1">
+          <i class="bi-pause-fill" style="font-size:14pt;"></i> Pause
+        </button>
+        <button id="btn-algo-stop" type="button"
+                                   class="btn btn-outline-danger m-1">
+          <i class="bi-stop-fill" style="font-size:14pt;"></i> Stop
+        </button>
+        <button id="btn-algo-clear" type="button"
+                                    class="btn btn-outline-dark m-1">
+          <i class="bi-eraser-fill" style="font-size:14pt;"></i> Clear
+        </button>
 
-            <div class="btn-group m-1 ml-5" role="group">
-              <div class="btn-group dropdown" role="group">
-                <button id="btndrop-algo-output" type="button"
-                  class="btn btn-primary dropdown-toggle"
-                  data-toggle="dropdown"
-                  aria-haspopup="true"
-                  aria-expanded="false" disabled>Output</button>
-                <div role="menu" class="dropdown-menu"
-                  aria-labelledby="btndrop-algo-output">
-                  <a class="dropdown-item" id ="btn-algo-output-tab"
-                    href="#">New Tab</a>
-                  <a class="dropdown-item" id ="btn-algo-output-export"
-                    href="#">Save as File</a>
-                </div>
-              </div>
+        <div class="btn-group m-1 ml-5" role="group">
+          <div class="btn-group dropdown" role="group">
+            <button id="btndrop-algo-output" type="button"
+                                             class="btn btn-primary dropdown-toggle"
+                                             data-toggle="dropdown"
+                                             aria-haspopup="true"
+                                             aria-expanded="false" disabled>Output</button>
+            <div role="menu" class="dropdown-menu"
+                             aria-labelledby="btndrop-algo-output">
+              <a class="dropdown-item" id ="btn-algo-output-tab"
+                 href="#">New Tab</a>
+              <a class="dropdown-item" id ="btn-algo-output-export"
+                 href="#">Save as File</a>
             </div>
-
+          </div>
         </div>
 
-        <div class="row p-2 justify-content-center">
-          <label class="col-lg-1" for="algorithm-speed">Speed</label>
-          <input type="range" class="custom-range col-lg-6"
-                              min=0 max=100 id="algorithm-speed">
-        </div>
+      </div>
+
+      <div class="row p-2 justify-content-center">
+        <label class="col-lg-1" for="algorithm-speed">Speed</label>
+        <input type="range" class="custom-range col-lg-6"
+                            min=0 max=100 id="algorithm-speed">
+      </div>
 
     </template>
 
