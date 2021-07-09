@@ -175,6 +175,7 @@
 
             <div id="container"></div> <!-- KonvaJS container -->
 
+            <!-- Toast Message -->
             <div class="toast" role="alert" aria-live="assertive"
               aria-atomic="true" style="position:absolute; left:3%; bottom:3%"
                                  data-delay="1500"
@@ -187,10 +188,18 @@
                   <span aria-hidden="true">&times;</span>
                 </button>
               </div>
+
               <div class="toast-body">
                 Hello, world! This is a toast message.
               </div>
             </div>
+
+            <!-- Status Line -->
+            <div style="position:absolute; left: 50%; bottom:3%">
+              <div style="position:relative; left: -50%;" id="statusLine">
+              </div>
+            </div>
+
           </div>
 
           <!-- Algorithm control panel -->

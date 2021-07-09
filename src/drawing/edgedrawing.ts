@@ -11,14 +11,15 @@ import { ToolName } from "../ui_handlers/tools";
 type LabelEditCallback = (edgeDrawing: EdgeDrawing, label: string) => boolean;
 
 export default class EdgeDrawing extends Konva.Group {
-    arrow: Konva.Arrow;
-    curvePoint: Konva.Circle;
-    label?: EditableText;
-    labelOffset?: Vector2;
-    decorationState: DecorationState;
+    private arrow: Konva.Arrow;
+    private curvePoint: Konva.Circle;
+    private label?: EditableText;
+    private labelOffset?: Vector2;
+    private decorationState: DecorationState;
     private allowLabelEdit: boolean;
     private readonly startMoveCallbackId: number;
     private readonly endMoveCallbackId: number;
+    private labelFontSize: number = 10;
 
     constructor(private readonly graphDrawing: GraphDrawing,
                 readonly start: VertexDrawing,
@@ -74,7 +75,7 @@ export default class EdgeDrawing extends Konva.Group {
         this.label = new EditableText(this.graphDrawing, editableOn,
             {
                 text: labelText,
-                fontSize: 10,
+                fontSize: this.labelFontSize,
                 hitStrokeWidth: 5,
             });
         this.label.on('click', event => {
@@ -100,6 +101,12 @@ export default class EdgeDrawing extends Konva.Group {
         });
         this.add(this.label);
         this.labelOffset = this.graphDrawing.getEdgeLabelOffset(this.start, this.end);
+        this.updateLabelPosition();
+    }
+
+    setLabelFontSize(size: number) {
+        this.labelFontSize = size;
+        this.label?.fontSize(size);
         this.updateLabelPosition();
     }
 

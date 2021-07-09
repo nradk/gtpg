@@ -194,7 +194,7 @@ export class GraphDrawing {
         const edgeKeys = this.getEdgeDrawingKeyList();
         for (const key of edgeKeys) {
             const edgeDrawing = this.getEdgeDrawings()[key[0]][key[1]];
-            edgeDrawing.label?.fontSize(size);
+            edgeDrawing.setLabelFontSize(size);
         }
         this.edgesLayer.draw();
     }
@@ -252,7 +252,7 @@ export class GraphDrawing {
             this.graph instanceof Graphs.WeightedGraph ?
             this.handleWeightUpdate.bind(this) : undefined
         );
-        edgeDrawing.label?.fontSize(this.weightFontSize);
+        edgeDrawing.setLabelFontSize(this.weightFontSize);
         return edgeDrawing;
     }
 

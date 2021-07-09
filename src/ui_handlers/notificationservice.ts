@@ -30,3 +30,12 @@ export function showWarning(title: string, text: string) {
 export function showInfo(title: string, text: string) {
     showMessage({ level: "info", text: text, title: title});
 }
+
+export function showStatus(text: string) {
+    $("#statusLine").html('');
+    const $element = $('<span>');
+    $element.html(text);
+    $element.hide();
+    $("#statusLine").append($element);
+    $element.fadeIn();
+}

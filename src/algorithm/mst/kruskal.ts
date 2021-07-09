@@ -63,6 +63,7 @@ export class KruskalMST implements Algorithm<void> {
         while (this.edges.length > 0) {
             const e = this.edges.pop();
             this.decorator.setEdgeState(e[0], e[1], DecorationState.CONSIDERING);
+            this.decorator.setStatusLine(`Looking at edge ${e}`);
             // Yield now to let the user see the 'considering' state
             yield;
             // Check if e connects two vertices in different this.forests

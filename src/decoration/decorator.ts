@@ -1,6 +1,6 @@
-import { Graph, Weighted } from "../graph_core/graph";
+import { Graph } from "../graph_core/graph";
 import { GraphDrawing, EuclideanGraphDrawing } from "../drawing/graphdrawing";
-import { getNumStringForLabels } from "../util";
+import { showStatus } from "../ui_handlers/notificationservice";
 
 export class DecorationState {
     static readonly DEFAULT = new DecorationState();
@@ -30,17 +30,16 @@ export interface Decorator {
     clearVertexExternalLabel(vertexId: number): void;
     setEdgeLabel(startVertexId: number, endVertexId: number, label: string): void;
     clearEdgeLabel(startVertexId: number, endVertexId: number): void;
+    setStatusLine(text: string): void;
     clearAllDecoration(): void;
 }
 
 export class DefaultDecorator implements Decorator {
-    protected drawing: GraphDrawing;
     static readonly auxiliaryColors = ["#795548", "#FFEB3B",
         "#C0CA33", "#43A047", "#009688", "#2196F3", "#673AB7", "#E91E63",
         "#9C27B0", "#546E7A"];
 
-    constructor(graphDrawing: GraphDrawing) {
-        this.drawing = graphDrawing;
+    constructor(protected drawing: GraphDrawing) {
     }
 
     private getEdgeDrawing(startVertexId: number, endVertexId: number) {
@@ -102,6 +101,10 @@ export class DefaultDecorator implements Decorator {
         }
     }
 
+    setStatusLine(text: string) {
+        showStatus(text);
+    }
+
     clearAllDecoration() {
         for (const vertex of this.drawing.getGraph().getVertexIds()) {
             this.setVertexState(vertex, DecorationState.DEFAULT);
@@ -111,6 +114,7 @@ export class DefaultDecorator implements Decorator {
             this.setEdgeState(edge[0], edge[1], DecorationState.DEFAULT);
             this.clearEdgeLabel(edge[0], edge[1]);
         }
+        this.setStatusLine('');
     }
 }
 
@@ -164,6 +168,7 @@ export class EuclideanDecorator extends DefaultDecorator {
             this.drawing.removeEdgeDrawing(f, t, false);
         }
         this.drawing.redrawGraph();
+        this.setStatusLine('');
     }
 }
 
@@ -202,5 +207,8 @@ export class HeadlessDecorator implements Decorator {
     }
 
     clearEdgeLabel(_: number, __: number) {
+    }
+
+    setStatusLine(_: string): void {
     }
 }
