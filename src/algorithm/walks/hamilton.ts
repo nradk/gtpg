@@ -3,7 +3,7 @@ import { Decorator, DecorationState } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { isSingleComponent } from "../../graph_core/graph_util";
 import { combinationBits } from "../../util";
-import { createOutputGraph } from "../../graph_core/graph_util";
+import { createGraphFromPath } from "../../graph_core/graph_util";
 
 export class BHKHamiltonPath implements Algorithm<void> {
 
@@ -120,7 +120,7 @@ export class BHKHamiltonPath implements Algorithm<void> {
                 if (graph.areNeighbors(endV, path[0])) {
                     // Then there is a hamilton circuit!
                     const circuit = path.concat(path[0]);
-                    this.path = createOutputGraph(circuit, graph);
+                    this.path = createGraphFromPath(circuit, graph);
                     this.setSelectionState(vertices, allVertices, DecorationState.SELECTED);
                     this.setPathEdgesState(circuit, DecorationState.SELECTED);
                     return this.getOutput(true);
@@ -130,7 +130,7 @@ export class BHKHamiltonPath implements Algorithm<void> {
             }
         }
         if (hamiltonPath != null) {
-            this.path = createOutputGraph(hamiltonPath, graph);
+            this.path = createGraphFromPath(hamiltonPath, graph);
             this.setSelectionState(vertices, allVertices, DecorationState.SELECTED);
             this.setPathEdgesState(hamiltonPath, DecorationState.SELECTED);
             return this.getOutput(false);

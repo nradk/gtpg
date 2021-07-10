@@ -3,7 +3,7 @@ import { Decorator, DecorationState } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { combinationBits } from "../../util";
-import { createOutputGraph } from "../../graph_core/graph_util";
+import { createGraphFromPath } from "../../graph_core/graph_util";
 
 export class BHK_TSP implements Algorithm<void> {
 
@@ -130,7 +130,7 @@ export class BHK_TSP implements Algorithm<void> {
                 bestCost = cost;
             }
         }
-        this.path = createOutputGraph(bestTour, graph);
+        this.path = createGraphFromPath(bestTour, graph);
         this.setSelectionState(vertices, allVertices, DecorationState.SELECTED);
         this.setPathEdgesState(bestTour, DecorationState.SELECTED);
         return {

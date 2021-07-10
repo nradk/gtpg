@@ -1,7 +1,7 @@
 import { Decorator, DecorationState } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
-import { createOutputGraph } from "../../graph_core/graph_util";
+import { createGraphFromPath } from "../../graph_core/graph_util";
 import { getNumStringForLabels } from "../../util";
 import { VertexInput } from "../../commontypes";
 import { TSPApprox } from "./tsp_approx";
@@ -67,7 +67,7 @@ export class TSPApproxNearestNeighbor extends TSPApprox {
         this.decorator.setEdgeState(tour[0], current, DecorationState.SELECTED);
         const w = graph.getEdgeWeight(tour[0], current);
         this.decorator.setEdgeLabel(tour[0], current, getNumStringForLabels(w));
-        this.path = createOutputGraph(tour.concat(tour[0]), graph);
+        this.path = createGraphFromPath(tour.concat(tour[0]), graph);
         return {
             graph: this.path,
             name: "Approximate TSP Tour",

@@ -1,7 +1,7 @@
 import { Decorator, DecorationState } from "../../decoration/decorator";
 import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
-import { createOutputGraph } from "../../graph_core/graph_util";
+import { createGraphFromPath } from "../../graph_core/graph_util";
 import { getNumStringForLabels } from "../../util";
 import { VertexInput } from "../../commontypes";
 import { TSPApprox } from "./tsp_approx";
@@ -61,7 +61,7 @@ export class TSPApproxCheapestInsert extends TSPApprox {
             yield;
         }
         return {
-            graph: createOutputGraph(tour.tour, graph),
+            graph: createGraphFromPath(tour.tour, graph),
             name:  "Approximate TSP Tour",
             message: null,
         }

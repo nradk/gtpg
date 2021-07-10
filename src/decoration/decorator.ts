@@ -23,6 +23,8 @@ export interface StatusSink {
     setStatus(text: string): void;
 }
 
+export type PathDecorationOption = "vertices-only" | "edges-only" | "both";
+
 export interface Decorator {
     getGraph(): Graph;
     getVertexState(vertexId: number): DecorationState;
@@ -33,6 +35,7 @@ export interface Decorator {
     clearVertexExternalLabel(vertexId: number): void;
     setEdgeLabel(startVertexId: number, endVertexId: number, label: string): void;
     clearEdgeLabel(startVertexId: number, endVertexId: number): void;
+    setPathState(path: number[], state: DecorationState, option: PathDecorationOption): void;
     setStatusLine(text: string): void;
     clearAllDecoration(): void;
 }
@@ -118,6 +121,22 @@ export class DefaultDecorator implements Decorator {
             this.clearEdgeLabel(edge[0], edge[1]);
         }
         this.setStatusLine('');
+    }
+
+    setPathState(path: number[], state: DecorationState, option: PathDecorationOption) {
+        if (option != "edges-only") {
+            this.setVertexState(path[0], state);
+        }
+        for (let i = 1; i < path.length; i++) {
+            const start = path[i - 1];
+            const end = path[i];
+            if (option != "edges-only") {
+                this.setVertexState(end, state);
+            }
+            if (option != "vertices-only") {
+                this.setEdgeState(start, end, state);
+            }
+        }
     }
 }
 
@@ -213,5 +232,8 @@ export class HeadlessDecorator implements Decorator {
     }
 
     setStatusLine(_: string): void {
+    }
+
+    setPathState(_: number[], __: DecorationState, ___: PathDecorationOption): void {
     }
 }

@@ -14,7 +14,9 @@ export function isSingleComponent(graph: Graph): boolean {
     return output.graph.getVertexIds().size == graph.getVertexIds().size;
 }
 
-export function createOutputGraph(path: number[], labelsFrom: Graph): Graph {
+// Create a graph from a path (a list of vertex ids). Take labels from the
+// graph provided as the second argument.
+export function createGraphFromPath(path: number[], labelsFrom: Graph): Graph {
     const outGraph = new UnweightedGraph(true);
     const graph = labelsFrom;
     outGraph.addVertex(path[0], graph.getVertexLabel(path[0]));

@@ -13,6 +13,7 @@ import { BHK_TSP } from "../algorithm/tsp/bhk";
 import { TSPApproxNearestNeighbor } from "../algorithm/tsp/approx_nearest_neighbor";
 import { TSPApproxNearestInsert } from "../algorithm/tsp/approx_nearest_insert";
 import { TSPApproxCheapestInsert } from "../algorithm/tsp/approx_cheapest_insert";
+import { TSPApproxMSTBased } from "../algorithm/tsp/approx_mst";
 import { ArticulationPoints } from "../algorithm/decompose/articulation";
 import { EdmondsKarpAlgorithm } from "../algorithm/flow/edmonds_karp";
 
@@ -31,6 +32,7 @@ export default class AlgorithmUI {
         "#btn-algo-nn-tsp": [VertexInputControls, TSPApproxNearestNeighbor],
         "#btn-algo-ni-tsp": [VertexInputControls, TSPApproxNearestInsert],
         "#btn-algo-ci-tsp": [VertexInputControls, TSPApproxCheapestInsert],
+        "#btn-algo-mst-tsp": [InputlessControls, TSPApproxMSTBased],
         "#btn-algo-edmondskarp": [SourceSinkInputControls, EdmondsKarpAlgorithm],
     };
 
