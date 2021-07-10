@@ -416,9 +416,10 @@ export class GraphDrawing {
     }
 
     storeAndShowEdgeDrawing(edgeDrawing: EdgeDrawing, startId: number, endId: number) {
-        // The order is important because graph.getEdgeList() returns only
-        // (m,n) edges where m < n. We conform to that here.
-        if (startId < endId) {
+        // For undirected graphs too, the order is important because
+        // graph.getEdgeList() returns only (m,n) edges where m < n. We conform
+        // to that here.
+        if (startId < endId || this.graph.isDirected()) {
             if (!(startId in this.edgeDrawings)) {
                 this.edgeDrawings[startId] = {};
             }

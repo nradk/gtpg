@@ -102,6 +102,7 @@ export default class EdgeDrawing extends Konva.Group {
         this.add(this.label);
         this.labelOffset = this.graphDrawing.getEdgeLabelOffset(this.start, this.end);
         this.updateLabelPosition();
+        this.setDecorationState(this.decorationState);
     }
 
     setLabelFontSize(size: number) {
@@ -279,7 +280,7 @@ export default class EdgeDrawing extends Konva.Group {
         this.labelText = label;
         this.labelEditCallback = editCallback;
         this.createLabel(label, new Set());
-        this.draw();
+        this.redrawCallback();
     }
 
     clearEdgeLabel() {
@@ -288,7 +289,7 @@ export default class EdgeDrawing extends Konva.Group {
         }
         this.label.remove();
         this.label.destroy();
-        this.draw();
+        this.redrawCallback();
     }
 
     getDecorationState(): DecorationState {
