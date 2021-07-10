@@ -12,7 +12,7 @@ import { Tools } from "./tools";
 export default class GraphTabs {
     tabBar: TabBar = $("tab-bar")[0] as TabBar;
     tabDrawings: {[id: number]: GraphDrawing} = {};
-    controlPanels: {[id: number]: HTMLElement} = {};
+    controlPanels: {[id: number]: AlgorithmControls } = {};
     tabSwitchCallbacks: (() => void)[];
     tools: Tools;
 
@@ -56,6 +56,7 @@ export default class GraphTabs {
         });
         this.tabBar.setTabDeactivatedCallback((id: number) => {
             this.tabDrawings[id].detachStage();
+            this.controlPanels[id]?.onDetach();
             this.stage.removeChildren();
             this.stage.clear();
         });
@@ -94,6 +95,7 @@ export default class GraphTabs {
         container.innerHTML = '';
         if (controls) {
             container.appendChild(controls);
+            controls.onAttach();
         }
     }
 

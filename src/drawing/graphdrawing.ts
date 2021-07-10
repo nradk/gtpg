@@ -8,7 +8,7 @@ import * as Layouts from "../drawing/layouts";
 import { getMouseEventXY } from "./util";
 import { getLetterFromInteger, getTwoLevelKeyList } from "../util";
 import { Vector2, Util, Point, NoVertexClickedError } from "../commontypes";
-import { Decorator, DefaultDecorator, EuclideanDecorator } from "../decoration/decorator";
+import { Decorator, DefaultDecorator, EuclideanDecorator, StatusSink } from "../decoration/decorator";
 import { Tools } from "../ui_handlers/tools";
 import { showInfo, showWarning } from "../ui_handlers/notificationservice";
 import { getNumStringForLabels } from "../util";
@@ -549,8 +549,8 @@ export class GraphDrawing {
         return this.graph;
     }
 
-    getDecorator(): Decorator {
-        return new DefaultDecorator(this);
+    getDecorator(statusSink: StatusSink): Decorator {
+        return new DefaultDecorator(this, statusSink);
     }
 
     getVertexPosition(vertexId: number): Point {
@@ -647,7 +647,7 @@ export class EuclideanGraphDrawing extends GraphDrawing {
         this.edgeDrawings = {};
     }
 
-    getDecorator() {
-        return new EuclideanDecorator(this);
+    getDecorator(statusSink: StatusSink) {
+        return new EuclideanDecorator(this, statusSink);
     }
 }

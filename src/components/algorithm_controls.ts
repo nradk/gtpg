@@ -7,13 +7,11 @@ import * as Layout from "../drawing/layouts";
 import { GraphDrawing } from "../drawing/graphdrawing";
 import { Graph } from "../graph_core/graph";
 import { VertexInput, NoVertexClickedError, SourceSinkInput } from "../commontypes";
-import { Decorator } from "../decoration/decorator";
+import { Decorator, StatusSink } from "../decoration/decorator";
 import { showMessage } from "../ui_handlers/notificationservice";
+import { showStatus } from "../ui_handlers/notificationservice";
 
-export class AlgorithmControls extends HTMLElement {
-}
-
-export abstract class GenericControls extends AlgorithmControls {
+export abstract class AlgorithmControls extends HTMLElement implements StatusSink {
 
     protected readonly play_btn: JQuery<HTMLElement>;
     protected readonly pause_btn: JQuery<HTMLElement>;
@@ -27,6 +25,7 @@ export abstract class GenericControls extends AlgorithmControls {
     protected readonly graphTabs: GraphTabs;
     protected readonly graphDrawing: GraphDrawing;
     protected output: AlgorithmOutput;
+    protected statusText: string = '';
 
     constructor(graphTabs: GraphTabs, graphDrawing: GraphDrawing) {
         super();
@@ -136,7 +135,6 @@ export abstract class GenericControls extends AlgorithmControls {
                 this.graphTabs.getStageDims());
             graphDrawing = GraphDrawing.create(graph);
         } else {
-            console.log("Graphdrawing defined, creating fixed layout");
             const positions: Layout.PositionMap = new Map();
             for (const v of graph.getVertexIds()) {
                 positions.set(v, this.graphDrawing.getVertexPosition(v));
@@ -194,9 +192,22 @@ export abstract class GenericControls extends AlgorithmControls {
             button.attr("disabled", "true");
         }
     }
+
+    setStatus(text: string): void {
+        this.statusText = text;
+        showStatus(text, 50);
+    }
+
+    onAttach() {
+        showStatus(this.statusText, 0);
+    }
+
+    onDetach() {
+        showStatus('', 0);
+    }
 }
 
-export class InputlessControls extends GenericControls {
+export class InputlessControls extends AlgorithmControls {
 
     runner: AlgorithmRunner<void>;
     algorithm: Algorithm<void>;
@@ -204,7 +215,7 @@ export class InputlessControls extends GenericControls {
     constructor(AlgorithmClass: new (decorator: Decorator) => Algorithm<void>,
             graphTabs: GraphTabs, graphDrawing: GraphDrawing) {
         super(graphTabs, graphDrawing);
-        this.algorithm = new AlgorithmClass(graphDrawing.getDecorator());
+        this.algorithm = new AlgorithmClass(graphDrawing.getDecorator(this));
         this.runner = new AlgorithmRunner(this.algorithm);
         this.runner.setStateChangeCallback(this.algorithmStateChanged.bind(this));
         $(this).find("#algo-name").text(this.getRunner().getAlgorithm().getFullName());
@@ -219,7 +230,7 @@ export class InputlessControls extends GenericControls {
     }
 }
 
-export class VertexInputControls extends GenericControls {
+export class VertexInputControls extends AlgorithmControls {
 
     private runner: AlgorithmRunner<VertexInput>;
     private algorithm: Algorithm<VertexInput>;
@@ -227,7 +238,7 @@ export class VertexInputControls extends GenericControls {
     constructor(AlgorithmClass: new (decorator: Decorator) => Algorithm<VertexInput>,
             graphTabs: GraphTabs, graphDrawing: GraphDrawing) {
         super(graphTabs, graphDrawing);
-        this.algorithm = new AlgorithmClass(graphDrawing.getDecorator());
+        this.algorithm = new AlgorithmClass(graphDrawing.getDecorator(this));
         this.runner = new AlgorithmRunner(this.algorithm);
         this.runner.setStateChangeCallback(this.algorithmStateChanged.bind(this));
         $(this).find("#algo-name").text(this.getRunner().getAlgorithm().getFullName());
@@ -246,7 +257,7 @@ export class VertexInputControls extends GenericControls {
     }
 }
 
-export class SourceSinkInputControls extends GenericControls {
+export class SourceSinkInputControls extends AlgorithmControls {
 
     private runner: AlgorithmRunner<SourceSinkInput>;
     private algorithm: Algorithm<SourceSinkInput>;
@@ -254,7 +265,7 @@ export class SourceSinkInputControls extends GenericControls {
     constructor(AlgorithmClass: new (decorator: Decorator) => Algorithm<SourceSinkInput>,
             graphTabs: GraphTabs, graphDrawing: GraphDrawing) {
         super(graphTabs, graphDrawing);
-        this.algorithm = new AlgorithmClass(graphDrawing.getDecorator());
+        this.algorithm = new AlgorithmClass(graphDrawing.getDecorator(this));
         this.runner = new AlgorithmRunner(this.algorithm);
         this.runner.setStateChangeCallback(this.algorithmStateChanged.bind(this));
         $(this).find("#algo-name").text(this.getRunner().getAlgorithm().getFullName());

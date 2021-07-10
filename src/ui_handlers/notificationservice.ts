@@ -31,11 +31,21 @@ export function showInfo(title: string, text: string) {
     showMessage({ level: "info", text: text, title: title});
 }
 
-export function showStatus(text: string) {
-    $("#statusLine").html('');
-    const $element = $('<span>');
-    $element.html(text);
-    $element.hide();
-    $("#statusLine").append($element);
-    $element.fadeIn();
+export function showStatus(text: string, fadeDelay: number) {
+    const span = $("#statusLine").find("span");
+    const addNew = () => {
+        const $element = $('<span>');
+        $element.html(text);
+        $element.hide();
+        $("#statusLine").append($element);
+        $element.fadeIn(fadeDelay);
+    }
+    if (span.length == 0) {
+        addNew();
+    } else {
+        span.fadeOut(fadeDelay, () => {
+            span.remove();
+            addNew();
+        });
+    }
 }

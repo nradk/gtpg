@@ -1,6 +1,5 @@
 import { Graph } from "../graph_core/graph";
 import { GraphDrawing, EuclideanGraphDrawing } from "../drawing/graphdrawing";
-import { showStatus } from "../ui_handlers/notificationservice";
 
 export class DecorationState {
     static readonly DEFAULT = new DecorationState();
@@ -18,6 +17,10 @@ export class DecorationState {
     getAuxiliaryId(): number {
         return this.id;
     }
+}
+
+export interface StatusSink {
+    setStatus(text: string): void;
 }
 
 export interface Decorator {
@@ -39,7 +42,7 @@ export class DefaultDecorator implements Decorator {
         "#C0CA33", "#43A047", "#009688", "#2196F3", "#673AB7", "#E91E63",
         "#9C27B0", "#546E7A"];
 
-    constructor(protected drawing: GraphDrawing) {
+    constructor(protected drawing: GraphDrawing, protected statusSink: StatusSink) {
     }
 
     private getEdgeDrawing(startVertexId: number, endVertexId: number) {
@@ -102,7 +105,7 @@ export class DefaultDecorator implements Decorator {
     }
 
     setStatusLine(text: string) {
-        showStatus(text);
+        this.statusSink.setStatus(text);
     }
 
     clearAllDecoration() {
@@ -119,8 +122,8 @@ export class DefaultDecorator implements Decorator {
 }
 
 export class EuclideanDecorator extends DefaultDecorator {
-    constructor(graphDrawing: EuclideanGraphDrawing) {
-        super(graphDrawing);
+    constructor(graphDrawing: EuclideanGraphDrawing, statusSink: StatusSink) {
+        super(graphDrawing, statusSink);
     }
 
     getEdgeState(startVertexId: number, endVertexId: number): DecorationState {
