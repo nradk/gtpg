@@ -16,6 +16,7 @@ import { TSPApproxCheapestInsert } from "../algorithm/tsp/approx_cheapest_insert
 import { TSPApproxMSTBased } from "../algorithm/tsp/approx_mst";
 import { ArticulationPoints } from "../algorithm/decompose/articulation";
 import { EdmondsKarpAlgorithm } from "../algorithm/flow/edmonds_karp";
+import { TSPApproxChristofides } from "../algorithm/tsp/approx_christofides";
 
 export default class AlgorithmUI {
 
@@ -33,6 +34,7 @@ export default class AlgorithmUI {
         "#btn-algo-ni-tsp": [VertexInputControls, TSPApproxNearestInsert],
         "#btn-algo-ci-tsp": [VertexInputControls, TSPApproxCheapestInsert],
         "#btn-algo-mst-tsp": [InputlessControls, TSPApproxMSTBased],
+        "#btn-algo-mst-c": [InputlessControls, TSPApproxChristofides],
         "#btn-algo-edmondskarp": [SourceSinkInputControls, EdmondsKarpAlgorithm],
     };
 
