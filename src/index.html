@@ -106,19 +106,22 @@
             <div class="p-2" id="tool-buttons-container">
               <div class="row align-items-center">
                 <button class="btn btn-dark m-2" id="btn-tool-default"
-                        type="button" data-tool="default">
+                        type="button" data-tool="default" data-bs-toggle="tooltip"
+                        data-bs-placement="right" title="Add and move vertices and edges">
                   <i class="bi-cursor" style="font-size: 14pt"></i></button>
                 <label for="btn-tool-default">Add/Move</label>
               </div>
               <div class="row align-items-center">
-                <button class="btn btn-outline-dark m-2"
-                        type="button" data-tool="delete">
+                <button class="btn btn-outline-dark m-2" type="button"
+                        data-tool="delete" data-bs-toggle="tooltip"
+                        data-bs-placement="right" title="Delete vertices and edges">
                   <i class="bi-x" style="font-size: 14pt"></i></button>
                 <label for="btn-tool-default">Delete</label>
               </div>
               <div class="row align-items-center">
-                <button class="btn btn-outline-dark m-2"
-                        type="button" data-tool="text">
+                <button class="btn btn-outline-dark m-2" type="button"
+                  data-tool="text" data-bs-toggle="tooltip"
+                  data-bs-placement="right" title="Edit vertex labels and edge weights">
                   <i class="bi-cursor-text" style="font-size: 14pt"></i></button>
                 </button>
                 <label for="btn-tool-default">Text</label>
@@ -178,6 +181,23 @@
           <div class="row" style="position:relative">
 
             <div id="container"></div> <!-- KonvaJS container -->
+
+              <div style="position:absolute; left: 50%; bottom:50%">
+                <div style="position:relative; left: -50%;" id="noGraphText"
+                  class="text-muted">
+                  No graph open. Please click the <b>New</b> button to see
+                  options to create a graph.
+                </div>
+              </div>
+
+              <div style="position:absolute; left: 50%; bottom:50%">
+                <div style="position:relative; left: -50%;" id="clickToAddText"
+                  class="text-muted">
+                  Click to add a vertex. Connect vertices by clicking them one
+                  after the other.
+                </div>
+              </div>
+
 
             <!-- Toast Message -->
             <div class="toast" role="alert" aria-live="assertive"
@@ -441,7 +461,8 @@
     </template>
 
     <template id="bookmarks-item-template">
-      <tr class="table-secondary">
+      <tr class="table-secondary" data-bs-toggle="tooltip"
+        data-bs-placement="right" title="Click to open graph">
         <td><span name="bookmark-name">Untitled</span></td>
         <td></td>
         <td></td>

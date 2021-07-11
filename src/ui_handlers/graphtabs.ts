@@ -15,10 +15,24 @@ export default class GraphTabs {
     controlPanels: {[id: number]: AlgorithmControls } = {};
     tabSwitchCallbacks: (() => void)[];
     tools: Tools;
+    private clickToAddUpdater: () => void;
 
     constructor(private stage: Konva.Stage) {
         this.tabSwitchCallbacks = [];
-        this.tools = new Tools(this);
+        $("#clickToAddText").hide();
+        this.clickToAddUpdater = () => {
+            const graph = this.getActiveGraphDrawing()?.getGraph();
+            const tool = this.tools.getCurrentTool();
+            if (graph == undefined) {
+                return;
+            }
+            if (graph.getVertexIds().size > 0 ||  tool != "default") {
+                $("#clickToAddText").hide();
+            } else {
+                $("#clickToAddText").show();
+            }
+        };
+        this.tools = new Tools(this, this.clickToAddUpdater);
         this.tabBar.setTabCreatedCallback((id: number, tabType: TabType) => {
             let graph: Graph;
             switch (tabType) {
@@ -45,6 +59,9 @@ export default class GraphTabs {
             } else {
                 this.tabDrawings[id] = GraphDrawing.create(graph);
             }
+            if (Object.keys(this.tabDrawings).length == 1) {
+                $("#noGraphText").hide();
+            }
         });
         this.tabBar.setTabActivatedCallback((id: number) => {
             this.stage.removeChildren();
@@ -53,9 +70,13 @@ export default class GraphTabs {
             this.tabDrawings[id].renderGraph();
             this.setCorrectControlPanel();
             this.tabSwitchCallbacks.forEach(cb => cb());
+            this.clickToAddUpdater();
+            this.tabDrawings[id].setGraphEditCallback(this.clickToAddUpdater);
         });
         this.tabBar.setTabDeactivatedCallback((id: number) => {
             this.tabDrawings[id].detachStage();
+            $("#clickToAddText").hide();
+            this.tabDrawings[id].setGraphEditCallback(undefined);
             this.controlPanels[id]?.onDetach();
             this.stage.removeChildren();
             this.stage.clear();
@@ -64,6 +85,9 @@ export default class GraphTabs {
             delete this.tabDrawings[id];
             $(this.controlPanels[id]).remove();
             delete this.controlPanels[id];
+            if (Object.keys(this.tabDrawings).length == 0) {
+                $("#noGraphText").show();
+            }
         });
     }
 
@@ -76,6 +100,7 @@ export default class GraphTabs {
             this.tabDrawings[id] = graphDrawing;
             this.tabDrawings[id].setEnvironment(this.stage, this.tools);
             this.tabDrawings[id].renderGraph();
+            this.clickToAddUpdater();
         } else {
             this.tabDrawings[id] = graphDrawing;
         }

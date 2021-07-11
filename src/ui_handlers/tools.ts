@@ -9,7 +9,7 @@ export class Tools {
     private currentTool: ToolName = "default";
     private stage: Konva.Stage;
 
-    constructor(private graphTabs: GraphTabs) {
+    constructor(private graphTabs: GraphTabs, toolSwitchCallback?: () => void) {
         this.stage = this.graphTabs.getStage();
         $("#tool-buttons-container").find('button').on('click', (e) => {
             $("#tool-buttons-container").find('button').removeClass('btn-dark');
@@ -18,6 +18,7 @@ export class Tools {
             targetBtn.removeClass('btn-outline-dark');
             targetBtn.addClass('btn-dark');
             this.setCurrentTool(targetBtn.attr("data-tool") as ToolName);
+            toolSwitchCallback?.();
         });
     }
 

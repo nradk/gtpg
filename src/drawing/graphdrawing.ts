@@ -65,6 +65,7 @@ export class GraphDrawing {
     protected weightFontSize: number;
     protected vertexSelectMode: boolean = false;
     protected tools: Tools;
+    protected graphEditCallback: () => void;
 
     protected autoLabelScheme: AutoLabelScheme = "123";
     protected labelers: {[scheme in AutoLabelScheme]: AutoLabeler} = {
@@ -313,6 +314,7 @@ export class GraphDrawing {
         this.verticesLayer.add(drawing);
         this.verticesLayer.draw();
 
+        this.graphEditCallback?.();
         this.centroidCache.n += 1;
         this.centroidCache.xSum += x;
         this.centroidCache.ySum += y;
@@ -394,6 +396,7 @@ export class GraphDrawing {
         this.verticesLayer.draw();
         this.edgesLayer.draw();
 
+        this.graphEditCallback?.();
         this.centroidCache.n -= 1;
         this.centroidCache.xSum -= vertexDrawing.x();
         this.centroidCache.ySum -= vertexDrawing.y();
@@ -413,6 +416,7 @@ export class GraphDrawing {
         this.graph.addEdge(startId, endId);
         const edgeDrawing = this.createEdgeDrawing(startId, endId);
         this.storeAndShowEdgeDrawing(edgeDrawing, startId, endId);
+        this.graphEditCallback?.();
     }
 
     storeAndShowEdgeDrawing(edgeDrawing: EdgeDrawing, startId: number, endId: number) {
@@ -443,6 +447,7 @@ export class GraphDrawing {
     removeEdgeByIds(startId: number, endId: number, draw?: boolean) {
         this.removeEdgeDrawing(startId, endId, draw);
         this.graph.removeEdge(startId, endId);
+        this.graphEditCallback?.();
     }
 
     removeEdgeDrawing(startId: number, endId: number, draw?: boolean) {
@@ -617,6 +622,10 @@ export class GraphDrawing {
 
     getAutoLabelScheme(): AutoLabelScheme {
         return this.autoLabelScheme;
+    }
+
+    setGraphEditCallback(onGraphEdit: () => void) {
+        this.graphEditCallback = onGraphEdit;
     }
 }
 
