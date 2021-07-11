@@ -126,8 +126,8 @@ export class EuclideanGraph implements Graph, Weighted {
     }
 
 
-    clone(): Graph {
-        return fromJsonObject(this.toJSON());
+    clone(): this {
+        return fromJsonObject(this.toJSON()) as this;
     }
 
     isWeighted(): boolean {

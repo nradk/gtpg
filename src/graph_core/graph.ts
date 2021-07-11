@@ -2,10 +2,12 @@ import { EuclideanGraph } from "./euclidean_graph";
 
 type EmptyEdgeData = { };
 interface WeightedEdgeData extends EmptyEdgeData { weight: number };
+interface MultiEdgeData extends EmptyEdgeData { count: number };
 
 type GraphAdjacencies<EdgeData extends EmptyEdgeData> = Map<number, Map<number, EdgeData>>;;
 type UnweightedAdjacencies = GraphAdjacencies<EmptyEdgeData>;
 type WeightedAdjacencies = GraphAdjacencies<WeightedEdgeData>;
+type MultiAdjacencies = GraphAdjacencies<MultiEdgeData>;
 
 export interface Graph {
     getVertexIds(): Set<number>;
@@ -25,7 +27,7 @@ export interface Graph {
     isWeighted(): boolean;  // If isWeighted() == true for an implementation, it MUST
                             // implement the Weighted interface.
     toJSON(): object;
-    clone(): Graph;
+    clone(): this;
     populateLabelsFromIds(): void;
 }
 
@@ -43,9 +45,10 @@ export function fromJsonObject(jsonObject: any): Graph {
     if ("isEuclidean" in jsonObject) {
         return EuclideanGraph.fromJsonObject(jsonObject);
     }
-    const obj: {adjacencies: (UnweightedAdjacencies | WeightedAdjacencies);
+    type AdjacencyTypes = UnweightedAdjacencies | WeightedAdjacencies | MultiAdjacencies;
+    const obj: {adjacencies: AdjacencyTypes;
             vertexLabels: {[vertexId: number]: string},
-            directed: boolean, weighted: boolean} = jsonObject;
+            directed: boolean, weighted: boolean, multi: boolean } = jsonObject;
     let labels:  Map<number, string>;
     if (obj.vertexLabels) {
         const entries = Object.entries(obj.vertexLabels);
@@ -57,7 +60,7 @@ export function fromJsonObject(jsonObject: any): Graph {
             labels.set(parseInt(key), key);
         });
     }
-    const adjacencies: (WeightedAdjacencies | UnweightedAdjacencies) = new Map();
+    const adjacencies: AdjacencyTypes = new Map();
     for (const f in obj.adjacencies) {
         const fromV = parseInt(f);
         if (isNaN(fromV)) {
@@ -80,6 +83,8 @@ export function fromJsonObject(jsonObject: any): Graph {
     if (obj.weighted) {
         return new WeightedGraph(obj.directed,
             adjacencies as WeightedAdjacencies, labels);
+    } else if (obj.multi) {
+        return new MultiGraph(adjacencies as MultiAdjacencies, labels);
     } else {
         return new UnweightedGraph(obj.directed,
             adjacencies as UnweightedAdjacencies, labels);
@@ -268,11 +273,12 @@ abstract class DefaultGraph<EdgeData> implements Graph {
             vertexLabels: Object.fromEntries(this.vertexLabels),
             directed: this.isDirected(),
             weighted: this.isWeighted(),
+            multi: this instanceof MultiGraph,
         };
     }
 
-    clone(): Graph {
-        return fromJsonObject(this.toJSON());
+    clone(): this {
+        return fromJsonObject(this.toJSON()) as this;
     }
 
     populateLabelsFromIds() {
@@ -334,5 +340,92 @@ export class WeightedGraph extends DefaultGraph<WeightedEdgeData> implements Wei
 
     isWeighted() {
         return true;
+    }
+}
+
+export class MultiGraph extends DefaultGraph<MultiEdgeData> {
+    constructor(adjacencies?: GraphAdjacencies<MultiEdgeData>,
+            vertexLabels?: Map<number, string>) {
+        super(false, adjacencies, vertexLabels);
+    }
+
+    protected initialEdgeData(): MultiEdgeData {
+        return { count: 1 };
+    }
+
+    getEdgeCount(startVertex: number, endVertex: number): number {
+        if (!this.areNeighbors(startVertex, endVertex)) {
+            return 0;
+        }
+        return this.adjacencies.get(startVertex).get(endVertex).count;
+    }
+
+    setEdgeCount(startVertex: number, endVertex: number, count: number) {
+        if (!this.adjacencies.has(startVertex)) {
+            throw Error(`Vertex ${startVertex} is not in the graph.`);
+        }
+        if (!this.adjacencies.has(endVertex)) {
+            throw Error(`Vertex ${endVertex} is not in the graph.`);
+        }
+        if (count < 0) {
+            throw Error(`Edge count cannot be a negative number!`);
+        }
+        if (!Number.isInteger(count)) {
+            throw Error(`Edge count should be an integer!`);
+        }
+        if (this.doesEdgeExist(startVertex, endVertex)) {
+            if (count == 0) {
+                super.removeEdge(startVertex, endVertex);
+            } else {
+                this.adjacencies.get(startVertex).set(endVertex, { count: count });
+                this.adjacencies.get(endVertex).set(startVertex, { count: count });
+            }
+        } else {
+            super.addEdge(startVertex, endVertex);
+            this.setEdgeCount(startVertex, endVertex, count);
+        }
+    }
+
+    addEdge(startVertex: number, endVertex: number) {
+        if (this.doesEdgeExist(startVertex, endVertex)) {
+            // If the edge already exists, increment the count
+            const count = this.adjacencies.get(startVertex).get(endVertex).count;
+            this.adjacencies.get(startVertex).set(endVertex, { count: count + 1 });
+        } else {
+            super.addEdge(startVertex, endVertex);
+        }
+    }
+
+    removeEdge(startVertex: number, endVertex: number): void {
+        if (!this.doesEdgeExist(startVertex, endVertex)) {
+            throw Error(`Edge ${startVertex},${endVertex} is not in the graph.`);
+        }
+        const count = this.adjacencies.get(startVertex).get(endVertex).count;
+        if (count == 1) {
+            super.removeEdge(startVertex, endVertex);
+        } else {
+            this.adjacencies.get(startVertex).set(endVertex, { count: count - 1 });
+        }
+    }
+
+    getEdgeList(): number[][] {
+        return super.getEdgeList().map(e => [...e, this.getEdgeCount(e[0], e[1])]);
+    }
+
+    isWeighted() {
+        return false;
+    }
+
+    // Returns vertex neighbor ids taking multiplicity into account, i.e.
+    // vertices are repeated if multiple edges exist.
+    getVertexNeighborArray(vertex: number): number[] {
+        const neighbors = this.getVertexNeighborIds(vertex);
+        let array: number[] = [];
+        for (const n of neighbors) {
+            const count = this.getEdgeCount(vertex, n);
+            const nArray = Array.from({ length: count }, _ => n);
+            array = array.concat(nArray);
+        }
+        return array;
     }
 }
