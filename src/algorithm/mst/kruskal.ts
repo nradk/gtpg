@@ -59,11 +59,18 @@ export class KruskalMST implements Algorithm<void> {
         return this.decorator;
     }
 
+    private l(vertex: number) {
+        const graph = this.getDecorator().getGraph();
+        return graph.getVertexLabel(vertex) ?? vertex.toString();
+    }
+
     *run(): Generator<void, AlgorithmOutput, void> {
+        const l = this.l.bind(this);
+        let totalWeight = 0;
         while (this.edges.length > 0) {
             const e = this.edges.pop();
             this.decorator.setEdgeState(e[0], e[1], DecorationState.CONSIDERING);
-            this.decorator.setStatusLine(`Looking at edge ${e}`);
+            this.decorator.setStatusLine(`Considering edge ${l(e[0])}, ${l(e[1])}`);
             // Yield now to let the user see the 'considering' state
             yield;
             // Check if e connects two vertices in different this.forests
@@ -73,6 +80,8 @@ export class KruskalMST implements Algorithm<void> {
                 this.edgesAdded += 1;
                 // Select that edge
                 this.decorator.setEdgeState(e[0], e[1], DecorationState.SELECTED);
+                this.decorator.setStatusLine(`Added edge ${l(e[0])}, ${l(e[1])} to MST`);
+                totalWeight += e[2];
                 this.decorator.setVertexState(e[0], DecorationState.SELECTED);
                 this.decorator.setVertexState(e[1], DecorationState.SELECTED);
                 // Merge the this.forests
@@ -93,6 +102,10 @@ export class KruskalMST implements Algorithm<void> {
                 break;
             }
         }
+        this.decorator.setStatusLine(`MST with weight ${totalWeight} found`);
+        yield;
+        this.decorator.setStatusLine(`MST with weight ${totalWeight} found`);
+        yield;
         return {
             graph: this.mst,
             name: "MST",

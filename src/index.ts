@@ -28,7 +28,7 @@ function displayNewGraph(tabType: TabBar.TabType) {
 
 const stage = new Konva.Stage({
     container: 'container',
-    width: 1400,
+    width: 1250,
     height: 700,
     draggable: true
 });

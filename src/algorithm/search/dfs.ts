@@ -26,7 +26,8 @@ export class DepthFirstSearch implements Algorithm<VertexInput> {
         this.inTree = new Set();
         this.stack = [[startVertex.vertexId, undefined]];
         this.inTree.add(startVertex.vertexId);
-        this.searchTree.addVertex(startVertex.vertexId);
+        this.searchTree.addVertex(startVertex.vertexId,
+            graph.getVertexLabel(startVertex.vertexId));
 
         for (const v of vertexIds) {
             if (v == startVertex.vertexId) {
@@ -58,7 +59,7 @@ export class DepthFirstSearch implements Algorithm<VertexInput> {
             }
 
             if (!this.inTree.has(v)) {
-                this.searchTree.addVertex(v);
+                this.searchTree.addVertex(v, graph.getVertexLabel(v));
                 this.inTree.add(v);
                 if (vparent != undefined) {
                     if (this.searchTree.isWeighted()) {

@@ -98,7 +98,8 @@ export class ArticulationPoints implements Algorithm<void> {
                     L[u] = Math.min(L[u], dfn[w]);
                 }
             }
-            that.decorator.setVertexExternalLabel(u, L[u].toString());
+            const label = `D=${dfn[u]}, L=${L[u]}`;
+            that.decorator.setVertexExternalLabel(u, label);
             yield;
         };
         yield* art(firstVertex, undefined);

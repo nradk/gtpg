@@ -113,18 +113,16 @@ export class FleuryEulerTrail implements Algorithm<void> {
         let stop = false;
         let edgeIndex = 1;
         while (!stop) {
-            this.decorator.setVertexState(currentVertex, DecorationState.SELECTED);
             yield;
+            this.decorator.setVertexState(currentVertex, DecorationState.SELECTED);
             stop = true;
             const neighbors = this.graph.getVertexNeighborIds(currentVertex);
             let i = 0;
             for (const n of neighbors) {
                 this.decorator.setEdgeState(currentVertex, n, DecorationState.CONSIDERING);
-                yield;
                 if (!this.isBridge(this.graph, [currentVertex, n]) || i == neighbors.size - 1) {
                     stop = false;
                     this.decorator.setEdgeState(currentVertex, n, DecorationState.SELECTED);
-                    yield;
                     if (!this.trail.getVertexIds().has(n)) {
                         this.trail.addVertex(n, this.graph.getVertexLabel(n));
                     }
@@ -135,8 +133,8 @@ export class FleuryEulerTrail implements Algorithm<void> {
                     break;
                 } else {
                     this.decorator.setEdgeState(currentVertex, n, DecorationState.DISABLED);
-                    yield;
                 }
+                yield;
                 i += 1;
             }
         }

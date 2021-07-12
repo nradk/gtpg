@@ -78,8 +78,9 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
                 const dist = vDist + graph.getEdgeWeight(v, n);
                 if (dist < this.distances[n]) {
                     this.decorator.setEdgeState(v, n, DecorationState.CONSIDERING);
-                    this.decorator.setVertexState(n, DecorationState.CONSIDERING); yield;
+                    this.decorator.setVertexState(n, DecorationState.CONSIDERING);
                     this.decorator.setVertexExternalLabel(n, getNumStringForLabels(dist));
+                    yield;
                     this.distances[n] = dist;
                     this.parents[n] = v;
                     this.queue.push([n, dist]);
