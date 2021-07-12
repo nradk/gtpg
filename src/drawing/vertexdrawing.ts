@@ -185,7 +185,7 @@ export default class VertexDrawing extends Konva.Group {
         if (this.externalLabel == undefined) {
             this.externalLabel = new Konva.Text({
                 text: text,
-                fontsize: 15,
+                fontSize: 12,
                 fill: 'black'
             });
             this.add(this.externalLabel);
@@ -227,9 +227,34 @@ export default class VertexDrawing extends Konva.Group {
         }
         this.externalLabel.x(labelPosition[0]);
         this.externalLabel.y(labelPosition[1]);
-        this.externalLabel.offsetX(this.externalLabel.width() / 2);
-        this.externalLabel.offsetY(this.externalLabel.height() / 2);
+        this.setTextOffsetOnBoundary(this.externalLabel);
         this.graphDrawing.getStage().draw();
+    }
+
+    private setTextOffsetOnBoundary(text: Konva.Text) {
+        const [w, h] = [text.width(), text.height()];
+        const [x, y] = [text.x(), text.y()];
+        const toAnchor: Vector2 = [-x, -y];
+        const alpha = Math.atan2(-toAnchor[1], toAnchor[0]);
+        const thresholdAlpha = Math.atan2(h, w);
+        let dx = 0, dy = 0;
+        if (Math.abs(alpha) > thresholdAlpha && Math.abs(alpha) < Math.PI - thresholdAlpha) {
+            // The center-to-anchor line intersects with a horizontal boundary
+            // of the text bounding box
+            const L = h / (2 * Math.sin(alpha)); // Length from center to boundary
+            dx = L * Math.cos(alpha);
+            dy = alpha > 0 ? -h/2 : h/2;
+        } else {
+            // The center-to-anchor line intersects with a vertical boundary
+            // of the text bounding box
+            const L = w / (2 * Math.cos(alpha)); // Length from center to boundary
+            dx = Math.abs(alpha) < thresholdAlpha ? w/2 : -w/2;
+            dy = -L * Math.sin(alpha);
+        }
+        text.offsetX(text.width() / 2);
+        text.offsetY(text.height() / 2);
+        text.x(text.x() - dx);
+        text.y(text.y() - dy);
     }
 
     clearExternalLabel(dontRedrawStage?: boolean) {
