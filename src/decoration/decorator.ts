@@ -17,6 +17,10 @@ export class DecorationState {
     getAuxiliaryId(): number {
         return this.id;
     }
+
+    isAuxiliary(): boolean {
+        return this.id != undefined;
+    }
 }
 
 export interface StatusSink {
@@ -41,9 +45,18 @@ export interface Decorator {
 }
 
 export class DefaultDecorator implements Decorator {
-    static readonly auxiliaryColors = ["#795548", "#FFEB3B",
-        "#C0CA33", "#43A047", "#009688", "#2196F3", "#673AB7", "#E91E63",
-        "#9C27B0", "#546E7A"];
+    // The 26 colors from the Color Alphabet Project
+    //static readonly auxiliaryColors = [ "#FFFF80", "#FFFF00", "#FFCC99",
+        //"#FFA405", "#FFA8BB", "#FF5005", "#FF0010", "#F0A3FF", "#E0FF66",
+        //"#C20088", "#990000", "#808080", "#426600", "#191919", "#003380",
+        //"#00998F", "#993F00", "#740AFF", "#94FFB5", "#0075DC", "#9DCC00",
+        //"#8F7C00", "#5EF1F2", "#005C31", "#4C005C", "#2BCE48" ];
+    // From https://sashamaps.net/docs/resources/20-colors/
+    static readonly auxiliaryColors = [ '#e6194b', '#3cb44b', '#ffe119',
+        '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c',
+        '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000',
+        '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', '#000000'
+    ];
 
     constructor(protected drawing: GraphDrawing, protected statusSink: StatusSink) {
     }
