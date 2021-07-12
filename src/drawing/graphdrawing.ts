@@ -112,7 +112,8 @@ export class GraphDrawing {
         this.stage.removeChildren();
         this.stage.add(this.edgesLayer).add(this.verticesLayer);
         this.stage.on('click', e => {
-            if (!this.vertexSelectMode && e.target === this.stage) {
+            if (!this.vertexSelectMode && e.target === this.stage
+                && this.tools.getCurrentTool() == "default") {
                 this.addVertexToCurrentGraph(e);
             }
         });
@@ -387,12 +388,10 @@ export class GraphDrawing {
         for (const n of this.graph.getVertexNeighborIds(id, true)) {
             this.removeEdgeByIds(id, n, false);
         }
-        // TODO remove edge drawing from this.edgeDrawings
-        const vertexId = this.lookupVertexId(vertexDrawing)
-        this.graph.removeVertex(vertexId);
+        this.graph.removeVertex(id);
         vertexDrawing.destroy();
-        delete this.vertexDrawings[vertexId];
-        this.positions.delete(vertexId);
+        delete this.vertexDrawings[id];
+        this.positions.delete(id);
         this.verticesLayer.draw();
         this.edgesLayer.draw();
 
@@ -651,6 +650,34 @@ export class EuclideanGraphDrawing extends GraphDrawing {
         const vd = super.addVertexToCurrentGraph(e);
         vd.setExternalLabelPlacement("anti-centroid");
         return vd;
+    }
+
+    protected deleteVertex(vertexDrawing: VertexDrawing) {
+        if (vertexDrawing === this.selectedVertex) {
+            // Unset the selected vertex if it is going to be deleted
+            this.selectedVertex = null;
+        }
+        const id = vertexDrawing.getVertexId();
+        if (this.edgeDrawings[id]) {
+            for (const n in this.edgeDrawings[id]) {
+                this.removeEdgeDrawing(id, parseInt(n));
+            }
+        }
+        for (const v in this.edgeDrawings) {
+            if (this.edgeDrawings[v][id]) {
+                this.removeEdgeDrawing(parseInt(v), id);
+            }
+        }
+        this.graph.removeVertex(id);
+        vertexDrawing.destroy();
+        delete this.vertexDrawings[id];
+        this.verticesLayer.draw();
+        this.edgesLayer.draw();
+
+        this.graphEditCallback?.();
+        this.centroidCache.n -= 1;
+        this.centroidCache.xSum -= vertexDrawing.x();
+        this.centroidCache.ySum -= vertexDrawing.y();
     }
 
     populateEdgeDrawings() {
