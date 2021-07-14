@@ -205,7 +205,7 @@ export class GraphDrawing {
         return this.weightFontSize;
     }
 
-    populateVertexDrawings(layout: Layouts.Layout) {
+    protected populateVertexDrawings(layout: Layouts.Layout) {
         // TODO find a more elegant way to do this
         // Don't replace the positions object because in the special case of
         // the Euclidean Graph, the positions object is shared with the graph
@@ -221,7 +221,7 @@ export class GraphDrawing {
         }
     }
 
-    attachVertexEventHandlers() {
+    private attachVertexEventHandlers() {
         for (const v of Object.keys(this.vertexDrawings)) {
             this.vertexDrawings[v].addClickCallback(
                 this.vertexClickHandler.bind(this));
@@ -231,7 +231,7 @@ export class GraphDrawing {
     }
 
     // Assume vertices already drawn
-    populateEdgeDrawings() {
+    protected populateEdgeDrawings() {
         const edges = this.graph.getEdgeList();
         this.edgeDrawings = {};
         for (const e of edges) {
@@ -245,12 +245,13 @@ export class GraphDrawing {
     createEdgeDrawing(startId: number, endId: number) {
         const start = this.vertexDrawings[startId];
         const end   = this.vertexDrawings[endId];
+        const weight = !this.graph.isWeighted() ? undefined :
+            getNumStringForLabels((this.graph as Graphs.Weighted & Graphs.Graph)
+                .getEdgeWeight(startId, endId));
         const edgeDrawing = new EdgeDrawing(this, start, end,
             this.graph.isDirected(),
             this.edgesLayer.draw.bind(this.edgesLayer),
-            this.graph instanceof Graphs.WeightedGraph ?
-            getNumStringForLabels(this.graph.getEdgeWeight(startId,
-                endId)) : undefined,
+            weight,
             this.graph instanceof Graphs.WeightedGraph ?
             this.handleWeightUpdate.bind(this) : undefined
         );
@@ -292,7 +293,7 @@ export class GraphDrawing {
         return next;
     }
 
-    addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>): VertexDrawing {
+    protected addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>): VertexDrawing {
         // TODO:::::
         // WARNING: BAD HACK! We check to see if the stage has it's 'draggable'
         // property disabled, because EditableText disables stage dragging when
@@ -330,7 +331,7 @@ export class GraphDrawing {
         this.updateCentroidCache(oldPosition, newPosition);
     }
 
-    vertexMoveHandler(vertex: VertexDrawing) {
+    protected vertexMoveHandler(vertex: VertexDrawing) {
         const vid = vertex.getVertexId();
         this.updateVertexPosition(vertex);
         // Notify neighbors so they can update their label positions
@@ -347,7 +348,7 @@ export class GraphDrawing {
         this.centroidCache.ySum += newPosition.y;
     }
 
-    vertexClickHandler(vertexDrawing: VertexDrawing) {
+    protected vertexClickHandler(vertexDrawing: VertexDrawing) {
         if (this.vertexSelectMode) {
             // TODO this should be made into a tool
             // If we are in 'vertex select mode', vertex click is handled
@@ -401,14 +402,9 @@ export class GraphDrawing {
         this.centroidCache.ySum -= vertexDrawing.y();
     }
 
-    lookupVertexId(vertexDrawing: VertexDrawing): number {
-        const m = this.vertexDrawings;
-        return parseInt(Object.keys(m).find(key => m[key] === vertexDrawing));
-    }
-
     protected addEdge(start: VertexDrawing, end: VertexDrawing) {
-        const startId = this.lookupVertexId(start);
-        const endId = this.lookupVertexId(end);
+        const startId = start.getVertexId();
+        const endId = end.getVertexId();
         if (this.graph.doesEdgeExist(startId, endId)) {
             return;
         }
@@ -438,12 +434,12 @@ export class GraphDrawing {
     }
 
     removeEdge(start: VertexDrawing, end: VertexDrawing, draw?: boolean) {
-        const startId = this.lookupVertexId(start);
-        const endId = this.lookupVertexId(end);
+        const startId = start.getVertexId();
+        const endId = end.getVertexId();
         this.removeEdgeByIds(startId, endId, draw);
     }
 
-    removeEdgeByIds(startId: number, endId: number, draw?: boolean) {
+    protected removeEdgeByIds(startId: number, endId: number, draw?: boolean) {
         this.removeEdgeDrawing(startId, endId, draw);
         this.graph.removeEdge(startId, endId);
         this.graphEditCallback?.();
@@ -532,9 +528,9 @@ export class GraphDrawing {
         return [this.centroidCache.xSum / n, this.centroidCache.ySum / n];;
     }
 
-    handleWeightUpdate(edgeDrawing: EdgeDrawing, weightStr: string) {
-        let startId = this.lookupVertexId(edgeDrawing.start);
-        let endId = this.lookupVertexId(edgeDrawing.end);
+    protected handleWeightUpdate(edgeDrawing: EdgeDrawing, weightStr: string) {
+        let startId = edgeDrawing.start.getVertexId();
+        let endId = edgeDrawing.end.getVertexId();
         const weight = Number(weightStr);
         if (!this.graph.isWeighted()) {
             console.error("Attempt to edit weight in a non-weighted graph!");
@@ -635,18 +631,18 @@ export class EuclideanGraphDrawing extends GraphDrawing {
         this.positions = graph.getPositions();
     }
 
-    populateVertexDrawings(layout: Layouts.Layout) {
+    protected populateVertexDrawings(layout: Layouts.Layout) {
         super.populateVertexDrawings(layout);
         for (const v of Object.keys(this.vertexDrawings)) {
             this.vertexDrawings[v].setExternalLabelPlacement("anti-centroid");
         }
     }
 
-    vertexMoveHandler(vertex: VertexDrawing) {
+    protected vertexMoveHandler(vertex: VertexDrawing) {
         this.updateVertexPosition(vertex);
     }
 
-    addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
+    protected addVertexToCurrentGraph(e: Konva.KonvaEventObject<MouseEvent>) {
         const vd = super.addVertexToCurrentGraph(e);
         vd.setExternalLabelPlacement("anti-centroid");
         return vd;
@@ -680,7 +676,7 @@ export class EuclideanGraphDrawing extends GraphDrawing {
         this.centroidCache.ySum -= vertexDrawing.y();
     }
 
-    populateEdgeDrawings() {
+    protected populateEdgeDrawings() {
         this.edgeDrawings = {};
     }
 

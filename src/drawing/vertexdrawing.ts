@@ -132,7 +132,7 @@ export default class VertexDrawing extends Konva.Group {
         return this.callbackId;
     }
 
-    callMoveCallbacks() {
+    private callMoveCallbacks() {
         this.updateExternalLabelPosition();
         this.moveCallbacks.forEach(callback => callback(this));
     }
@@ -227,14 +227,15 @@ export default class VertexDrawing extends Konva.Group {
         }
         this.externalLabel.x(labelPosition[0]);
         this.externalLabel.y(labelPosition[1]);
-        this.setTextOffsetOnBoundary(this.externalLabel);
+        VertexDrawing.setTextOffsetOnBoundary(this.externalLabel);
         this.graphDrawing.getStage().draw();
     }
 
-    private setTextOffsetOnBoundary(text: Konva.Text) {
+    static setTextOffsetOnBoundary(text: Konva.Text, anchor?: Vector2) {
         const [w, h] = [text.width(), text.height()];
         const [x, y] = [text.x(), text.y()];
-        const toAnchor: Vector2 = [-x, -y];
+        anchor = anchor ?? [0, 0];
+        const toAnchor: Vector2 = [anchor[0] - x, anchor[1] - y];
         const alpha = Math.atan2(-toAnchor[1], toAnchor[0]);
         const thresholdAlpha = Math.atan2(h, w);
         let dx = 0, dy = 0;

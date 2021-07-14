@@ -111,7 +111,7 @@ export default class EdgeDrawing extends Konva.Group {
         this.updateLabelPosition();
     }
 
-    handleClick(evt: Konva.KonvaEventObject<MouseEvent>) {
+    private handleClick(evt: Konva.KonvaEventObject<MouseEvent>) {
         const currentTool = this.graphDrawing.getTools().getCurrentTool();
         if (currentTool == "default") {
             this.setCurvePointPosition(getMouseEventXY(evt));
@@ -163,7 +163,7 @@ export default class EdgeDrawing extends Konva.Group {
         this.updateLabelPosition();
     }
 
-    adjustArrowByCurvePoint() {
+    private adjustArrowByCurvePoint() {
         const l = this.arrow.points().length;
         const [sx, sy] = [this.arrow.points()[0], this.arrow.points()[1]];
         const [ex, ey] = [this.arrow.points()[l-2], this.arrow.points()[l-1]];
@@ -173,7 +173,7 @@ export default class EdgeDrawing extends Konva.Group {
         this.arrow.tension(1);
     }
 
-    setEdgePoints() {
+    private setEdgePoints() {
         const start = this.start;
         const end = this.end;
         const arrowPoints = [start.x(), start.y()];
@@ -196,7 +196,7 @@ export default class EdgeDrawing extends Konva.Group {
         }
     }
 
-    vertexMoveCallback(_: VertexDrawing) {
+    private vertexMoveCallback(_: VertexDrawing) {
         this.setEdgePoints();
         this.updateLabelPosition();
         this.redrawCallback();
@@ -209,13 +209,13 @@ export default class EdgeDrawing extends Konva.Group {
         return undefined;
     }
 
-    updateLabelPosition() {
+    private updateLabelPosition() {
         if (this.label == undefined) {
             return;
         }
         this.labelOffset = this.graphDrawing.getEdgeLabelOffset(this.start,
             this.end);
-        var labelAnchor: number[];
+        var labelAnchor: Vector2;
         if (this.curvePoint != undefined) {
             labelAnchor = [this.curvePoint.x(), this.curvePoint.y()];
         } else {
@@ -225,6 +225,7 @@ export default class EdgeDrawing extends Konva.Group {
         }
         this.label.x(labelAnchor[0] + this.labelOffset[0]);
         this.label.y(labelAnchor[1] + this.labelOffset[1]);
+        VertexDrawing.setTextOffsetOnBoundary(this.label, labelAnchor);
     }
 
     setDecorationState(state: DecorationState) {

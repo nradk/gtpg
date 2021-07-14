@@ -189,7 +189,7 @@ export class EuclideanGraph implements Graph, Weighted {
             const entries = Object.entries(obj.positions);
             positions = new Map(entries.map(([key, value]) => [parseInt(key), value]));
         } else {
-            // If no labels present, create labels from vertex ids.
+            // If no positions present, assign random positions
             positions = new Map<number, Point>();
             Object.entries(obj.positions).forEach(([key, _]) => {
                 positions.set(parseInt(key), EuclideanGraph.getRandomPosition());
