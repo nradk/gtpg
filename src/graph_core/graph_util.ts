@@ -1,7 +1,7 @@
 import { HeadlessRunner } from "../algorithm/algorithm";
 import { HeadlessDecorator } from "../decoration/decorator";
 import { BreadthFirstSearch } from "../algorithm/search/bfs";
-import { Graph, UnweightedGraph, WeightedGraph } from "./graph";
+import { Weighted, Graph, UnweightedGraph, WeightedGraph } from "./graph";
 import { EuclideanGraph } from "./euclidean_graph";
 
 export function isSingleComponent(graph: Graph): boolean {
@@ -15,10 +15,12 @@ export function isSingleComponent(graph: Graph): boolean {
 }
 
 // Create a graph from a path (a list of vertex ids). Take labels from the
-// graph provided as the second argument.
+// graph provided as the second argument. Includes edge weights if the given
+// graph is weighted.
 export function createGraphFromPath(path: number[], labelsFrom: Graph): Graph {
-    const outGraph = new UnweightedGraph(true);
     const graph = labelsFrom;
+    const outGraph = graph.isWeighted() ? new WeightedGraph(true) :
+        new UnweightedGraph(true);
     outGraph.addVertex(path[0], graph.getVertexLabel(path[0]));
     for (let i = 1; i < path.length; i++) {
         // The following 'if' guard is necessary for paths that are
@@ -28,6 +30,12 @@ export function createGraphFromPath(path: number[], labelsFrom: Graph): Graph {
             outGraph.addVertex(path[i], graph.getVertexLabel(path[i]));
         }
         outGraph.addEdge(path[i - 1], path[i]);
+        if (graph.isWeighted()) {
+            const inGraphW = (graph as Weighted & Graph);
+            const outGraphW = (outGraph as Weighted & Graph);
+            outGraphW.setEdgeWeight(path[i - 1], path[i],
+                inGraphW.getEdgeWeight(path[i - 1], path[i]));
+        }
     }
     return outGraph;
 }
