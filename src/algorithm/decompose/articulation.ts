@@ -64,6 +64,8 @@ export class ArticulationPoints implements Algorithm<void> {
                 decorator.setEdgeState(v, u, DecorationState.CONSIDERING);
             }
             decorator.setVertexState(u, DecorationState.CONSIDERING);
+            let label = `D=${dfn[u]}`;
+            that.decorator.setVertexExternalLabel(u, label);
             yield;
             let nChildren = 0;
             for (const w of that.graph.getVertexNeighborIds(u)) {
@@ -92,13 +94,14 @@ export class ArticulationPoints implements Algorithm<void> {
                             decorator.setVertexState(u, DecorationState.SELECTED);
                             articulationPoints.add(u);
                         }
+                        yield;
                     }
                     L[u] = Math.min(L[u], L[w]);
                 } else if (w !== v) {
                     L[u] = Math.min(L[u], dfn[w]);
                 }
             }
-            const label = `D=${dfn[u]}, L=${L[u]}`;
+            label = `D=${dfn[u]}, L=${L[u]}`;
             that.decorator.setVertexExternalLabel(u, label);
             yield;
         };

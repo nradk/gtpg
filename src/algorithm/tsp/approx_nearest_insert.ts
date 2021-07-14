@@ -69,6 +69,7 @@ export class TSPApproxNearestInsert extends TSPApprox {
                         graph.getEdgeWeight(tour[i - 1], tour[i]);
                     if (cost < bestCost) {
                         insertAt = i;
+                        bestCost = cost;
                     }
                 }
                 tour.splice(insertAt, 0, nearest);
@@ -102,8 +103,9 @@ export class TSPApproxNearestInsert extends TSPApprox {
             output: { nearest: number }) {
         let nearest = null;
         let minDist = Infinity;
-        for (const p of path) {
-            const nn = graph.getNearestNeighbor(p, new Set(path));
+        const pathSet = new Set(path);
+        for (const p of pathSet) {
+            const nn = graph.getNearestNeighbor(p, pathSet);
             this.decorator.setEdgeState(p, nn, DecorationState.CONSIDERING);
             this.decorator.setVertexState(nn, DecorationState.CONSIDERING);
             yield;
