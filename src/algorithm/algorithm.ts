@@ -87,10 +87,6 @@ export class AlgorithmRunner<I> {
         this.delay = 1 + (2000 - 1) * (1 - speed / 100);
     }
 
-    getDelay() {
-        return this.delay;
-    }
-
     getState(): AlgorithmState {
         return this.state;
     }

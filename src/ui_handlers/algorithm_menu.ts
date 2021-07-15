@@ -18,7 +18,7 @@ import { ArticulationPoints } from "../algorithm/decompose/articulation";
 import { EdmondsKarpAlgorithm } from "../algorithm/flow/edmonds_karp";
 import { TSPApproxChristofides } from "../algorithm/tsp/approx_christofides";
 
-export default class AlgorithmUI {
+export default class AlgorithmMenu {
 
     static readonly algorithms = {
         "#btn-algo-kruskal": [InputlessControls, KruskalMST],
@@ -39,15 +39,15 @@ export default class AlgorithmUI {
     };
 
     constructor(graphTabs: GraphTabs) {
-        for (const id in AlgorithmUI.algorithms) {
+        for (const id in AlgorithmMenu.algorithms) {
             $(id).on('click', () => {
                 const graphDrawing = graphTabs.getActiveGraphDrawing();
                 if (graphDrawing == undefined) {
                     alert("Please create or open a graph first.");
                     return false;
                 }
-                const Controls = AlgorithmUI.algorithms[id][0];
-                const Algorithm = AlgorithmUI.algorithms[id][1];
+                const Controls = AlgorithmMenu.algorithms[id][0];
+                const Algorithm = AlgorithmMenu.algorithms[id][1];
                 const controls = new Controls(Algorithm, graphTabs, graphDrawing);
                 graphTabs.setControlPanelForActiveTab(controls);
             });
