@@ -1,6 +1,7 @@
 import $ from "jquery";
-import {  InputlessControls, VertexInputControls, SourceSinkInputControls }
-    from "../components/algorithm_controls";
+import {  AlgorithmControls, InputlessControls, VertexInputControls,
+    SourceSinkInputControls } from "../components/algorithm_controls";
+import { Algorithm } from "../algorithm/algorithm";
 import GraphTabs from "./graphtabs";
 import { KruskalMST } from "../algorithm/mst/kruskal";
 import { PrimMST } from "../algorithm/mst/prim";
@@ -17,40 +18,140 @@ import { TSPApproxMSTBased } from "../algorithm/tsp/approx_mst";
 import { ArticulationPoints } from "../algorithm/decompose/articulation";
 import { EdmondsKarpAlgorithm } from "../algorithm/flow/edmonds_karp";
 import { TSPApproxChristofides } from "../algorithm/tsp/approx_christofides";
+import { Decorator } from "../decoration/decorator";
+import { GraphDrawing } from "../drawing/graphdrawing";
+
+
+type AlgorithmType<I> = new (d: Decorator) => Algorithm<I>;
+type ControlsType<I> = new (algClass: AlgorithmType<I>,
+    graphTabs: GraphTabs, graphDrawing: GraphDrawing) => AlgorithmControls;
+
+interface MenuEntry<I> {
+    controlsClass: ControlsType<I>;
+    algorithmClass: AlgorithmType<I>;
+    menuText: string;
+}
 
 export default class AlgorithmMenu {
 
-    static readonly algorithms = {
-        "#btn-algo-kruskal": [InputlessControls, KruskalMST],
-        "#btn-algo-prim": [VertexInputControls, PrimMST],
-        "#btn-algo-bfs": [VertexInputControls, BreadthFirstSearch],
-        "#btn-algo-dfs": [VertexInputControls, DepthFirstSearch],
-        "#btn-algo-dijkstra": [VertexInputControls, DijkstrasShortestPath],
-        "#btn-algo-fleury": [InputlessControls, FleuryEulerTrail],
-        "#btn-algo-articulation": [InputlessControls, ArticulationPoints],
-        "#btn-algo-bhk": [InputlessControls, BHKHamiltonPath],
-        "#btn-algo-bhk-tsp": [InputlessControls, BHK_TSP],
-        "#btn-algo-nn-tsp": [VertexInputControls, TSPApproxNearestNeighbor],
-        "#btn-algo-ni-tsp": [VertexInputControls, TSPApproxNearestInsert],
-        "#btn-algo-ci-tsp": [VertexInputControls, TSPApproxCheapestInsert],
-        "#btn-algo-mst-tsp": [InputlessControls, TSPApproxMSTBased],
-        "#btn-algo-mst-c": [InputlessControls, TSPApproxChristofides],
-        "#btn-algo-edmondskarp": [SourceSinkInputControls, EdmondsKarpAlgorithm],
-    };
+    static readonly algorithms: MenuEntry<any>[][] = [
+        [
+            {
+                controlsClass: InputlessControls,
+                algorithmClass: KruskalMST,
+                menuText: "Kruskal's Minimum Spanning Tree",
+            },
+            {
+                controlsClass: VertexInputControls,
+                algorithmClass: PrimMST,
+                menuText: "Prim's Minimum Spanning Tree",
+            },
+        ],
+        [
+            {
+                controlsClass: VertexInputControls,
+                algorithmClass: BreadthFirstSearch,
+                menuText: "Breadth First Search",
+            },
+            {
+                controlsClass: VertexInputControls,
+                algorithmClass: DepthFirstSearch,
+                menuText: "Depth First Search",
+            },
+        ],
+        [
+            {
+                controlsClass: VertexInputControls,
+                algorithmClass: DijkstrasShortestPath,
+                menuText: "Dijkstra's Shortest Path",
+            },
+        ],
+        [
+            {
+                controlsClass: InputlessControls,
+                algorithmClass: FleuryEulerTrail,
+                menuText: "Fleury's Euler Trail",
+            },
+            {
+                controlsClass: InputlessControls,
+                algorithmClass: BHKHamiltonPath,
+                menuText: "Bellman-Held-Karp Hamilton Path",
+            },
+        ],
+        [
+            {
+                controlsClass: InputlessControls,
+                algorithmClass: ArticulationPoints,
+                menuText: "Articulation Points",
+            },
+        ],
+        [
+            {
+                controlsClass: InputlessControls,
+                algorithmClass: BHK_TSP,
+                menuText: "Bellman-Held-Karp TSP",
+            },
+            {
+                controlsClass: VertexInputControls,
+                algorithmClass: TSPApproxNearestNeighbor,
+                menuText: "Nearest Neighbor TSP (Approximation)",
+            },
+            {
+                controlsClass: VertexInputControls,
+                algorithmClass: TSPApproxNearestInsert,
+                menuText: "Nearest Insert TSP (Approximation)",
+            },
+            {
+                controlsClass: VertexInputControls,
+                algorithmClass: TSPApproxCheapestInsert,
+                menuText: "Cheapest Insert TSP (Approximation)",
+            },
+            {
+                controlsClass: InputlessControls,
+                algorithmClass: TSPApproxMSTBased,
+                menuText: "MST-Based TSP (Approximation)",
+            },
+            {
+                controlsClass: InputlessControls,
+                algorithmClass: TSPApproxChristofides,
+                menuText: "Christofides TSP (Approximation)",
+            },
+        ],
+        [
+            {
+                controlsClass: SourceSinkInputControls,
+                algorithmClass: EdmondsKarpAlgorithm,
+                menuText: "Edmonds-Karp Network Flow",
+            },
+        ]
+    ];
 
     constructor(graphTabs: GraphTabs) {
-        for (const id in AlgorithmMenu.algorithms) {
-            $(id).on('click', () => {
-                const graphDrawing = graphTabs.getActiveGraphDrawing();
-                if (graphDrawing == undefined) {
-                    alert("Please create or open a graph first.");
-                    return false;
-                }
-                const Controls = AlgorithmMenu.algorithms[id][0];
-                const Algorithm = AlgorithmMenu.algorithms[id][1];
-                const controls = new Controls(Algorithm, graphTabs, graphDrawing);
-                graphTabs.setControlPanelForActiveTab(controls);
-            });
+        $("#algorithmDropdown").children().remove();
+        for (const category of AlgorithmMenu.algorithms) {
+            for (const entry of category) {
+                var $a = $("<a>", {"class": "dropdown-item", "href": "#"});
+                $a.html(entry.menuText);
+                $a.on('click', () => {
+                    const graphDrawing = graphTabs.getActiveGraphDrawing();
+                    if (graphDrawing == undefined) {
+                        alert("Please create or open a graph first.");
+                        return false;
+                    }
+                    const Controls = entry.controlsClass;
+                    const Algorithm = entry.algorithmClass;
+                    const controls = new Controls(Algorithm, graphTabs,
+                        graphDrawing);
+                    graphTabs.setControlPanelForActiveTab(controls);
+                });
+                $("#algorithmDropdown").append($a);
+            }
+            if (category !== AlgorithmMenu.algorithms[
+                AlgorithmMenu.algorithms.length - 1]) {
+            $("#algorithmDropdown").append($('<div>',
+                {"class": "dropdown-divider"}));
+            }
+
         }
     }
 }
