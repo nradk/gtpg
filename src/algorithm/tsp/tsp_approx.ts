@@ -9,7 +9,7 @@ export abstract class TSPApprox implements Algorithm<VertexInput> {
     constructor(protected decorator: Decorator) {
     }
 
-    initialize(input: VertexInput) {
+    protected initialize(input: VertexInput) {
         const graph = this.decorator.getGraph();
         if (!(graph instanceof EuclideanGraph)) {
             throw new AlgorithmError("Only Euclidean graphs are supported!");
@@ -20,7 +20,7 @@ export abstract class TSPApprox implements Algorithm<VertexInput> {
         this.startVertex = input.vertexId;
     }
 
-    abstract run(): Generator<void, AlgorithmOutput, void>;
+    abstract run(input: VertexInput): Generator<void, AlgorithmOutput, void>;
     abstract getFullName(): string;
     abstract getShortName(): string;
     abstract getDecorator(): Decorator;

@@ -15,7 +15,7 @@ export class KruskalMST implements Algorithm<void> {
     constructor(private decorator: Decorator) {
     }
 
-    initialize() {
+    private initialize() {
         const g = this.decorator.getGraph();
         if (!g.isWeighted() || g.isDirected()) {
             throw new AlgorithmError("Kruskal's algorithm needs a weighted undirected graph!");
@@ -65,6 +65,7 @@ export class KruskalMST implements Algorithm<void> {
     }
 
     *run(): Generator<void, AlgorithmOutput, void> {
+        this.initialize();
         const l = this.l.bind(this);
         let totalWeight = 0;
         while (this.edges.length > 0) {

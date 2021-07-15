@@ -4,7 +4,6 @@ import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { combinationBits } from "../../util";
 import { createGraphFromPath } from "../../graph_core/graph_util";
-import { getNumStringForLabels } from "../../util";
 
 export class BHK_TSP implements Algorithm<void> {
 
@@ -13,7 +12,7 @@ export class BHK_TSP implements Algorithm<void> {
     constructor(private decorator: Decorator) {
     }
 
-    initialize() {
+    private initialize() {
         const graph = this.decorator.getGraph();
         if (!(graph instanceof EuclideanGraph)) {
             throw new AlgorithmError("Bellman-Held-Karp TSP algorithm only Euclidean graphs!");
@@ -47,11 +46,10 @@ export class BHK_TSP implements Algorithm<void> {
     }
 
     *run() {
+        this.initialize();
         type Path = { steps: number[], cost: number };
         const graph = this.decorator.getGraph() as EuclideanGraph;
         const n = graph.getNumberOfVertices();
-        const l = (e: number[]) => getNumStringForLabels(
-            graph.getEdgeWeight(e[0], e[1]));
         const vertices = [...graph.getVertexIds()];
         const vertexIndices = new Map<number, number>();
         vertices.forEach((v, i) => vertexIndices.set(v, i));

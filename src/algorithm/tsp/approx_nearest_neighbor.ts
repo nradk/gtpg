@@ -15,7 +15,7 @@ export class TSPApproxNearestNeighbor extends TSPApprox {
         super(decorator);
     }
 
-    initialize(input: VertexInput) {
+    protected initialize(input: VertexInput) {
         super.initialize(input);
         const graph = this.decorator.getGraph();
         this.path = null;
@@ -36,7 +36,8 @@ export class TSPApproxNearestNeighbor extends TSPApprox {
         return this.decorator;
     }
 
-    *run(): Generator<void, AlgorithmOutput, void> {
+    *run(input: VertexInput): Generator<void, AlgorithmOutput, void> {
+        this.initialize(input);
         const graph = this.decorator.getGraph() as EuclideanGraph;
         const n = graph.getNumberOfVertices();
         const vertices = [...graph.getVertexIds()];

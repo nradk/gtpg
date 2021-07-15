@@ -1,5 +1,4 @@
 import { Graph } from "../graph_core/graph";
-import { Decorator } from "../decoration/decorator";
 import { Message } from "../ui_handlers/notificationservice";
 
 export type AlgorithmState = "init" | "running" | "paused" | "done";
@@ -14,11 +13,8 @@ export interface AlgorithmOutput {
 }
 
 export interface Algorithm<I> {
-    initialize(input: I): void;
-    run(): Generator<void, AlgorithmOutput, void>;
+    run(input: I): Generator<void, AlgorithmOutput, void>;
     getFullName(): string;
-    getShortName(): string;
-    getDecorator(): Decorator;
 }
 
 export class AlgorithmRunner<I> {
@@ -34,8 +30,7 @@ export class AlgorithmRunner<I> {
     }
 
     execute(input: I): Promise<AlgorithmOutput> {
-        this.algorithm.initialize(input);
-        const iterator = this.algorithm.run();
+        const iterator = this.algorithm.run(input);
         return new Promise((resolve, _) => {
             this.runnerStep = () => {
                 const it = iterator.next();
@@ -110,8 +105,7 @@ export class HeadlessRunner<I> {
     }
 
     run(input: I): AlgorithmOutput {
-        this.algorithm.initialize(input);
-        const it = this.algorithm.run();
+        const it = this.algorithm.run(input);
         let itRes: IteratorResult<void, AlgorithmOutput>;
         while (!(itRes = it.next()).done);
         return itRes.value;

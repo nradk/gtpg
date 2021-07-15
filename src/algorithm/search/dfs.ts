@@ -15,7 +15,7 @@ export class DepthFirstSearch implements Algorithm<VertexInput> {
     constructor(private decorator: Decorator) {
     }
 
-    initialize(startVertex: VertexInput) {
+    private initialize(startVertex: VertexInput) {
         const graph = this.decorator.getGraph();
         if (graph.isWeighted()) {
             this.searchTree = new WeightedGraph(true);
@@ -45,7 +45,8 @@ export class DepthFirstSearch implements Algorithm<VertexInput> {
         }
     }
 
-    *run() {
+    *run(startVertex: VertexInput) {
+        this.initialize(startVertex);
         while (this.stack.length > 0) {
             const [v, vparent] = this.stack.pop();
             const graph = this.decorator.getGraph();

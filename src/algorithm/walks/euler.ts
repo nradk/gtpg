@@ -59,7 +59,7 @@ export class FleuryEulerTrail implements Algorithm<void> {
         return (new Set(Object.values(sets))).size < nComps;
     }
 
-    initialize() {
+    private initialize() {
         const graph = this.decorator.getGraph();
         if (graph.isDirected() || graph.isWeighted()) {
             throw new AlgorithmError("Fleury's algorithm only supports undirected unweighted graphs!");
@@ -109,6 +109,7 @@ export class FleuryEulerTrail implements Algorithm<void> {
     }
 
     *run() {
+        this.initialize();
         let currentVertex = this.startVertex;
         let stop = false;
         let edgeIndex = 1;

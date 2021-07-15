@@ -13,7 +13,7 @@ export class TSPApproxChristofides implements Algorithm<void> {
     constructor(private decorator: Decorator) {
     }
 
-    initialize() {
+    private initialize() {
         const graph = this.decorator.getGraph();
         if (!(graph instanceof EuclideanGraph)) {
             throw new AlgorithmError("Only Euclidean graphs are supported!");
@@ -39,9 +39,9 @@ export class TSPApproxChristofides implements Algorithm<void> {
     }
 
     *run() {
+        this.initialize();
         const graph = this.decorator.getGraph() as EuclideanGraph;
         const kruskal = new KruskalMST(this.decorator);
-        kruskal.initialize();
         this.decorator.setStatusLine("Finding Minimum Spanning Tree with Kruskal's Algorithm");
         yield;
         const mstOut = yield* kruskal.run();

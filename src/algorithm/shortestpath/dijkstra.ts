@@ -20,7 +20,7 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
     constructor(private decorator: Decorator) {
     }
 
-    initialize(startVertex: VertexInput) {
+    private initialize(startVertex: VertexInput) {
         const graph = this.decorator.getGraph();
         if (!graph.isWeighted()) {
             throw new AlgorithmError("Dijkstra's algorithm needs a weighted graph!");
@@ -58,7 +58,8 @@ export class DijkstrasShortestPath implements Algorithm<VertexInput> {
         }
     }
 
-    *run() {
+    *run(startVertex: VertexInput) {
+        this.initialize(startVertex);
         const graph = this.decorator.getGraph() as Weighted & Graph;
         yield;
         while (this.queue.length > 0) {

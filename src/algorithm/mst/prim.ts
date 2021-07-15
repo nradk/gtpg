@@ -17,7 +17,7 @@ export class PrimMST implements Algorithm<VertexInput> {
     constructor(private decorator: Decorator) {
     }
 
-    initialize(input: VertexInput) {
+    private initialize(input: VertexInput) {
         const g = this.decorator.getGraph();
         if (!g.isWeighted() || g.isDirected()) {
             throw new AlgorithmError("Prim's algorithm needs a weighted undirected graph!");
@@ -66,7 +66,8 @@ export class PrimMST implements Algorithm<VertexInput> {
         }
     }
 
-    *run(): Generator<void, AlgorithmOutput, void> {
+    *run(input: VertexInput): Generator<void, AlgorithmOutput, void> {
+        this.initialize(input);
         while (this.notInTree.size > 0) {
             const edge = this.edgeQ.pop();
             this.decorator.setEdgeState(edge[0], edge[1], DecorationState.CONSIDERING);

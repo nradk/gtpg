@@ -12,7 +12,7 @@ export class BHKHamiltonPath implements Algorithm<void> {
     constructor(private decorator: Decorator) {
     }
 
-    initialize() {
+    private initialize() {
         const graph = this.decorator.getGraph();
         if (graph.isDirected()) {
             throw new AlgorithmError("Bellman-Held-Karp algorithm only supports undirected graphs!");
@@ -49,6 +49,7 @@ export class BHKHamiltonPath implements Algorithm<void> {
     }
 
     *run(): Generator<void, AlgorithmOutput, void> {
+        this.initialize();
         const graph = this.decorator.getGraph();
         const n = graph.getNumberOfVertices();
         const vertices = [...graph.getVertexIds()];

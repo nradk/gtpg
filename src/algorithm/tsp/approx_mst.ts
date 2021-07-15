@@ -1,9 +1,6 @@
-
 import { Decorator, DecorationState } from "../../decoration/decorator";
-import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { createGraphFromPath } from "../../graph_core/graph_util";
-import { getNumStringForLabels } from "../../util";
 import { AlgorithmError, Algorithm } from "../algorithm";
 import { KruskalMST } from "../mst/kruskal";
 
@@ -12,7 +9,7 @@ export class TSPApproxMSTBased implements Algorithm<void> {
     constructor(private decorator: Decorator) {
     }
 
-    initialize() {
+    private initialize() {
         const graph = this.decorator.getGraph();
         if (!(graph instanceof EuclideanGraph)) {
             throw new AlgorithmError("Only Euclidean graphs are supported!");
@@ -38,9 +35,9 @@ export class TSPApproxMSTBased implements Algorithm<void> {
     }
 
     *run() {
+        this.initialize();
         const graph = this.decorator.getGraph() as EuclideanGraph;
         const kruskal = new KruskalMST(this.decorator);
-        kruskal.initialize();
         this.decorator.setStatusLine("Finding Minimum Spanning Tree with Kruskal's Algorithm");
         yield;
         const mstOut = yield* kruskal.run();
@@ -101,6 +98,4 @@ export class TSPApproxMSTBased implements Algorithm<void> {
             message: null,
         };
     }
-
-
 }

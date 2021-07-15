@@ -11,7 +11,7 @@ export class TSPApproxNearestInsert extends TSPApprox {
         super(decorator);
     }
 
-    initialize(input: VertexInput) {
+    protected initialize(input: VertexInput) {
         super.initialize(input);
         const graph = this.decorator.getGraph();
         for (const v of graph.getVertexIds()) {
@@ -31,7 +31,8 @@ export class TSPApproxNearestInsert extends TSPApprox {
         return this.decorator;
     }
 
-    *run() {
+    *run(input: VertexInput) {
+        this.initialize(input);
         const graph = this.decorator.getGraph() as EuclideanGraph;
         const n = graph.getNumberOfVertices();
         const vertices = [...graph.getVertexIds()];

@@ -1,4 +1,5 @@
 import { Decorator, DecorationState } from "../../decoration/decorator";
+import { AlgorithmOutput } from "../algorithm";
 import { Graph } from "../../graph_core/graph";
 import { EuclideanGraph } from "../../graph_core/euclidean_graph";
 import { createGraphFromPath } from "../../graph_core/graph_util";
@@ -16,7 +17,7 @@ export class TSPApproxCheapestInsert extends TSPApprox {
         super(decorator);
     }
 
-    initialize(input: VertexInput) {
+    protected initialize(input: VertexInput) {
         super.initialize(input);
         this.path = null;
         this.decorator.clearAllDecoration();
@@ -38,7 +39,8 @@ export class TSPApproxCheapestInsert extends TSPApprox {
         return this.decorator;
     }
 
-    *run() {
+    *run(input: VertexInput): Generator<void, AlgorithmOutput, void> {
+        this.initialize(input);
         const graph = this.decorator.getGraph() as EuclideanGraph;
         const n = graph.getNumberOfVertices();
         const vertices = [...graph.getVertexIds()];

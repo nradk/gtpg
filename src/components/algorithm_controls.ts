@@ -22,21 +22,18 @@ export abstract class AlgorithmControls extends HTMLElement implements StatusSin
     protected readonly output_tab_btn: JQuery<HTMLElement>;
     protected readonly output_export_btn: JQuery<HTMLElement>;
     protected readonly output_drop_btn: JQuery<HTMLElement>;
-    protected readonly graphTabs: GraphTabs;
-    protected readonly graphDrawing: GraphDrawing;
+    protected decorator: Decorator;
     protected output: AlgorithmOutput;
     protected statusText: string = '';
 
-    constructor(graphTabs: GraphTabs, graphDrawing: GraphDrawing) {
+    constructor(private readonly graphTabs: GraphTabs,
+                protected readonly graphDrawing: GraphDrawing) {
         super();
         //const shadow = this.attachShadow({mode: 'open'});
         const template: HTMLTemplateElement =
             document.querySelector("#algo-control-template");
         const templateFrag = document.importNode(template.content, true);
         this.appendChild(templateFrag);
-
-        this.graphTabs = graphTabs;
-        this.graphDrawing = graphDrawing;
 
         $(this).addClass('container-fluid');
 
@@ -82,6 +79,10 @@ export abstract class AlgorithmControls extends HTMLElement implements StatusSin
     protected abstract executeAlgorithm(): Promise<AlgorithmOutput>;
     protected abstract getRunner(): AlgorithmRunner<any>;
 
+    protected setDecorator(decorator: Decorator) {
+        this.decorator = decorator;
+    }
+
     protected onPlay() {
         if (this.graphDrawing.getGraph().getVertexIds().size == 0) {
             alert("Please create a graph with at least one vertex!");
@@ -124,7 +125,7 @@ export abstract class AlgorithmControls extends HTMLElement implements StatusSin
     }
 
     protected onClear() {
-        this.getRunner().getAlgorithm().getDecorator().clearAllDecoration();
+        this.decorator.clearAllDecoration();
     }
 
     protected getGraphDrawingForOutput(graph: Graph): GraphDrawing {
@@ -215,7 +216,8 @@ export class InputlessControls extends AlgorithmControls {
     constructor(AlgorithmClass: new (decorator: Decorator) => Algorithm<void>,
             graphTabs: GraphTabs, graphDrawing: GraphDrawing) {
         super(graphTabs, graphDrawing);
-        this.algorithm = new AlgorithmClass(graphDrawing.getDecorator(this));
+        this.setDecorator(graphDrawing.getDecorator(this));
+        this.algorithm = new AlgorithmClass(this.decorator);
         this.runner = new AlgorithmRunner(this.algorithm);
         this.runner.setStateChangeCallback(this.algorithmStateChanged.bind(this));
         $(this).find("#algo-name").text(this.getRunner().getAlgorithm().getFullName());
@@ -238,7 +240,8 @@ export class VertexInputControls extends AlgorithmControls {
     constructor(AlgorithmClass: new (decorator: Decorator) => Algorithm<VertexInput>,
             graphTabs: GraphTabs, graphDrawing: GraphDrawing) {
         super(graphTabs, graphDrawing);
-        this.algorithm = new AlgorithmClass(graphDrawing.getDecorator(this));
+        this.setDecorator(graphDrawing.getDecorator(this));
+        this.algorithm = new AlgorithmClass(this.decorator);
         this.runner = new AlgorithmRunner(this.algorithm);
         this.runner.setStateChangeCallback(this.algorithmStateChanged.bind(this));
         $(this).find("#algo-name").text(this.getRunner().getAlgorithm().getFullName());
@@ -265,7 +268,8 @@ export class SourceSinkInputControls extends AlgorithmControls {
     constructor(AlgorithmClass: new (decorator: Decorator) => Algorithm<SourceSinkInput>,
             graphTabs: GraphTabs, graphDrawing: GraphDrawing) {
         super(graphTabs, graphDrawing);
-        this.algorithm = new AlgorithmClass(graphDrawing.getDecorator(this));
+        this.setDecorator(graphDrawing.getDecorator(this));
+        this.algorithm = new AlgorithmClass(this.decorator);
         this.runner = new AlgorithmRunner(this.algorithm);
         this.runner.setStateChangeCallback(this.algorithmStateChanged.bind(this));
         $(this).find("#algo-name").text(this.getRunner().getAlgorithm().getFullName());

@@ -15,7 +15,7 @@ export class BreadthFirstSearch implements Algorithm<VertexInput> {
     constructor(private decorator: Decorator) {
     }
 
-    initialize(startVertex: VertexInput) {
+    private initialize(startVertex: VertexInput) {
         const graph = this.decorator.getGraph();
         if (graph.isWeighted()) {
             this.searchTree = new WeightedGraph(true);
@@ -45,7 +45,8 @@ export class BreadthFirstSearch implements Algorithm<VertexInput> {
         }
     }
 
-    *run() {
+    *run(startVertex: VertexInput) {
+        this.initialize(startVertex);
         while (this.queue.length > 0) {
             const [v, vparent] = this.queue.shift();
             const graph = this.decorator.getGraph();

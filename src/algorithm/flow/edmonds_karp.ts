@@ -15,7 +15,7 @@ export class EdmondsKarpAlgorithm implements Algorithm<SourceSinkInput> {
     constructor(private decorator: Decorator) {
     }
 
-    initialize(sourceAndSink: SourceSinkInput) {
+    private initialize(sourceAndSink: SourceSinkInput) {
         const graph = this.decorator.getGraph();
         if (!graph.isWeighted() || !graph.isDirected()) {
             throw new AlgorithmError("Edmonds-Karp algorithm needs a weighted directed graph!");
@@ -46,7 +46,8 @@ export class EdmondsKarpAlgorithm implements Algorithm<SourceSinkInput> {
         return flowGraph;
     }
 
-    *run() {
+    *run(sourceAndSink: SourceSinkInput) {
+        this.initialize(sourceAndSink);
         yield;
         const graph = this.decorator.getGraph() as Weighted & Graph;
         const cap = new Map<number, Map<number, number>>();
