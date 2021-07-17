@@ -3,6 +3,8 @@ import {  AlgorithmControls, InputlessControls, VertexInputControls,
     SourceSinkInputControls } from "../components/algorithm_controls";
 import { Algorithm } from "../algorithm/algorithm";
 import GraphTabs from "./graphtabs";
+import { Decorator } from "../decoration/decorator";
+import { GraphDrawing } from "../drawing/graphdrawing";
 import { KruskalMST } from "../algorithm/mst/kruskal";
 import { PrimMST } from "../algorithm/mst/prim";
 import { BreadthFirstSearch } from "../algorithm/search/bfs";
@@ -18,8 +20,7 @@ import { TSPApproxMSTBased } from "../algorithm/tsp/approx_mst";
 import { ArticulationPoints } from "../algorithm/decompose/articulation";
 import { EdmondsKarpAlgorithm } from "../algorithm/flow/edmonds_karp";
 import { TSPApproxChristofides } from "../algorithm/tsp/approx_christofides";
-import { Decorator } from "../decoration/decorator";
-import { GraphDrawing } from "../drawing/graphdrawing";
+import { CountComponents } from "../algorithm/demo/components";
 
 
 type AlgorithmType<I> = new (d: Decorator) => Algorithm<I>;
@@ -123,6 +124,14 @@ export default class AlgorithmMenu {
                 algorithmClass: EdmondsKarpAlgorithm,
                 menuText: "Edmonds-Karp Network Flow",
             },
+        ],
+        [
+            {
+                controlsClass: InputlessControls,
+                algorithmClass: CountComponents,
+                menuText: "Component Count",
+            },
+
         ]
     ];
 
