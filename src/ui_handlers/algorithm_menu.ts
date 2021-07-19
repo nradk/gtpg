@@ -125,14 +125,14 @@ export default class AlgorithmMenu {
                 menuText: "Edmonds-Karp Network Flow",
             },
         ],
-        [
-            {
-                controlsClass: InputlessControls,
-                algorithmClass: CountComponents,
-                menuText: "Component Count",
-            },
+        //[
+            //{
+                //controlsClass: InputlessControls,
+                //algorithmClass: CountComponents,
+                //menuText: "Component Count",
+            //},
 
-        ]
+        //]
     ];
 
     constructor(graphTabs: GraphTabs) {
