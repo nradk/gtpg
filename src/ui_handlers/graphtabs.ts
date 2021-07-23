@@ -66,7 +66,7 @@ export default class GraphTabs {
         this.tabBar.setTabActivatedCallback((id: number) => {
             this.stage.removeChildren();
             this.stage.clear();
-            this.tabDrawings[id].setEnvironment(this.stage, this.tools);
+            this.tabDrawings[id].attachStage(this.stage, this.tools);
             this.tabDrawings[id].renderGraph();
             this.setCorrectControlPanel();
             this.tabSwitchCallbacks.forEach(cb => cb());
@@ -98,7 +98,7 @@ export default class GraphTabs {
             this.stage.destroyChildren();
             this.stage.clear();
             this.tabDrawings[id] = graphDrawing;
-            this.tabDrawings[id].setEnvironment(this.stage, this.tools);
+            this.tabDrawings[id].attachStage(this.stage, this.tools);
             this.tabDrawings[id].renderGraph();
             this.clickToAddUpdater();
         } else {

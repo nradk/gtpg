@@ -57,6 +57,7 @@ export class GraphDrawing {
     protected graph : Graphs.Graph;
     protected selectedVertex : VertexDrawing;
     protected stage : Konva.Stage;
+    protected dragPosition: Point;
     protected verticesLayer : Konva.Layer;
     protected edgesLayer : Konva.Layer;
     protected continuousLayoutTimer: number;
@@ -88,6 +89,7 @@ export class GraphDrawing {
         this.edgesLayer = new Konva.Layer();
         this.vertexRadius = 15;
         this.weightFontSize = 10;
+        this.dragPosition = { x: 0, y: 0};
 
         this.centroidCache = {
             n: this.graph.getNumberOfVertices(),
@@ -106,16 +108,21 @@ export class GraphDrawing {
         }
     }
 
-    setEnvironment(stage: Konva.Stage, tools: Tools): void {
+    attachStage(stage: Konva.Stage, tools: Tools): void {
         this.stage = stage;
         this.tools = tools;
         this.stage.removeChildren();
         this.stage.add(this.edgesLayer).add(this.verticesLayer);
-        this.stage.on('click', e => {
+        this.stage.on('click.addvertex', e => {
             if (!this.vertexSelectMode && e.target === this.stage
                 && this.tools.getCurrentTool() == "default") {
                 this.addVertexToCurrentGraph(e);
             }
+        });
+        this.stage.x(this.dragPosition.x);
+        this.stage.y(this.dragPosition.y);
+        this.stage.on('dragend.rememberpos', () => {
+            this.dragPosition = { x: stage.x(), y: stage.y() };
         });
     }
 
@@ -484,7 +491,8 @@ export class GraphDrawing {
         return JSON.stringify({
             graph: this.graph,
             vertexPositions: pobj,
-            curvePointPositions: curvePointPositions
+            curvePointPositions: curvePointPositions,
+            dragPosition: this.dragPosition
         });
     }
 
@@ -492,7 +500,8 @@ export class GraphDrawing {
         const data: {
             graph: string,
             vertexPositions: Layouts.PositionMap,
-            curvePointPositions: {[v1: number]: {[v2: number]: Vector2}}
+            curvePointPositions: {[v1: number]: {[v2: number]: Vector2}},
+            dragPosition: Point
         } = JSON.parse(jsonStr);
         const entries = Object.entries(data.vertexPositions);
         const positions: Layouts.PositionMap =
@@ -508,6 +517,7 @@ export class GraphDrawing {
                 ed.setCurvePointPosition(curvePointPosition);
             }
         }
+        gd.dragPosition = data.dragPosition ?? { x: 0, y: 0 };
         return gd;
     }
 
@@ -516,7 +526,8 @@ export class GraphDrawing {
             window.clearInterval(this.continuousLayoutTimer);
             this.continuousLayoutTimer = undefined;
         }
-        this.stage.off('click');
+        this.stage.off('click.addvertex');
+        this.stage.off('dragend.rememberpos');
     }
 
     getEdgeDrawing(startVertexId: number, endVertexId: number): EdgeDrawing {
