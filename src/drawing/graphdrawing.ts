@@ -51,6 +51,9 @@ function getAutoLabelerForScheme(scheme: AutoLabelScheme): AutoLabeler {
 }
 
 export class GraphDrawing {
+    // Set true to see vertex centroid. Useful for debugging edge labels.
+    private static readonly SHOW_CENTROID = false;
+
     protected vertexDrawings : {[id: number]: VertexDrawing};
     // For undirected graphs, 'start' is always smaller than 'end'
     protected edgeDrawings : {[start: number]: { [end: number]: EdgeDrawing }};
@@ -67,6 +70,7 @@ export class GraphDrawing {
     protected vertexSelectMode: boolean = false;
     protected tools: Tools;
     protected graphEditCallback: () => void;
+    protected centroidDot: Konva.Circle;
 
     protected autoLabelScheme: AutoLabelScheme = "123";
     protected labelers: {[scheme in AutoLabelScheme]: AutoLabeler} = {
@@ -95,6 +99,21 @@ export class GraphDrawing {
             n: this.graph.getNumberOfVertices(),
             xSum: 0, ySum: 0
         };
+        const centroid = this.getCentroid();
+        this.centroidDot = new Konva.Circle({
+            fill: 'red',
+            stroke: 'red',
+            radius: 3,
+            visible: GraphDrawing.SHOW_CENTROID,
+            x: centroid[0],
+            y: centroid[1]
+        });
+    }
+
+    private updateDotPosition() {
+        const centroid = this.getCentroid();
+        this.centroidDot.x(centroid[0]);
+        this.centroidDot.y(centroid[1]);
     }
 
     static create(forGraph?: Graphs.Graph): GraphDrawing {
@@ -147,6 +166,7 @@ export class GraphDrawing {
                 this.edgesLayer.add(this.edgeDrawings[s][e]);
             }
         }
+        this.verticesLayer.add(this.centroidDot);
 
         // Draw both layers (necessary for the added objects to actually be
         // visible)
@@ -226,6 +246,7 @@ export class GraphDrawing {
             this.vertexDrawings[v] = new VertexDrawing(p.x, p.y,
                 this.vertexRadius, this, v);
         }
+        this.updateDotPosition();
     }
 
     private attachVertexEventHandlers() {
@@ -327,6 +348,7 @@ export class GraphDrawing {
         this.centroidCache.n += 1;
         this.centroidCache.xSum += x;
         this.centroidCache.ySum += y;
+        this.updateDotPosition();
         return drawing;
     }
 
@@ -353,6 +375,7 @@ export class GraphDrawing {
 
         this.centroidCache.xSum += newPosition.x;
         this.centroidCache.ySum += newPosition.y;
+        this.updateDotPosition();
     }
 
     protected vertexClickHandler(vertexDrawing: VertexDrawing) {
@@ -407,6 +430,7 @@ export class GraphDrawing {
         this.centroidCache.n -= 1;
         this.centroidCache.xSum -= vertexDrawing.x();
         this.centroidCache.ySum -= vertexDrawing.y();
+        this.updateDotPosition();
     }
 
     protected addEdge(start: VertexDrawing, end: VertexDrawing) {
@@ -534,8 +558,12 @@ export class GraphDrawing {
         return this.edgeDrawings[startVertexId]?.[endVertexId];
     }
 
+    // Returns (0, 0) if no vertices exist
     getCentroid(): Vector2 {
         const n = this.centroidCache.n;
+        if (n == 0) {
+            return [0, 0];
+        }
         return [this.centroidCache.xSum / n, this.centroidCache.ySum / n];;
     }
 
