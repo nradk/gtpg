@@ -112,23 +112,23 @@ export class BipartiteLayout extends Layout {
         const center = [ w / 2, h / 2];
         const left = new Set<number>();
         const right = new  Set<number>();
+        type VertexAndDepth = Vector2;
         for (const v of graph.getVertexIds()) {
             if (left.has(v) || right.has(v)) {
                 continue;
             }
-            const q: number[] = [v];
+            const q: VertexAndDepth[] = [[v, 0]];
             left.add(v);
-            let toRight = true;
             while (q.length > 0) {
-                const vertex = q.shift();
-                for (const n of graph.getVertexNeighborIds(vertex)) {
+                const [vertex, depth] = q.shift();
+                const neighbors = graph.getVertexNeighborIds(vertex);
+                for (const n of neighbors) {
                     if (left.has(n) || right.has(n)) {
                         continue;
                     }
-                    (toRight ? right : left).add(n);
-                    q.push(n);
+                    ((depth % 2 == 0) ? right : left).add(n);
+                    q.push([n, depth + 1]);
                 }
-                toRight = !toRight;
             }
         }
         const hGap = w / 2;
