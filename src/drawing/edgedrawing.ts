@@ -114,7 +114,7 @@ export default class EdgeDrawing extends Konva.Group {
     private handleClick(evt: Konva.KonvaEventObject<MouseEvent>) {
         const currentTool = this.graphDrawing.getTools().getCurrentTool();
         if (currentTool == "default") {
-            this.setCurvePointPosition(getMouseEventXY(evt));
+            this.setCurvePointPosition(getMouseEventXY(evt), true);
             this.updateLabelPosition();
         } else if (currentTool == "delete") {
             this.graphDrawing.removeEdge(this.start, this.end);
@@ -122,7 +122,7 @@ export default class EdgeDrawing extends Konva.Group {
         evt.cancelBubble = true;
     }
 
-    setCurvePointPosition(position: Vector2) {
+    setCurvePointPosition(position: Vector2, show?: boolean) {
         if (this.curvePoint != undefined) {
             this.curvePoint.remove();
             this.curvePoint.destroy();
@@ -137,18 +137,24 @@ export default class EdgeDrawing extends Konva.Group {
             strokeWidth: 1,
             draggable: true
         });
-        this.curvePoint.on("mouseover", (e) => {
-            document.body.style.cursor = "move";
+        const showCurvePoint = () => {
             this.curvePoint.opacity(1);
             this.curvePoint.fill("red");
             this.redrawCallback();
+        };
+        const hideCurvePoint = () => {
+            this.curvePoint.opacity(0);
+            this.curvePoint.fill("white");
+            this.redrawCallback();
+        };
+        this.curvePoint.on("mouseover", (e) => {
+            document.body.style.cursor = "move";
+            showCurvePoint();
             e.cancelBubble = true;
         });
         this.curvePoint.on("mouseout", (e) => {
             document.body.style.cursor = "default";
-            this.curvePoint.opacity(0);
-            this.curvePoint.fill("white");
-            this.redrawCallback();
+            hideCurvePoint();
             e.cancelBubble = true;
         });
         this.curvePoint.on("dragmove", () => {
@@ -161,6 +167,7 @@ export default class EdgeDrawing extends Konva.Group {
         this.add(this.curvePoint);
         this.adjustArrowByCurvePoint();
         this.updateLabelPosition();
+        show || hideCurvePoint();
     }
 
     private adjustArrowByCurvePoint() {
