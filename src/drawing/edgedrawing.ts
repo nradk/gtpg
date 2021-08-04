@@ -282,9 +282,12 @@ export default class EdgeDrawing extends Konva.Group {
         if (this.label != undefined) {
             this.clearEdgeLabel();
         }
+        this.allowLabelEdit = editCallback != undefined;
+        const labelEditOn: Set<ToolName> = this.allowLabelEdit ?
+            new Set(["default", "text"]) : new Set();
         this.labelText = label;
         this.labelEditCallback = editCallback;
-        this.createLabel(label, new Set());
+        this.createLabel(label, labelEditOn);
         this.redrawCallback();
     }
 
