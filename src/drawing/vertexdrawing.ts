@@ -202,10 +202,10 @@ export default class VertexDrawing extends Konva.Group {
         let labelPosition: Vector2;
         const vVect: Vector2 = [this.x(), this.y()];
         const graph = this.graphDrawing.getGraph();
-        const hasNeighbors = graph.getVertexNeighborIds(this.vertexId).size > 0;
+        const hasNeighbors = graph.getVertexNeighborIds(this.vertexId, true).size > 0;
         if (this.externalLabelPlacement == "best-gap" && hasNeighbors) {
             const neighborDirections: Vector2[] = [];
-            for (const n of graph.getVertexNeighborIds(this.vertexId)) {
+            for (const n of graph.getVertexNeighborIds(this.vertexId, true)) {
                 const nPt = this.graphDrawing.getVertexPosition(n);
                 const nVect = [nPt.x, nPt.y];
                 neighborDirections.push([nVect[0] - vVect[0], nVect[1] - vVect[1]]);
