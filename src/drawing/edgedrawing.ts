@@ -10,6 +10,10 @@ import { ToolName } from "../ui_handlers/tools";
 
 type LabelEditCallback = (edgeDrawing: EdgeDrawing, label: string) => boolean;
 
+const SELECTED_COLOR = '#158cba';
+const CONSIDERING_COLOR = '#ff851b';
+const DISABLED_COLOR = '#d0d0d0';
+
 export default class EdgeDrawing extends Konva.Group {
     private arrow: Konva.Arrow;
     private curvePoint: Konva.Circle;
@@ -42,17 +46,31 @@ export default class EdgeDrawing extends Konva.Group {
         });
         this.decorationState = DecorationState.DEFAULT;
         this.add(this.arrow);
+        const _currentTool = () => this.graphDrawing.getTools().getCurrentTool();
+        let previousStroke = "black";
         this.arrow.on('mouseover', () => {
             if (this.curvePoint != undefined) {
                 this.curvePoint.opacity(1);
                 this.redrawCallback();
             }
+            const tool = _currentTool();
+            // TODO this should be a state
+            previousStroke = this.arrow.stroke();
+            if (tool == "default") {
+                this.arrow.stroke(SELECTED_COLOR);
+            } else if (tool == "delete") {
+                this.arrow.stroke("red");
+            }
+            this.draw();
+
         });
         this.arrow.on('mouseout', () => {
             if (this.curvePoint != undefined) {
                 this.curvePoint.opacity(0);
                 this.redrawCallback();
             }
+            this.arrow.stroke(previousStroke);
+            this.draw();
         });
         this.arrow.on('click', this.handleClick.bind(this));
         this.startMoveCallbackId = this.start.addMoveCallback(this.vertexMoveCallback.bind(this));
@@ -237,25 +255,25 @@ export default class EdgeDrawing extends Konva.Group {
 
     setDecorationState(state: DecorationState) {
         this.decorationState = state;
-        const selected_color = '#158cba';
-        const considering_color = '#ff851b';
-        const disabled_color = '#d0d0d0';
+        const SELECTED_COLOR = '#158cba';
+        const CONSIDERING_COLOR = '#ff851b';
+        const DISABLED_COLOR = '#d0d0d0';
         switch (state)  {
             case DecorationState.DEFAULT:
                 this.arrow.stroke('black');
                 this.label && this.label.fill('black');
                 break;
             case DecorationState.SELECTED:
-                this.arrow.stroke(selected_color);
-                this.label && this.label.fill(selected_color);
+                this.arrow.stroke(SELECTED_COLOR);
+                this.label && this.label.fill(SELECTED_COLOR);
                 break;
             case DecorationState.DISABLED:
-                this.arrow.stroke(disabled_color);
-                this.label && this.label.fill(disabled_color);
+                this.arrow.stroke(DISABLED_COLOR);
+                this.label && this.label.fill(DISABLED_COLOR);
                 break;
             case DecorationState.CONSIDERING:
-                this.arrow.stroke(considering_color);
-                this.label && this.label.fill(considering_color);
+                this.arrow.stroke(CONSIDERING_COLOR);
+                this.label && this.label.fill(CONSIDERING_COLOR);
                 break;
             default:
                 const color = DefaultDecorator.getAuxiliaryColor(state.getAuxiliaryId());

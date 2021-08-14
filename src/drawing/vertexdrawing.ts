@@ -11,6 +11,10 @@ import { ToolName } from "../ui_handlers/tools";
 type VertexDrawingEventCallback = (v: VertexDrawing) => void;
 type ExternalLabelPlacement = "anti-centroid" | "best-gap";
 
+const SELECTED_COLOR = '#158cba';
+const CONSIDERING_COLOR = '#ff851b';
+const DISABLED_COLOR = '#d0d0d0';
+
 export default class VertexDrawing extends Konva.Group {
 
     private decorationState: DecorationState;
@@ -50,11 +54,24 @@ export default class VertexDrawing extends Konva.Group {
         this.label.offsetX(this.label.width() / 2);
         this.label.offsetY(this.label.height() / 2);
         this.add(this.label);
+        const _currentTool = () => this.graphDrawing.getTools().getCurrentTool();
+        let previousStroke = "black";
         const mouseOverHandler = function () {
             document.body.style.cursor = 'pointer';
+            const tool = _currentTool();
+            // TODO this should be a state
+            previousStroke = this.circle.stroke();
+            if (tool == "default") {
+                this.circle.stroke(SELECTED_COLOR);
+            } else if (tool == "delete") {
+                this.circle.stroke("red");
+            }
+            this.draw();
         };
         const mouseOutHandler = function () {
             document.body.style.cursor = 'default';
+            this.circle.stroke(previousStroke);
+            this.draw();
         };
         const dragHandler = (_: Konva.KonvaEventObject<MouseEvent>) =>
             this.callMoveCallbacks();
@@ -89,9 +106,6 @@ export default class VertexDrawing extends Konva.Group {
 
     setDecorationState(state: DecorationState) {
         this.decorationState = state;
-        const selected_color = '#158cba';
-        const considering_color = '#ff851b';
-        const disabled_color = '#d0d0d0';
         switch (state)  {
             case DecorationState.DEFAULT:
                 this.circle.stroke('black');
@@ -99,19 +113,19 @@ export default class VertexDrawing extends Konva.Group {
                 this.label.fill('black');
                 break;
             case DecorationState.SELECTED:
-                this.circle.stroke(selected_color);
-                this.circle.fill(selected_color);
+                this.circle.stroke(SELECTED_COLOR);
+                this.circle.fill(SELECTED_COLOR);
                 this.label.fill('white');
                 break;
             case DecorationState.DISABLED:
-                this.circle.stroke(disabled_color);
+                this.circle.stroke(DISABLED_COLOR);
                 this.circle.fill('white');
-                this.label.fill(disabled_color);
+                this.label.fill(DISABLED_COLOR);
                 break;
             case DecorationState.CONSIDERING:
-                this.circle.stroke(considering_color);
+                this.circle.stroke(CONSIDERING_COLOR);
                 this.circle.fill('white');
-                this.label.fill(considering_color);
+                this.label.fill(CONSIDERING_COLOR);
                 break;
             default:
                 const color = DefaultDecorator.getAuxiliaryColor(state.getAuxiliaryId());
