@@ -47,7 +47,7 @@ export default class EdgeDrawing extends Konva.Group {
         this.decorationState = DecorationState.DEFAULT;
         this.add(this.arrow);
         const _currentTool = () => this.graphDrawing.getTools().getCurrentTool();
-        let previousStroke = "black";
+        let previousState = DecorationState.DEFAULT;
         this.arrow.on('mouseover', () => {
             if (this.curvePoint != undefined) {
                 this.curvePoint.opacity(1);
@@ -55,11 +55,11 @@ export default class EdgeDrawing extends Konva.Group {
             }
             const tool = _currentTool();
             // TODO this should be a state
-            previousStroke = this.arrow.stroke();
+            previousState = this.decorationState;
             if (tool == "default") {
-                this.arrow.stroke(SELECTED_COLOR);
+                this.setDecorationState(DecorationState.SELECT_HOVER);
             } else if (tool == "delete") {
-                this.arrow.stroke("red");
+                this.setDecorationState(DecorationState.DELETE_HOVER);
             }
             this.draw();
 
@@ -69,7 +69,7 @@ export default class EdgeDrawing extends Konva.Group {
                 this.curvePoint.opacity(0);
                 this.redrawCallback();
             }
-            this.arrow.stroke(previousStroke);
+            this.setDecorationState(previousState);
             this.draw();
         });
         this.arrow.on('click', this.handleClick.bind(this));
@@ -255,9 +255,6 @@ export default class EdgeDrawing extends Konva.Group {
 
     setDecorationState(state: DecorationState) {
         this.decorationState = state;
-        const SELECTED_COLOR = '#158cba';
-        const CONSIDERING_COLOR = '#ff851b';
-        const DISABLED_COLOR = '#d0d0d0';
         switch (state)  {
             case DecorationState.DEFAULT:
                 this.arrow.stroke('black');
@@ -275,8 +272,21 @@ export default class EdgeDrawing extends Konva.Group {
                 this.arrow.stroke(CONSIDERING_COLOR);
                 this.label && this.label.fill(CONSIDERING_COLOR);
                 break;
+            case DecorationState.SELECT_HOVER:
+                this.arrow.stroke(SELECTED_COLOR);
+                this.label && this.label.fill(SELECTED_COLOR);
+                break;
+            case DecorationState.DELETE_HOVER:
+                this.arrow.stroke("red");
+                this.label && this.label.fill("red");
+                break;
             default:
-                const color = DefaultDecorator.getAuxiliaryColor(state.getAuxiliaryId());
+                const id = state.getAuxiliaryId();
+                if (!id) {
+                    console.error("Invalid decoration state!");
+                    return;
+                }
+                const color = DefaultDecorator.getAuxiliaryColor(id);
                 this.arrow.stroke(color);
                 this.label && this.label.fill(color);
         }

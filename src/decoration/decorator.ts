@@ -7,7 +7,13 @@ export class DecorationState {
     static readonly DISABLED = new DecorationState();
     static readonly CONSIDERING = new DecorationState();
 
-    private constructor(private id?: number) {
+    // These are for use by vertices and edges internally to show hover status.
+    // More abstract names might be needed if we want to use these states from
+    // algorithms as well.
+    static readonly SELECT_HOVER = new DecorationState();
+    static readonly DELETE_HOVER = new DecorationState();
+
+    constructor(private id?: number) {
     }
 
     static getAuxiliaryState(id: number): DecorationState {

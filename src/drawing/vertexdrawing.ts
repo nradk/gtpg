@@ -55,22 +55,22 @@ export default class VertexDrawing extends Konva.Group {
         this.label.offsetY(this.label.height() / 2);
         this.add(this.label);
         const _currentTool = () => this.graphDrawing.getTools().getCurrentTool();
-        let previousStroke = "black";
+        let previousState = DecorationState.DEFAULT;
         const mouseOverHandler = function () {
             document.body.style.cursor = 'pointer';
             const tool = _currentTool();
             // TODO this should be a state
-            previousStroke = this.circle.stroke();
+            previousState = this.decorationState;
             if (tool == "default") {
-                this.circle.stroke(SELECTED_COLOR);
+                this.setDecorationState(DecorationState.SELECT_HOVER);
             } else if (tool == "delete") {
-                this.circle.stroke("red");
+                this.setDecorationState(DecorationState.DELETE_HOVER);
             }
             this.draw();
         };
         const mouseOutHandler = function () {
             document.body.style.cursor = 'default';
-            this.circle.stroke(previousStroke);
+            this.setDecorationState(previousState);
             this.draw();
         };
         const dragHandler = (_: Konva.KonvaEventObject<MouseEvent>) =>
@@ -127,8 +127,23 @@ export default class VertexDrawing extends Konva.Group {
                 this.circle.fill('white');
                 this.label.fill(CONSIDERING_COLOR);
                 break;
+            case DecorationState.SELECT_HOVER:
+                this.circle.stroke(SELECTED_COLOR);
+                this.circle.fill('white');
+                this.label.fill(SELECTED_COLOR);
+                break;
+            case DecorationState.DELETE_HOVER:
+                this.circle.stroke("red");
+                this.circle.fill("white");
+                this.label.fill("red");
+                break;
             default:
-                const color = DefaultDecorator.getAuxiliaryColor(state.getAuxiliaryId());
+                const id = state.getAuxiliaryId();
+                if (!id) {
+                    console.error("Invalid decoration state!");
+                    return;
+                }
+                const color = DefaultDecorator.getAuxiliaryColor(id);
                 this.circle.stroke(color);
                 this.circle.fill('white');
                 this.label.fill(color);
