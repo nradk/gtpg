@@ -3,7 +3,7 @@
 Graph Theory Playground is an under-construction tool to enable visualization
 of graph theory concepts and algorithms.
 
-Try it at [neerajadh.gitlab.io/graph-theory-playground](https://neerajadh.gitlab.io/graph-theory-playground/#).
+Try it at [neerajadh.gitlab.io/graph-playground](https://neerajadh.gitlab.io/graph-playground/#).
 Please be warned that the project is still very much in it's infancy and there
 are a lot of things missing and things that do not work.
 
